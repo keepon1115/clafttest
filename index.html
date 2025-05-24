@@ -364,6 +364,11 @@
         <h1 class="map-title heading-primary">クエストマップ</h1>
     </header>
 
+    <!-- ユーザー名表示 -->
+　　<div style="padding: 16px; font-size: 18px; font-weight: bold; text-align: center;">
+   　 <span id="usernameDisplay">ようこそ冒険者さん！</span>
+　　</div>
+
     <!-- マップエリア -->
     <div class="map-scroll-wrapper">
         <div class="map-path">
@@ -578,6 +583,18 @@
                 closeModal();
             }
         });
+
+            // URLパラメータを取得する関数
+    function getQueryParam(key) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(key);
+    }
+
+    // userパラメータを取得して表示
+    const user = getQueryParam('user');
+    if (user) {
+        document.getElementById('usernameDisplay').textContent = `こんにちは、${user}さん！`;
+    }
     </script>
 </body>
 </html>
