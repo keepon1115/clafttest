@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLAFT - クエストマップ</title>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #4DB6F7;
+            --accent-green: #8EE38F;
+            --bg-warm-white: #FFFEF5;
+            --text-dark: #2C3E50;
+            --text-light: #6B7280;
+            --shadow-soft: rgba(0, 0, 0, 0.08);
+            --cta-red: #FF6B6B;
+            --disabled-gray: #D1D5DB;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: linear-gradient(180deg, #E0F2FE 0%, #FEF3C7 100%);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .heading-primary { 
+            font-family: 'M PLUS Rounded 1c', sans-serif; 
+            font-weight: 900;
+        }
+        
+        .heading-secondary { 
+            font-family: 'M PLUS Rounded 1c', sans-serif; 
+            font-weight: 700;
+        }
+
+        /* ヘッダー */
+        .map-header {
+            background: white;
+            padding: 20px;
+            box-shadow: 0 2px 8px var(--shadow-soft);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .home-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: var(--primary-blue);
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .home-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .map-title {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        /* マップエリア */
+        .map-scroll-wrapper {
+            overflow-x: auto;
+            padding: 40px 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .map-path {
+            display: flex;
+            align-items: center;
+            min-width: 1400px;
+            padding: 40px;
+        }
+
+        /* ステージノード */
+        .stage-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
+        .stage-node {
+            position: relative;
+            width: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .stage-node:hover {
+            transform: scale(1.1);
+        }
+
+        .stage-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 2;
+            font-size: 40px;
+        }
+
+        .stage-node.completed .stage-icon {
+            background: var(--accent-green);
+            box-shadow: 0 0 20px rgba(142, 227, 143, 0.5);
+        }
+
+        .stage-node.current .stage-icon {
+            background: var(--primary-blue);
+            box-shadow: 0 0 30px rgba(77, 182, 247, 0.6);
+            animation: pulse 2s infinite;
+        }
+
+        .stage-node.locked .stage-icon {
+            background: var(--disabled-gray);
+            opacity: 0.6;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 20px rgba(77, 182, 247, 0.6); }
+            50% { box-shadow: 0 0 40px rgba(77, 182, 247, 0.8); }
+            100% { box-shadow: 0 0 20px rgba(77, 182, 247, 0.6); }
+        }
+
+        .stage-number {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: 900;
+            color: white;
+        }
+
+        .stage-node.locked .stage-number {
+            color: #9CA3AF;
+        }
+
+        .stage-name {
+            margin-top: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .current-marker {
+            position: absolute;
+            top: -20px;
+            background: var(--primary-blue);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* パスライン */
+        .path-line {
+            width: 100px;
+            height: 4px;
+            background: #D1D5DB;
+            z-index: 1;
+            position: relative;
+        }
+
+        .path-line.completed {
+            background: var(--accent-green);
+        }
+
+        .path-line.current {
+            background: linear-gradient(90deg, var(--accent-green) 0%, #D1D5DB 100%);
+        }
+
+        /* クエスト開始ボタン */
+        .quest-start-btn {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            background: var(--cta-red);
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            padding: 20px 40px;
+            border-radius: 60px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 8px 24px rgba(255, 107, 107, 0.4);
+            animation: float 3s ease-in-out infinite;
+            z-index: 100;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .quest-start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 32px rgba(255, 107, 107, 0.5);
+        }
+
+        .sword-icon {
+            font-size: 24px;
+        }
+
+        /* モーダル */
+        .stage-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .stage-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #F3F4F6;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--cta-red);
+            color: white;
+        }
+
+        .stage-title {
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        .stage-description {
+            color: var(--text-light);
+            margin-bottom: 24px;
+        }
+
+        .clear-conditions {
+            background: #F9FAFB;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .clear-conditions h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .clear-conditions ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .clear-conditions li {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .progress-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            background: #E5E7EB;
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-blue) 0%, #6DD5FF 100%);
+            transition: width 0.5s ease;
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .quest-start-btn {
+                bottom: 20px;
+                right: 20px;
+                padding: 16px 24px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="map-header">
+        <button class="home-btn">🏠</button>
+        <h1 class="map-title heading-primary">クエストマップ</h1>
+    </header>
+
+    <!-- マップエリア -->
+    <div class="map-scroll-wrapper">
+        <div class="map-path">
+            <!-- ステージ1 -->
+            <div class="stage-wrapper">
+                <div class="stage-node completed" onclick="openModal(1)">
+                    <div class="stage-icon">
+                        🏘️
+                        <span class="stage-number">1</span>
+                    </div>
+                    <div class="stage-name">はじまりの村</div>
+                </div>
+                <div class="path-line completed"></div>
+            </div>
+
+            <!-- ステージ2 -->
+            <div class="stage-wrapper">
+                <div class="stage-node completed" onclick="openModal(2)">
+                    <div class="stage-icon">
+                        🌳
+                        <span class="stage-number">2</span>
+                    </div>
+                    <div class="stage-name">冒険の森</div>
+                </div>
+                <div class="path-line current"></div>
+            </div>
+
+            <!-- ステージ3（現在地） -->
+            <div class="stage-wrapper">
+                <div class="stage-node current" onclick="openModal(3)">
+                    <div class="current-marker">現在地</div>
+                    <div class="stage-icon">
+                        ⛰️
+                        <span class="stage-number">3</span>
+                    </div>
+                    <div class="stage-name">試練の山</div>
+                </div>
+                <div class="path-line"></div>
+            </div>
+
+            <!-- ステージ4 -->
+            <div class="stage-wrapper">
+                <div class="stage-node locked" onclick="openModal(4)">
+                    <div class="stage-icon">
+                        🌊
+                        <span class="stage-number">4</span>
+                    </div>
+                    <div class="stage-name">神秘の湖</div>
+                </div>
+                <div class="path-line"></div>
+            </div>
+
+            <!-- ステージ5 -->
+            <div class="stage-wrapper">
+                <div class="stage-node locked" onclick="openModal(5)">
+                    <div class="stage-icon">
+                        🏰
+                        <span class="stage-number">5</span>
+                    </div>
+                    <div class="stage-name">魔王の城</div>
+                </div>
+                <div class="path-line"></div>
+            </div>
+
+            <!-- ステージ6 -->
+            <div class="stage-wrapper">
+                <div class="stage-node locked" onclick="openModal(6)">
+                    <div class="stage-icon">
+                        🌟
+                        <span class="stage-number">6</span>
+                    </div>
+                    <div class="stage-name">星空の塔</div>
+                </div>
+                <div class="path-line"></div>
+            </div>
+
+            <!-- ステージ7 -->
+            <div class="stage-wrapper">
+                <div class="stage-node locked" onclick="openModal(7)">
+                    <div class="stage-icon">
+                        🏜️
+                        <span class="stage-number">7</span>
+                    </div>
+                    <div class="stage-name">砂漠の遺跡</div>
+                </div>
+                <div class="path-line"></div>
+            </div>
+
+            <!-- ステージ8 -->
+            <div class="stage-wrapper">
+                <div class="stage-node locked" onclick="openModal(8)">
+                    <div class="stage-icon">
+                        🏔️
+                        <span class="stage-number">8</span>
+                    </div>
+                    <div class="stage-name">氷の洞窟</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- クエスト開始ボタン -->
+    <button class="quest-start-btn">
+        <span class="sword-icon">⚔️</span>
+        <span class="btn-text">クエストに挑む！</span>
+    </button>
+
+    <!-- ステージ詳細モーダル -->
+    <div class="stage-modal" id="stageModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <h2 class="stage-title heading-secondary" id="modalTitle">ステージ3: 試練の山</h2>
+            <p class="stage-description" id="modalDescription">
+                山の頂上に住む賢者から、計算の極意を学ぼう！
+            </p>
+            <div class="clear-conditions">
+                <h3 class="heading-secondary">クリア条件</h3>
+                <ul id="modalConditions">
+                    <li>✓ 掛け算の問題を10問正解</li>
+                    <li>✓ タイムアタックで3分以内</li>
+                    <li>□ ボーナス: ノーミスでクリア</li>
+                </ul>
+            </div>
+            <div class="progress-section">
+                <span>進捗</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="modalProgress" style="width: 30%"></div>
+                </div>
+                <span id="modalProgressText">30%</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ステージデータ
+        const stageData = {
+            1: {
+                title: "ステージ1: はじまりの村",
+                description: "冒険の基本を学ぼう！村の人々からクエストを受けよう。",
+                conditions: [
+                    "✓ 自己紹介をしよう",
+                    "✓ 初めてのクエストをクリア",
+                    "✓ 仲間を1人見つける"
+                ],
+                progress: 100
+            },
+            2: {
+                title: "ステージ2: 冒険の森",
+                description: "森の中で、観察力と想像力を鍛えよう！",
+                conditions: [
+                    "✓ 森の生き物を5種類見つける",
+                    "✓ 観察日記を書く",
+                    "□ ボーナス: オリジナルの生き物を描く"
+                ],
+                progress: 100
+            },
+            3: {
+                title: "ステージ3: 試練の山",
+                description: "山の頂上に住む賢者から、計算の極意を学ぼう！",
+                conditions: [
+                    "✓ 掛け算の問題を10問正解",
+                    "✓ タイムアタックで3分以内",
+                    "□ ボーナス: ノーミスでクリア"
+                ],
+                progress: 30
+            },
+            4: {
+                title: "ステージ4: 神秘の湖",
+                description: "湖の精霊から、協力の大切さを学ぼう！",
+                conditions: [
+                    "□ チームで協力して課題をクリア",
+                    "□ 他の人を助ける",
+                    "□ ボーナス: リーダーシップを発揮"
+                ],
+                progress: 0
+            },
+            5: {
+                title: "ステージ5: 魔王の城",
+                description: "最終決戦！今まで学んだすべてを使って挑戦しよう！",
+                conditions: [
+                    "□ 総合テストに合格",
+                    "□ プレゼンテーションを完成",
+                    "□ ボーナス: 全員で協力してクリア"
+                ],
+                progress: 0
+            }
+        };
+
+        // モーダルを開く
+        function openModal(stageNum) {
+            const modal = document.getElementById('stageModal');
+            const data = stageData[stageNum] || stageData[3];
+            
+            document.getElementById('modalTitle').textContent = data.title;
+            document.getElementById('modalDescription').textContent = data.description;
+            document.getElementById('modalConditions').innerHTML = data.conditions.map(c => `<li>${c}</li>`).join('');
+            document.getElementById('modalProgress').style.width = data.progress + '%';
+            document.getElementById('modalProgressText').textContent = data.progress + '%';
+            
+            modal.classList.add('active');
+        }
+
+        // モーダルを閉じる
+        function closeModal() {
+            const modal = document.getElementById('stageModal');
+            modal.classList.remove('active');
+        }
+
+        // モーダルの外側をクリックしたら閉じる
+        document.getElementById('stageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
