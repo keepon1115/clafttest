@@ -2,8 +2,8 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">　
-    <title>CLAFT - クエストマップ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLAFT - 教育プログラム</title>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -25,24 +25,500 @@
 
         body {
             font-family: 'Noto Sans JP', sans-serif;
-            background: linear-gradient(180deg, #E0F2FE 0%, #FEF3C7 100%);
+            background-color: var(--bg-warm-white);
             color: var(--text-dark);
             line-height: 1.6;
-            min-height: 100vh;
-            overflow-x: hidden;
         }
 
+        /* 共通スタイル */
         .heading-primary { 
             font-family: 'M PLUS Rounded 1c', sans-serif; 
             font-weight: 900;
         }
-        
         .heading-secondary { 
             font-family: 'M PLUS Rounded 1c', sans-serif; 
             font-weight: 700;
         }
 
-        /* ヘッダー */
+        /* ナビゲーション */
+        .nav-tabs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 2px 8px var(--shadow-soft);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 16px;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-light);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .screen {
+            display: none;
+            padding-top: 80px;
+            min-height: 100vh;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* ダッシュボード画面 */
+        .dashboard-container {
+            background-color: var(--bg-warm-white);
+        }
+
+        .hero-section {
+            position: relative;
+            background: linear-gradient(135deg, #4DB6F7 0%, #6DD5FF 100%);
+            padding: 40px 20px;
+            border-radius: 0 0 30px 30px;
+            overflow: hidden;
+        }
+
+        .hero-bg-illustration {
+            position: absolute;
+            top: -20px;
+            right: -50px;
+            width: 300px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 20%, transparent 70%);
+            transform: rotate(-15deg);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1280px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .greeting-box {
+            color: white;
+        }
+
+        .greeting-title {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .greeting-sub {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .status-box {
+            text-align: right;
+            color: white;
+        }
+
+        .stage-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+        }
+
+        .stage-icon {
+            font-size: 20px;
+        }
+
+        .last-login {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* メイングリッド */
+        .main-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            padding: 32px 20px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 8px 24px var(--shadow-soft);
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px var(--shadow-soft);
+        }
+
+        .edit-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--primary-blue);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+
+        .edit-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .avatar-wrapper {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 16px;
+            background: linear-gradient(135deg, #FFE066 0%, #FFD93D 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .nickname {
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .character-trait {
+            text-align: center;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .status-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .label {
+            font-weight: 700;
+            color: var(--text-light);
+        }
+
+        .energy-bar {
+            flex: 1;
+            background: #E5E7EB;
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+            margin-left: 12px;
+        }
+
+        .energy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-green) 0%, #6EE7B7 100%);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .card-title {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: var(--text-dark);
+        }
+
+        .goals-section {
+            margin-bottom: 20px;
+        }
+
+        .goal-item {
+            margin-bottom: 12px;
+        }
+
+        .goal-label {
+            display: inline-block;
+            background: var(--primary-blue);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .goal-text {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .skill-gauges {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .gauge-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .gauge-item span {
+            width: 60px;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .gauge-bar {
+            flex: 1;
+            background: #E5E7EB;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .gauge-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-green) 0%, #6EE7B7 100%);
+            border-radius: 10px;
+        }
+
+        .works-gallery {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .work-thumb {
+            aspect-ratio: 16/9;
+            background: #F3F4F6;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .work-thumb:hover {
+            transform: scale(1.05);
+        }
+
+        .literacy-icons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .literacy-item {
+            text-align: center;
+            padding: 12px;
+            border-radius: 12px;
+            background: #F3F4F6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .literacy-item.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .icon-wrapper {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .literacy-item span {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .skill-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .skill-bar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .skill-name {
+            width: 80px;
+            font-weight: 700;
+        }
+
+        .skill-progress {
+            flex: 1;
+            background: #E5E7EB;
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-blue) 0%, #6DD5FF 100%);
+            border-radius: 10px;
+        }
+
+        .skill-level {
+            width: 40px;
+            text-align: right;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        /* サブコンテンツ */
+        .sub-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            padding: 0 20px 32px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .schedule-section, .news-section {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 8px 24px var(--shadow-soft);
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+
+        .schedule-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            background: #F9FAFB;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .schedule-date {
+            background: var(--primary-blue);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .news-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .news-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            background: #F9FAFB;
+            border-radius: 8px;
+        }
+
+        .news-date {
+            background: var(--primary-blue);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* フッター */
+        .dashboard-footer {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .cta-button {
+            background: var(--cta-red);
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            padding: 16px 32px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            min-height: 48px;
+            box-shadow: 0 4px 16px rgba(255, 107, 107, 0.3);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cta-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .copyright {
+            margin-top: 20px;
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* クエストマップ画面 */
+        .quest-map-container {
+            background: linear-gradient(180deg, #E0F2FE 0%, #FEF3C7 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
         .map-header {
             background: white;
             padding: 20px;
@@ -62,9 +538,6 @@
             cursor: pointer;
             font-size: 20px;
             transition: transform 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .home-btn:hover {
@@ -76,7 +549,6 @@
             margin: 0;
         }
 
-        /* マップエリア */
         .map-scroll-wrapper {
             overflow-x: auto;
             padding: 40px 20px;
@@ -86,14 +558,9 @@
         .map-path {
             display: flex;
             align-items: center;
-            min-width: 1400px;
+            min-width: 1200px;
             padding: 40px;
-        }
-
-        /* ステージノード */
-        .stage-wrapper {
-            display: flex;
-            align-items: center;
+            gap: 20px;
         }
 
         .stage-node {
@@ -184,24 +651,22 @@
             50% { transform: translateY(-5px); }
         }
 
-        /* パスライン */
         .path-line {
-            width: 100px;
+            width: 80px;
             height: 4px;
             background: #D1D5DB;
+            margin: 0 -50px;
             z-index: 1;
-            position: relative;
         }
 
-        .path-line.completed {
+        .stage-node.completed + .path-line {
             background: var(--accent-green);
         }
 
-        .path-line.current {
+        .stage-node.current + .path-line {
             background: linear-gradient(90deg, var(--accent-green) 0%, #D1D5DB 100%);
         }
 
-        /* クエスト開始ボタン */
         .quest-start-btn {
             position: fixed;
             bottom: 40px;
@@ -348,6 +813,10 @@
 
         /* レスポンシブ */
         @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
             .quest-start-btn {
                 bottom: 20px;
                 right: 20px;
@@ -358,250 +827,150 @@
     </style>
 </head>
 <body>
-    <!-- ヘッダー -->
-    <header class="map-header">
-        <button class="home-btn">🏠</button>
-        <h1 class="map-title heading-primary">クエストマップ</h1>
-    </header>
+    <!-- ナビゲーション -->
+    <nav class="nav-tabs">
+        <button class="nav-tab active" onclick="switchScreen('dashboard')">ダッシュボード</button>
+        <button class="nav-tab" onclick="switchScreen('quest')">クエストマップ</button>
+    </nav>
 
-    <!-- ユーザー名表示 -->
-　　<div style="padding: 16px; font-size: 18px; font-weight: bold; text-align: center;">
-   　 <span id="usernameDisplay">ようこそ冒険者さん！</span>
-　　</div>
-
-    <!-- マップエリア -->
-    <div class="map-scroll-wrapper">
-        <div class="map-path">
-            <!-- ステージ1 -->
-            <div class="stage-wrapper">
-                <div class="stage-node completed" onclick="openModal(1)">
-                    <div class="stage-icon">
-                        🏘️
-                        <span class="stage-number">1</span>
+    <!-- ダッシュボード画面 -->
+    <div id="dashboard" class="screen active">
+        <div class="dashboard-container">
+            <!-- ヘッダーHero -->
+            <header class="hero-section">
+                <div class="hero-bg-illustration"></div>
+                <div class="hero-content">
+                    <div class="greeting-box">
+                        <h1 class="greeting-title heading-primary">こんにちは、<span class="user-name">たろう</span>さん！</h1>
+                        <p class="greeting-sub">今日も冒険を始めましょう</p>
                     </div>
-                    <div class="stage-name">はじまりの村</div>
-                </div>
-                <div class="path-line completed"></div>
-            </div>
-
-            <!-- ステージ2 -->
-            <div class="stage-wrapper">
-                <div class="stage-node completed" onclick="openModal(2)">
-                    <div class="stage-icon">
-                        🌳
-                        <span class="stage-number">2</span>
+                    <div class="status-box">
+                        <div class="stage-badge">
+                            <span class="stage-icon">🏰</span>
+                            <span class="stage-text">ステージ 1-3</span>
+                        </div>
+                        <div class="last-login">前回: 12月23日 15:30</div>
                     </div>
-                    <div class="stage-name">冒険の森</div>
                 </div>
-                <div class="path-line current"></div>
-            </div>
+            </header>
 
-            <!-- ステージ3（現在地） -->
-            <div class="stage-wrapper">
-                <div class="stage-node current" onclick="openModal(3)">
-                    <div class="current-marker">現在地</div>
-                    <div class="stage-icon">
-                        ⛰️
-                        <span class="stage-number">3</span>
+            <!-- メインコンテンツ -->
+            <main class="main-grid">
+                <!-- プロフィールカード -->
+                <div class="card profile-card">
+                    <button class="edit-btn">✏️</button>
+                    <div class="avatar-wrapper">
+                        👤
                     </div>
-                    <div class="stage-name">試練の山</div>
-                </div>
-                <div class="path-line"></div>
-            </div>
-
-            <!-- ステージ4 -->
-            <div class="stage-wrapper">
-                <div class="stage-node locked" onclick="openModal(4)">
-                    <div class="stage-icon">
-                        🌊
-                        <span class="stage-number">4</span>
+                    <h2 class="nickname heading-secondary">冒険者たろう</h2>
+                    <div class="character-trait">勇敢な剣士</div>
+                    <div class="status-list">
+                        <div class="status-item">
+                            <span class="label">得意</span>
+                            <span class="value">計算・パズル</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">苦手</span>
+                            <span class="value">長文読解</span>
+                        </div>
+                        <div class="status-item energy">
+                            <span class="label">エネルギー</span>
+                            <div class="energy-bar">
+                                <div class="energy-fill" style="width: 75%"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stage-name">神秘の湖</div>
                 </div>
-                <div class="path-line"></div>
-            </div>
 
-            <!-- ステージ5 -->
-            <div class="stage-wrapper">
-                <div class="stage-node locked" onclick="openModal(5)">
-                    <div class="stage-icon">
-                        🏰
-                        <span class="stage-number">5</span>
+                <!-- ストーリーカード -->
+                <div class="card story-card">
+                    <h3 class="card-title heading-secondary">冒険の物語</h3>
+                    <div class="goals-section">
+                        <div class="goal-item">
+                            <span class="goal-label">短期目標</span>
+                            <p class="goal-text">お店屋さんごっこで計算マスター</p>
+                        </div>
+                        <div class="goal-item">
+                            <span class="goal-label">長期目標</span>
+                            <p class="goal-text">みんなを笑顔にする発明家</p>
+                        </div>
                     </div>
-                    <div class="stage-name">魔王の城</div>
-                </div>
-                <div class="path-line"></div>
-            </div>
-
-            <!-- ステージ6 -->
-            <div class="stage-wrapper">
-                <div class="stage-node locked" onclick="openModal(6)">
-                    <div class="stage-icon">
-                        🌟
-                        <span class="stage-number">6</span>
+                    <div class="skill-gauges">
+                        <div class="gauge-item">
+                            <span>創造力</span>
+                            <div class="gauge-bar">
+                                <div class="gauge-fill" style="width: 60%"></div>
+                            </div>
+                        </div>
+                        <div class="gauge-item">
+                            <span>協調性</span>
+                            <div class="gauge-bar">
+                                <div class="gauge-fill" style="width: 80%"></div>
+                            </div>
+                        </div>
+                        <div class="gauge-item">
+                            <span>探究心</span>
+                            <div class="gauge-bar">
+                                <div class="gauge-fill" style="width: 45%"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stage-name">星空の塔</div>
-                </div>
-                <div class="path-line"></div>
-            </div>
-
-            <!-- ステージ7 -->
-            <div class="stage-wrapper">
-                <div class="stage-node locked" onclick="openModal(7)">
-                    <div class="stage-icon">
-                        🏜️
-                        <span class="stage-number">7</span>
+                    <div class="works-gallery">
+                        <div class="work-thumb">📝</div>
+                        <div class="work-thumb">🎨</div>
+                        <div class="work-thumb">🔬</div>
                     </div>
-                    <div class="stage-name">砂漠の遺跡</div>
                 </div>
-                <div class="path-line"></div>
-            </div>
 
-            <!-- ステージ8 -->
-            <div class="stage-wrapper">
-                <div class="stage-node locked" onclick="openModal(8)">
-                    <div class="stage-icon">
-                        🏔️
-                        <span class="stage-number">8</span>
+                <!-- スキル&リテラシーカード -->
+                <div class="card skills-card">
+                    <h3 class="card-title heading-secondary">スキル & リテラシー</h3>
+                    <div class="literacy-icons">
+                        <div class="literacy-item active">
+                            <div class="icon-wrapper">💰</div>
+                            <span>金融/お金</span>
+                        </div>
+                        <div class="literacy-item">
+                            <div class="icon-wrapper">🤖</div>
+                            <span>AI</span>
+                        </div>
+                        <div class="literacy-item">
+                            <div class="icon-wrapper">🎤</div>
+                            <span>発表</span>
+                        </div>
                     </div>
-                    <div class="stage-name">氷の洞窟</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- クエスト開始ボタン -->
-    <button class="quest-start-btn">
-        <span class="sword-icon">⚔️</span>
-        <span class="btn-text">クエストに挑む！</span>
-    </button>
-
-    <!-- ステージ詳細モーダル -->
-    <div class="stage-modal" id="stageModal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal()">×</button>
-            <h2 class="stage-title heading-secondary" id="modalTitle">ステージ3: 試練の山</h2>
-            <p class="stage-description" id="modalDescription">
-                山の頂上に住む賢者から、計算の極意を学ぼう！
-            </p>
-            <div class="clear-conditions">
-                <h3 class="heading-secondary">クリア条件</h3>
-                <ul id="modalConditions">
-                    <li>✓ 掛け算の問題を10問正解</li>
-                    <li>✓ タイムアタックで3分以内</li>
-                    <li>□ ボーナス: ノーミスでクリア</li>
-                </ul>
-            </div>
-            <div class="progress-section">
-                <span>進捗</span>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="modalProgress" style="width: 30%"></div>
-                </div>
-                <span id="modalProgressText">30%</span>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // ステージデータ
-        const stageData = {
-            1: {
-                title: "ステージ1: はじまりの村",
-                description: "冒険の基本を学ぼう！村の人々からクエストを受けよう。",
-                conditions: [
-                    "✓ 自己紹介をしよう",
-                    "✓ 初めてのクエストをクリア",
-                    "✓ 仲間を1人見つける"
-                ],
-                progress: 100
-            },
-            2: {
-                title: "ステージ2: 冒険の森",
-                description: "森の中で、観察力と想像力を鍛えよう！",
-                conditions: [
-                    "✓ 森の生き物を5種類見つける",
-                    "✓ 観察日記を書く",
-                    "□ ボーナス: オリジナルの生き物を描く"
-                ],
-                progress: 100
-            },
-            3: {
-                title: "ステージ3: 試練の山",
-                description: "山の頂上に住む賢者から、計算の極意を学ぼう！",
-                conditions: [
-                    "✓ 掛け算の問題を10問正解",
-                    "✓ タイムアタックで3分以内",
-                    "□ ボーナス: ノーミスでクリア"
-                ],
-                progress: 30
-            },
-            4: {
-                title: "ステージ4: 神秘の湖",
-                description: "湖の精霊から、協力の大切さを学ぼう！",
-                conditions: [
-                    "□ チームで協力して課題をクリア",
-                    "□ 他の人を助ける",
-                    "□ ボーナス: リーダーシップを発揮"
-                ],
-                progress: 0
-            },
-            5: {
-                title: "ステージ5: 魔王の城",
-                description: "最終決戦！今まで学んだすべてを使って挑戦しよう！",
-                conditions: [
-                    "□ 総合テストに合格",
-                    "□ プレゼンテーションを完成",
-                    "□ ボーナス: 全員で協力してクリア"
-                ],
-                progress: 0
-            }
-        };
-
-        // モーダルを開く
-        function openModal(stageNum) {
-            const modal = document.getElementById('stageModal');
-            const data = stageData[stageNum] || stageData[3];
-            
-            document.getElementById('modalTitle').textContent = data.title;
-            document.getElementById('modalDescription').textContent = data.description;
-            document.getElementById('modalConditions').innerHTML = data.conditions.map(c => `<li>${c}</li>`).join('');
-            document.getElementById('modalProgress').style.width = data.progress + '%';
-            document.getElementById('modalProgressText').textContent = data.progress + '%';
-            
-            modal.classList.add('active');
-        }
-
-        // モーダルを閉じる
-        function closeModal() {
-            const modal = document.getElementById('stageModal');
-            modal.classList.remove('active');
-        }
-
-        // モーダルの外側をクリックしたら閉じる
-        document.getElementById('stageModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
-        });
-
-    // URLパラメータを取得する関数
-    function getQueryParam(key) {
-        const params = new URLSearchParams(window.location.search);
-        return params.get(key);
-    }
-
-    // ページが読み込まれてから実行
-    document.addEventListener("DOMContentLoaded", function () {
-        const user = getQueryParam('user');
-        if (user) {
-            const display = document.getElementById('usernameDisplay');
-            if (display) {
-                display.textContent = `こんにちは、${user}さん！`;
-            }
-        }
-    });
-</script>
-
-    </script>
-</body>
-</html>
+                    <div class="skill-bars">
+                        <div class="skill-bar-item">
+                            <span class="skill-name">つなぐ</span>
+                            <div class="skill-progress">
+                                <div class="progress-fill" style="width: 40%"></div>
+                            </div>
+                            <span class="skill-level">Lv.2</span>
+                        </div>
+                        <div class="skill-bar-item">
+                            <span class="skill-name">ひらく</span>
+                            <div class="skill-progress">
+                                <div class="progress-fill" style="width: 60%"></div>
+                            </div>
+                            <span class="skill-level">Lv.3</span>
+                        </div>
+                        <div class="skill-bar-item">
+                            <span class="skill-name">えがく</span>
+                            <div class="skill-progress">
+                                <div class="progress-fill" style="width: 55%"></div>
+                            </div>
+                            <span class="skill-level">Lv.3</span>
+                        </div>
+                        <div class="skill-bar-item">
+                            <span class="skill-name">なりきる</span>
+                            <div class="skill-progress">
+                                <div class="progress-fill" style="width: 30%"></div>
+                            </div>
+                            <span class="skill-level">Lv.2</span>
+                        </div>
+                        <div class="skill-bar-item">
+                            <span class="skill-name">まきこむ</span>
+                            <div class="skill-progress">
+                                <div class="progress-fill" style="width: 45%"></div>
+                            </div>
+                            <span class="
