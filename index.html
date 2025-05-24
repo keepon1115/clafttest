@@ -584,17 +584,24 @@
             }
         });
 
-            // URLパラメータを取得する関数
+    // URLパラメータを取得する関数
     function getQueryParam(key) {
         const params = new URLSearchParams(window.location.search);
         return params.get(key);
     }
 
-    // userパラメータを取得して表示
-    const user = getQueryParam('user');
-    if (user) {
-        document.getElementById('usernameDisplay').textContent = `こんにちは、${user}さん！`;
-    }
+    // ページが読み込まれてから実行
+    document.addEventListener("DOMContentLoaded", function () {
+        const user = getQueryParam('user');
+        if (user) {
+            const display = document.getElementById('usernameDisplay');
+            if (display) {
+                display.textContent = `こんにちは、${user}さん！`;
+            }
+        }
+    });
+</script>
+
     </script>
 </body>
 </html>
