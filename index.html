@@ -918,10 +918,15 @@
         });
 
         // === ここからが改善点 ===
-        // ページが読み込まれた時点でマップを生成するために、generateMap関数を呼び出します。
-        // DOMContentLoadedを使うと、HTMLの解析が終わってから実行されるためより安全ですが、
-        // scriptタグがbodyの最後にある場合は、この位置での直接呼び出しでも通常問題ありません。
-        generateMap();
+        // HTMLドキュメントの解析と読み込みが完了した時点で generateMap 関数を実行します。
+        // これにより、DOM要素が確実に利用可能な状態でスクリプトが動作します。
+        document.addEventListener('DOMContentLoaded', function() {
+            generateMap();
+
+            // もし他の初期化処理でDOM要素へのアクセスが早すぎる問題が起きる場合は、
+            // それらの処理もこの DOMContentLoaded イベントリスナー内に移動させると
+            // より安定性が増します。今回はまず generateMap() のみで試してみましょう。
+        });
         // === ここまでが改善点 ===
 
     </script>
