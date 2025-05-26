@@ -1,138 +1,921 @@
-<div class="dashboard-container">
-  <!-- ヘッダーHero -->
-  <header class="hero-section">
-    <div class="hero-bg-illustration"></div>
-    <div class="hero-content">
-      <div class="greeting-box">
-        <h1 class="greeting-title">こんにちは、<span class="user-name">〇〇</span>さん！</h1>
-        <p class="greeting-sub">今日も冒険を始めましょう</p>
-      </div>
-      <div class="status-box">
-        <div class="stage-badge">
-          <span class="stage-icon">🏰</span>
-          <span class="stage-text">ステージ 1-3</span>
-        </div>
-        <div class="last-login">前回: 12月23日 15:30</div>
-      </div>
-    </div>
-  </header>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLAFT - クエストマップ</title>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #4DB6F7;
+            --accent-green: #8EE38F;
+            --bg-warm-white: #FFFEF5;
+            --text-dark: #2C3E50;
+            --text-light: #6B7280;
+            --shadow-soft: rgba(0, 0, 0, 0.05);
+            --cta-red: #FF6B6B;
+            --disabled-gray: #C0C0C0;
+        }
 
-  <!-- メインコンテンツ -->
-  <main class="main-grid">
-    <!-- プロフィールカード -->
-    <div class="card profile-card">
-      <button class="edit-btn">
-        <svg><!-- 鉛筆アイコン --></svg>
-      </button>
-      <div class="avatar-wrapper">
-        <img src="avatar-placeholder.png" alt="アバター">
-      </div>
-      <h2 class="nickname">冒険者ニックネーム</h2>
-      <div class="character-trait">勇敢な剣士</div>
-      <div class="status-list">
-        <div class="status-item">
-          <span class="label">得意</span>
-          <span class="value">計算・パズル</span>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: linear-gradient(180deg, #E0F2FE 0%, #FEF3C7 100%);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .heading-primary { 
+            font-family: 'M PLUS Rounded 1c', sans-serif; 
+            font-weight: 900;
+        }
+        
+        .heading-secondary { 
+            font-family: 'M PLUS Rounded 1c', sans-serif; 
+            font-weight: 700;
+        }
+
+        /* ヘッダー */
+        .map-header {
+            background: white;
+            padding: 20px;
+            box-shadow: 0 2px 6px var(--shadow-soft);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .home-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: var(--primary-blue);
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+
+        .home-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .map-title {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        /* マップコンテナ */
+        .map-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 40px 20px 120px;
+        }
+
+        /* マップグリッド */
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            position: relative;
+        }
+
+        /* ステージラッパー（ジグザグ配置用） */
+        .stage-wrapper {
+            display: contents;
+        }
+
+        /* ステージノード */
+        .stage-node {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            padding: 16px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px var(--shadow-soft);
+        }
+
+        .stage-node:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ジグザグ配置のロジック */
+        .stage-node:nth-child(n+4):nth-child(-n+6) {
+            order: 6;
+        }
+        .stage-node:nth-child(5) {
+            order: 5;
+        }
+        .stage-node:nth-child(6) {
+            order: 4;
+        }
+
+        .stage-node:nth-child(n+7):nth-child(-n+9) {
+            order: 7;
+        }
+
+        .stage-node:nth-child(n+10):nth-child(-n+12) {
+            order: 12;
+        }
+        .stage-node:nth-child(11) {
+            order: 11;
+        }
+        .stage-node:nth-child(12) {
+            order: 10;
+        }
+
+        .stage-node:nth-child(n+13):nth-child(-n+15) {
+            order: 13;
+        }
+
+        .stage-node:nth-child(n+16):nth-child(-n+18) {
+            order: 18;
+        }
+        .stage-node:nth-child(17) {
+            order: 17;
+        }
+        .stage-node:nth-child(18) {
+            order: 16;
+        }
+
+        .stage-node:nth-child(n+19):nth-child(-n+20) {
+            order: 19;
+        }
+
+        .stage-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--disabled-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 12px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .stage-node.completed .stage-icon {
+            background: var(--accent-green);
+            box-shadow: 0 0 20px rgba(142, 227, 143, 0.5);
+        }
+
+        .stage-node.current .stage-icon {
+            background: var(--primary-blue);
+            box-shadow: 0 0 30px rgba(77, 182, 247, 0.6);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 20px rgba(77, 182, 247, 0.6); }
+            50% { box-shadow: 0 0 40px rgba(77, 182, 247, 0.8); }
+            100% { box-shadow: 0 0 20px rgba(77, 182, 247, 0.6); }
+        }
+
+        .stage-number {
+            position: absolute;
+            bottom: -8px;
+            right: -8px;
+            width: 32px;
+            height: 32px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 900;
+            box-shadow: 0 2px 6px var(--shadow-soft);
+            color: var(--text-dark);
+        }
+
+        .stage-node.completed .stage-number {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .stage-node.current .stage-number {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .stage-name {
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            color: var(--text-dark);
+        }
+
+        .current-marker {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-blue);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            animation: bounce 2s infinite;
+            white-space: nowrap;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        /* クエスト開始ボタン（固定） */
+        .quest-start-btn {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            background: var(--cta-red);
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            padding: 20px 40px;
+            border-radius: 60px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 8px 24px rgba(255, 107, 107, 0.4);
+            animation: float 3s ease-in-out infinite;
+            z-index: 999;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .quest-start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 32px rgba(255, 107, 107, 0.5);
+        }
+
+        .sword-icon {
+            font-size: 24px;
+        }
+
+        /* モーダル */
+        .stage-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .stage-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #F3F4F6;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--cta-red);
+            color: white;
+        }
+
+        .stage-title {
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        .stage-description {
+            color: var(--text-light);
+            margin-bottom: 24px;
+        }
+
+        .clear-conditions {
+            background: #F9FAFB;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .clear-conditions h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .clear-conditions ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .clear-conditions li {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .progress-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            background: #E5E7EB;
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-blue) 0%, #6DD5FF 100%);
+            transition: width 0.5s ease;
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .map-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            /* スマホでのジグザグ配置調整 */
+            .stage-node:nth-child(odd) {
+                order: initial;
+            }
+            .stage-node:nth-child(even) {
+                order: initial;
+            }
+            
+            .stage-node:nth-child(n+3):nth-child(-n+4) {
+                order: 4;
+            }
+            .stage-node:nth-child(4) {
+                order: 3;
+            }
+
+            .stage-node:nth-child(n+5):nth-child(-n+6) {
+                order: 5;
+            }
+
+            .stage-node:nth-child(n+7):nth-child(-n+8) {
+                order: 8;
+            }
+            .stage-node:nth-child(8) {
+                order: 7;
+            }
+
+            .stage-node:nth-child(n+9):nth-child(-n+10) {
+                order: 9;
+            }
+
+            .stage-node:nth-child(n+11):nth-child(-n+12) {
+                order: 12;
+            }
+            .stage-node:nth-child(12) {
+                order: 11;
+            }
+
+            .stage-node:nth-child(n+13):nth-child(-n+14) {
+                order: 13;
+            }
+
+            .stage-node:nth-child(n+15):nth-child(-n+16) {
+                order: 16;
+            }
+            .stage-node:nth-child(16) {
+                order: 15;
+            }
+
+            .stage-node:nth-child(n+17):nth-child(-n+18) {
+                order: 17;
+            }
+
+            .stage-node:nth-child(n+19):nth-child(-n+20) {
+                order: 20;
+            }
+            .stage-node:nth-child(20) {
+                order: 19;
+            }
+
+            .quest-start-btn {
+                bottom: 20px;
+                right: 20px;
+                padding: 16px 24px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .map-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stage-node {
+                order: initial !important;
+            }
+        }
+
+        /* ===== 追加スタイル ===== */
+        
+        /* 1. ハンバーガーメニュー */
+        .hamburger-menu {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 24px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .hamburger-menu span {
+            display: block;
+            width: 100%;
+            height: 3px;
+            background: var(--text-dark);
+            border-radius: 3px;
+            position: absolute;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-menu span:nth-child(1) { top: 0; }
+        .hamburger-menu span:nth-child(2) { top: 50%; transform: translateY(-50%); }
+        .hamburger-menu span:nth-child(3) { bottom: 0; }
+
+        .hamburger-menu.active span:nth-child(1) {
+            top: 50%;
+            transform: translateY(-50%) rotate(45deg);
+        }
+
+        .hamburger-menu.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-menu.active span:nth-child(3) {
+            bottom: 50%;
+            transform: translateY(50%) rotate(-45deg);
+        }
+
+        /* サイドナビゲーション */
+        .side-nav {
+            position: fixed;
+            top: 0;
+            left: -260px;
+            width: 260px;
+            height: 100%;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: left 0.3s ease;
+            z-index: 1000;
+        }
+
+        .side-nav.active {
+            left: 0;
+        }
+
+        .side-nav-header {
+            padding: 20px;
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .side-nav-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .side-nav-item {
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .side-nav-link {
+            display: block;
+            padding: 16px 20px;
+            text-decoration: none;
+            color: var(--text-dark);
+            transition: background 0.3s ease;
+        }
+
+        .side-nav-link:hover {
+            background: #F3F4F6;
+        }
+
+        .side-nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        .side-nav-overlay.active {
+            display: block;
+        }
+
+        /* 2. 背景・演出の追加 */
+        body {
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(77, 182, 247, 0.1) 20%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(142, 227, 143, 0.1) 30%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(255, 235, 59, 0.05) 40%, transparent 70%),
+                linear-gradient(180deg, #E0F2FE 0%, #FEF3C7 100%);
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.3)"/><circle cx="80" cy="80" r="1.5" fill="rgba(255,255,255,0.2)"/><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.4)"/></svg>');
+            background-size: 200px 200px;
+            pointer-events: none;
+            opacity: 0.5;
+            z-index: 0;
+        }
+
+        .map-container {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ボタンのホバーアニメーション強化 */
+        .quest-start-btn:hover {
+            animation: bounce-glow 0.5s ease;
+        }
+
+        @keyframes bounce-glow {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); box-shadow: 0 0 30px rgba(255, 107, 107, 0.8); }
+            100% { transform: scale(1.05); }
+        }
+
+        /* 3. モーダルの変更 */
+        .modal-message {
+            font-style: italic;
+            color: var(--primary-blue);
+            margin-bottom: 24px;
+            padding: 16px;
+            background: rgba(77, 182, 247, 0.1);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .modal-button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .modal-button.video {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .modal-button.quest {
+            background: var(--cta-red);
+            color: white;
+        }
+
+        .modal-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .modal-buttons {
+                flex-direction: column;
+            }
+
+            .side-nav {
+                width: 100%;
+                left: -100%;
+            }
+        }
+
+        /* 5. レイアウト調整 */
+        .map-container {
+            padding: 40px 16px 120px;
+        }
+
+        .map-grid {
+            gap: 16px;
+        }
+
+        /* ホームボタンの位置調整 */
+        .home-btn {
+            margin-left: 50px;
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="map-header">
+        <!-- ハンバーガーメニュー -->
+        <div class="hamburger-menu" id="hamburgerMenu">
+            <span></span>
+            <span></span>
+            <span></span>
         </div>
-        <div class="status-item">
-          <span class="label">苦手</span>
-          <span class="value">長文読解</span>
+        <button class="home-btn" aria-label="ホームに戻る">🏠</button>
+        <h1 class="map-title heading-primary">クエストマップ</h1>
+    </header>
+
+    <!-- サイドナビゲーション -->
+    <nav class="side-nav" id="sideNav">
+        <div class="side-nav-header">
+            <h2 class="heading-secondary">CLAFT</h2>
         </div>
-        <div class="status-item energy">
-          <span class="label">エネルギー</span>
-          <div class="energy-bar">
-            <div class="energy-fill" style="width: 75%"></div>
-          </div>
+        <ul class="side-nav-list">
+            <li class="side-nav-item">
+                <a href="#" class="side-nav-link">ホーム</a>
+            </li>
+            <li class="side-nav-item">
+                <a href="#" class="side-nav-link">ジブンクラフト</a>
+            </li>
+            <li class="side-nav-item">
+                <a href="#" class="side-nav-link">クエスト</a>
+            </li>
+            <li class="side-nav-item">
+                <a href="#" class="side-nav-link">Yononaka</a>
+            </li>
+            <li class="side-nav-item">
+                <a href="#" class="side-nav-link">ミライクラフト</a>
+            </li>
+        </ul>
+    </nav>
+    <div class="side-nav-overlay" id="sideNavOverlay"></div>
+
+    <!-- マップコンテナ -->
+    <div class="map-container">
+        <div class="map-grid" id="mapGrid">
+            <!-- ステージはJavaScriptで生成 -->
         </div>
-      </div>
     </div>
 
-    <!-- ストーリーカード -->
-    <div class="card story-card">
-      <h3 class="card-title">冒険の物語</h3>
-      <div class="goals-section">
-        <div class="goal-item">
-          <span class="goal-label">短期目標</span>
-          <p class="goal-text">お店屋さんごっこで計算マスター</p>
-        </div>
-        <div class="goal-item">
-          <span class="goal-label">長期目標</span>
-          <p class="goal-text">みんなを笑顔にする発明家</p>
-        </div>
-      </div>
-      <div class="skill-gauges">
-        <div class="gauge-item">
-          <span>創造力</span>
-          <div class="gauge-bar">
-            <div class="gauge-fill" style="width: 60%"></div>
-          </div>
-        </div>
-        <!-- 他のゲージ -->
-      </div>
-      <div class="works-gallery">
-        <a href="#" class="work-thumb">
-          <img src="work1-thumb.jpg" alt="作品1">
-        </a>
-        <!-- 他の作品 -->
-      </div>
-    </div>
-
-    <!-- スキル&リテラシーカード -->
-    <div class="card skills-card">
-      <h3 class="card-title">スキル & リテラシー</h3>
-      <div class="literacy-icons">
-        <div class="literacy-item active">
-          <div class="icon-wrapper">💰</div>
-          <span>金融/お金</span>
-        </div>
-        <div class="literacy-item">
-          <div class="icon-wrapper">🤖</div>
-          <span>AI</span>
-        </div>
-        <div class="literacy-item">
-          <div class="icon-wrapper">🎤</div>
-          <span>発表</span>
-        </div>
-      </div>
-      <div class="skill-bars">
-        <div class="skill-bar-item">
-          <span class="skill-name">つなぐ</span>
-          <div class="skill-progress">
-            <div class="progress-fill" style="width: 40%"></div>
-          </div>
-          <span class="skill-level">Lv.2</span>
-        </div>
-        <!-- 他のスキル -->
-      </div>
-    </div>
-  </main>
-
-  <!-- サブコンテンツ -->
-  <section class="sub-content">
-    <div class="schedule-section">
-      <h3 class="section-title">スケジュール</h3>
-      <div class="schedule-timeline">
-        <!-- タイムライン要素 -->
-      </div>
-    </div>
-    <div class="news-section">
-      <h3 class="section-title">お知らせ</h3>
-      <ul class="news-list">
-        <li class="news-item">
-          <span class="news-date">12/25</span>
-          <span class="news-text">冬休み特別クエスト開始！</span>
-        </li>
-        <!-- 他のお知らせ -->
-      </ul>
-    </div>
-  </section>
-
-  <!-- フッター -->
-  <footer class="dashboard-footer">
-    <button class="cta-button">
-      ジブンクラフト編集へ進む
-      <span class="arrow">→</span>
+    <!-- クエスト開始ボタン（固定） -->
+    <button class="quest-start-btn" aria-label="クエストに挑戦する">
+        <span class="sword-icon">⚔️</span>
+        <span class="btn-text">クエストに挑む！</span>
     </button>
-    <p class="copyright">© 2024 CLAFT Educational Program</p>
-  </footer>
-</div>
+
+    <!-- ステージ詳細モーダル -->
+    <div class="stage-modal" id="stageModal" role="dialog" aria-modal="true">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()" aria-label="モーダルを閉じる">×</button>
+            <h2 class="stage-title heading-secondary" id="modalTitle">ステージ3: 試練の山</h2>
+            <p class="stage-description" id="modalDescription">
+                山の頂上に住む賢者から、計算の極意を学ぼう！
+            </p>
+            <div class="modal-message" id="modalMessage">
+                「自分のスキルツリーを育てるのは、君自身だ」
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button video">
+                    <span>🎬</span>
+                    <span>動画を見る</span>
+                </button>
+                <button class="modal-button quest">
+                    <span>⚔️</span>
+                    <span>クエストに挑む</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ステージデータ（20ステージ）- 1~6を更新
+        const stages = [
+            { id: 1, name: "君はどんな冒険者？", icon: "🏘️", completed: true },
+            { id: 2, name: "ワクもやエネルギー", icon: "🌳", completed: true },
+            { id: 3, name: "君はどんなキャラ？", icon: "⛰️", current: true },
+            { id: 4, name: "どんな道具を持ってる？", icon: "🌊" },
+            { id: 5, name: "仲間と冒険するって？", icon: "🏜️" },
+            { id: 6, name: "未来のボスと向き合う", icon: "🏰" },
+            { id: 7, name: "雪原の道", icon: "❄️" },
+            { id: 8, name: "火山の洞窟", icon: "🌋" },
+            { id: 9, name: "天空の塔", icon: "🗼" },
+            { id: 10, name: "海底神殿", icon: "🏛️" },
+            { id: 11, name: "魔法の図書館", icon: "📚" },
+            { id: 12, name: "妖精の花園", icon: "🌸" },
+            { id: 13, name: "闇の迷宮", icon: "🌑" },
+            { id: 14, name: "虹の橋", icon: "🌈" },
+            { id: 15, name: "時の神殿", icon: "⏰" },
+            { id: 16, name: "星の祭壇", icon: "⭐" },
+            { id: 17, name: "嵐の峡谷", icon: "⛈️" },
+            { id: 18, name: "黄金の都", icon: "🏆" },
+            { id: 19, name: "竜の巣", icon: "🐉" },
+            { id: 20, name: "終焉の門", icon: "🚪" }
+        ];
+
+        // ステージ詳細データ - 1~6を更新
+        const stageDetails = {
+            1: {
+                description: "この世界の地図をひらいて、CLAFTを冒険しよう！",
+                message: "「この世界をどう歩くかは、自分で決めていい」",
+                progress: 100
+            },
+            2: {
+                description: "ワクワク・もやもやは問いの原動力になる",
+                message: "「君の感じた"もやもや"が、冒険の出発点」",
+                progress: 100
+            },
+            3: {
+                description: "自分を育てる育成ゲーム",
+                message: "「自分のスキルツリーを育てるのは、君自身だ」",
+                progress: 30
+            },
+            4: {
+                description: "この世界の地図をひらいて、CLAFTを冒険しよう！",
+                message: "「自分のスキルツリーを育てるのは、君自身だ」",
+                progress: 0
+            },
+            5: {
+                description: "この世界の地図をひらいて、CLAFTを冒険しよう！",
+                message: "「自分のスキルツリーを育てるのは、君自身だ」",
+                progress: 0
+            },
+            6: {
+                description: "この世界の地図をひらいて、CLAFTを冒険しよう！",
+                message: "「自分のスキルツリーを育てるのは、君自身だ」",
+                progress: 0
+            }
+        };
+
+        // マップグリッドの生成
+        function generateMap() {
+            const mapGrid = document.getElementById('mapGrid');
+            mapGrid.innerHTML = '';
+
+            stages.forEach((stage, index) => {
+                const stageNode = document.createElement('div');
+                stageNode.className = 'stage-node';
+                
+                if (stage.completed) {
+                    stageNode.classList.add('completed');
+                } else if (stage.current) {
+                    stageNode.classList.add('current');
+                }
+
+                stageNode.setAttribute('aria-label', `ステージ${stage.id}: ${stage.name}`);
+                stageNode.onclick = () => openModal(stage.id);
+
+                stageNode.innerHTML = `
+                    ${stage.current ? '<div class="current-marker">現在地</div>' : ''}
+                    <div class="stage-icon">
+                        ${stage.icon}
+                        <div class="stage-number">${stage.id}</div>
+                    </div>
+                    <div class="stage-name">${stage.name}</div>
+                `;
+
+                mapGrid.appendChild(stageNode);
+            });
+        }
+
+        // モーダルを開く
+        function openModal(stageId) {
+            const modal = document.getElementById('stageModal');
+            const stage = stages.find(s => s.id === stageId);
+            const details = stageDetails[stageId] || {
+                description: "このステージの詳細情報は準備中です。",
+                message: "「冒険の準備を整えよう」",
+                progress: 0
+            };
+            
+            document.getElementById('modalTitle').textContent = `ステージ${stage.id}: ${stage.name}`;
+            document.getElementById('modalDescription').textContent = details.description;
+            document.getElementById('modalMessage').textContent = details.message;
+            
+            modal.classList.add('active');
+        }
+
+        // モーダルを閉じる
+        function closeModal() {
+            const modal = document.getElementById('stageModal');
+            modal.classList.remove('active');
+        }
+
+        // モーダルの外側をクリックしたら閉じる
+        document.getElementById('stageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // ESCキーでモーダルを閉じる
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('stageModal').classList.contains('active')) {
+                closeModal();
+            }
+        });
+
+        // ハンバーガーメニューの制御
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        const sideNav = document.getElementById('sideNav');
+        const sideNavOverlay = document.getElementById('sideNavOverlay');
+
+        hamburgerMenu.addEventListener('click', function() {
+            this.classList.toggle('active');
+            sideNav.classList.toggle('active');
+            sideNavOverlay.classList.toggle('active');
+        });
+
+        sideNavOverlay.addEventListener('click', function() {
+            hamburgerMenu.classList.remove('active');
+            sideNav.classList.remove('active');
+            sideNavOverlay.classList.remove('active');
+        });
+
+        // サイドナビのリンククリック時に閉じる
+        document.querySelectorAll('.side-nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                hamburgerMenu.classList.remove('active');
+                sideNav.classList.remove('active');
+                sideNavOverlay.classList.remove('active');
+            });
+        });
+
+    </script>
+</body>
+</html>
