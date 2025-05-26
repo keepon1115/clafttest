@@ -3,932 +3,635 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CLAFT - クエストマップ</title>
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>プロフィールダッシュボード</title>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- 修正ここから -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- 修正ここまで -->
     <style>
-        :root {
-            --primary-blue: #4DB6F7;
-            --accent-green: #8EE38F;
-            --bg-warm-white: #FFFEF5;
-            --text-dark: #2C3E50;
-            --text-light: #6B7280;
-            --shadow-soft: rgba(0, 0, 0, 0.05);
-            --cta-red: #FF6B6B;
-            --disabled-gray: #C0C0C0;
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Noto Sans JP', sans-serif;
-            background: linear-gradient(180deg, #E0F2FE 0%, #FEF3C7 100%);
-            color: var(--text-dark);
-            line-height: 1.6;
-            min-height: 100vh;
+        :root {
+            --blue: #4DB6F7;
+            --yellow: #F6CF3F;
+            --pink: #FF5FA0;
+            --gray: #F5F5F5;
+            --text-dark: #333;
+            --shadow: rgba(0, 0, 0, 0.06) 0 4px 12px; /* 6. カードのbox-shadow (既存でOK) */
         }
 
-        .heading-primary { 
-            font-family: 'M PLUS Rounded 1c', sans-serif; 
-            font-weight: 900;
-        }
-        
-        .heading-secondary { 
-            font-family: 'M PLUS Rounded 1c', sans-serif; 
-            font-weight: 700;
+        body {
+            font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif;
+            background-color: #FAFAFA;
+            color: var(--text-dark);
         }
 
         /* ヘッダー */
-        .map-header {
-            background: white;
-            padding: 20px;
-            box-shadow: 0 2px 6px var(--shadow-soft);
+        .header {
+            background-color: var(--blue);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .header-left p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .header-right {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 20px;
+        }
+
+        .stage-badge {
+            background-color: white;
+            color: var(--pink);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stage-info {
+            text-align: right;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        /* レイアウト */
+        .container {
+            display: flex;
+            min-height: calc(100vh - 80px); /* ヘッダーの高さを仮に80pxとして計算 */
+        }
+
+        /* サイドメニュー */
+        .sidebar {
+            width: 240px;
+            background-color: white;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+            padding: 20px 0;
             position: sticky;
             top: 0;
-            z-index: 100;
+            height: 100vh;
         }
 
-        .home-btn {
-            width: 44px;
-            height: 44px;
-            border: none;
-            background: var(--primary-blue);
+        .sidebar-item {
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            text-decoration: none;
+            color: var(--text-dark);
+        }
+
+        .sidebar-item:hover {
+            background-color: var(--gray);
+        }
+
+        .sidebar-item.active {
+            background-color: var(--blue);
             color: white;
-            border-radius: 10px;
-            cursor: pointer;
+        }
+
+        /* メインコンテンツ */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            gap: 30px;
+        }
+
+        /* カード共通 */
+        .card {
+            background-color: white;
+            border-radius: 10px; /* デザイン定数 */
+            box-shadow: var(--shadow); /* 6. 既存の変数でOK */
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
             font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.3s ease;
+            font-weight: 700;
+            margin-bottom: 20px;
         }
 
-        .home-btn:hover {
-            transform: scale(1.1);
+        /* 左カラム */
+        .left-column {
+            flex: 0 0 320px;
         }
 
-        .map-title {
-            font-size: 24px;
-            margin: 0;
+        .profile-card {
+            text-align: center;
         }
 
-        /* マップコンテナ */
-        .map-container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 40px 20px 120px;
-        }
-
-        /* マップグリッド */
-        .map-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-            position: relative;
-        }
-
-        /* ステージラッパー（ジグザグ配置用） */
-        .stage-wrapper {
-            display: contents;
-        }
-
-        /* ステージノード */
-        .stage-node {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-            padding: 16px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px var(--shadow-soft);
-        }
-
-        .stage-node:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        /* ジグザグ配置のロジック */
-        .stage-node:nth-child(n+4):nth-child(-n+6) {
-            order: 6;
-        }
-        .stage-node:nth-child(5) {
-            order: 5;
-        }
-        .stage-node:nth-child(6) {
-            order: 4;
-        }
-
-        .stage-node:nth-child(n+7):nth-child(-n+9) {
-            order: 7;
-        }
-
-        .stage-node:nth-child(n+10):nth-child(-n+12) {
-            order: 12;
-        }
-        .stage-node:nth-child(11) {
-            order: 11;
-        }
-        .stage-node:nth-child(12) {
-            order: 10;
-        }
-
-        .stage-node:nth-child(n+13):nth-child(-n+15) {
-            order: 13;
-        }
-
-        .stage-node:nth-child(n+16):nth-child(-n+18) {
-            order: 18;
-        }
-        .stage-node:nth-child(17) {
-            order: 17;
-        }
-        .stage-node:nth-child(18) {
-            order: 16;
-        }
-
-        .stage-node:nth-child(n+19):nth-child(-n+20) {
-            order: 19;
-        }
-
-        .stage-icon {
+        .profile-icon {
             width: 80px;
             height: 80px;
+            background-color: var(--yellow);
             border-radius: 50%;
-            background: var(--disabled-gray);
+            margin: 0 auto 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 40px;
-            margin-bottom: 12px;
-            position: relative;
-            transition: all 0.3s ease;
         }
 
-        .stage-node.completed .stage-icon {
-            background: var(--accent-green);
-            box-shadow: 0 0 20px rgba(142, 227, 143, 0.5);
-        }
-
-        .stage-node.current .stage-icon {
-            background: var(--primary-blue);
-            box-shadow: 0 0 30px rgba(77, 182, 247, 0.6);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 20px rgba(77, 182, 247, 0.6); }
-            50% { box-shadow: 0 0 40px rgba(77, 182, 247, 0.8); }
-            100% { box-shadow: 0 0 20px rgba(77, 182, 247, 0.6); }
-        }
-
-        .stage-number {
-            position: absolute;
-            bottom: -8px;
-            right: -8px;
-            width: 32px;
-            height: 32px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* ラベル - 青いラベルテキスト */
+        .blue-label {
+            background-color: var(--blue);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin: 8px 5px;
+            display: inline-block;
             font-size: 14px;
-            font-weight: 900;
-            box-shadow: 0 2px 6px var(--shadow-soft);
-            color: var(--text-dark);
+            font-weight: 500;
         }
 
-        .stage-node.completed .stage-number {
-            background: var(--accent-green);
-            color: white;
+        /* 右カラム */
+        .right-column {
+            flex: 1;
         }
 
-        .stage-node.current .stage-number {
-            background: var(--primary-blue);
-            color: white;
-        }
-
-        .stage-name {
-            font-size: 14px;
-            font-weight: 700;
-            text-align: center;
-            color: var(--text-dark);
-        }
-
-        .current-marker {
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--primary-blue);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 700;
-            animation: bounce 2s infinite;
-            white-space: nowrap;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(-5px); }
-        }
-
-        /* クエスト開始ボタン（固定） */
-        .quest-start-btn {
-            position: fixed;
-            bottom: 40px;
-            right: 40px;
-            background: var(--cta-red);
-            color: white;
-            font-size: 18px;
-            font-weight: 700;
-            padding: 20px 40px;
-            border-radius: 60px;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 8px 24px rgba(255, 107, 107, 0.4);
-            animation: float 3s ease-in-out infinite;
-            z-index: 999;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .quest-start-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 12px 32px rgba(255, 107, 107, 0.5);
-        }
-
-        .sword-icon {
-            font-size: 24px;
-        }
-
-        /* モーダル */
-        .stage-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .stage-modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 24px;
-            padding: 32px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            animation: slideUp 0.3s ease;
-            position: relative;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            width: 32px;
-            height: 32px;
-            border: none;
-            background: #F3F4F6;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .modal-close:hover {
-            background: var(--cta-red);
-            color: white;
-        }
-
-        .stage-title {
-            font-size: 24px;
-            margin-bottom: 16px;
-        }
-
-        .stage-description {
-            color: var(--text-light);
-            margin-bottom: 24px;
-        }
-
-        .clear-conditions {
-            background: #F9FAFB;
-            border-radius: 12px;
-            padding: 16px;
+        /* ストーリーカード */
+        .story-section {
             margin-bottom: 20px;
         }
 
-        .clear-conditions h3 {
-            font-size: 16px;
-            margin-bottom: 12px;
+        /* ラベル - ピンクラベル */
+        .pink-label {
+            background-color: var(--pink);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 16px;
+            display: inline-block;
+            margin-right: 10px;
+            font-size: 14px;
+            font-weight: 500;
         }
 
-        .clear-conditions ul {
-            list-style: none;
+        .story-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        /* リンクボタン - 黄色ボタン */
+        .yellow-button {
+            background-color: var(--yellow);
+            color: var(--text-dark);
+            padding: 20px;
+            border-radius: 16px;
+            text-decoration: none;
+            flex: 1;
+            text-align: center;
+            font-weight: 500;
+            transition: transform 0.2s ease;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            align-items: center;
+            gap: 10px;
         }
 
-        .clear-conditions li {
-            font-size: 14px;
-            color: var(--text-light);
+        .yellow-button:hover {
+            transform: scale(1.05);
         }
 
-        .progress-section {
+        .button-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        /* リテラシー */
+        .literacy-item {
             display: flex;
             align-items: center;
-            gap: 12px;
+            margin-bottom: 15px;
+            gap: 15px;
         }
 
-        .progress-bar {
+        .literacy-label {
+            font-size: 14px;
+            width: 80px; /* 固定幅 */
+            flex-shrink: 0; /* 縮まないように */
+        }
+
+        .literacy-bar {
             flex: 1;
-            background: #E5E7EB;
+            height: 20px;
+            background-color: #E0E0E0;
             border-radius: 10px;
-            height: 12px;
             overflow: hidden;
+            position: relative;
         }
 
-        .progress-fill {
+        .literacy-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary-blue) 0%, #6DD5FF 100%);
-            transition: width 0.5s ease;
+            background-color: var(--blue);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .literacy-level {
+            font-size: 12px;
+            color: #999;
+            margin-left: 10px;
+            width: 35px; /* Lv.X の表示幅を確保 */
+            flex-shrink: 0;
+        }
+
+        /* スキル */
+        .skill-tabs {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        /* リンクボタン - スキルタブ */
+        .skill-tab {
+            width: 100px;
+            height: 100px;
+            background-color: #F0F0F0;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .skill-tab:hover {
+            transform: scale(1.05);
+            background-color: #E8E8E8;
+        }
+
+        .skill-tab.active {
+            background-color: var(--blue);
+            color: white;
+        }
+
+        .skill-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .skill-label {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .skill-level {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background-color: white;
+            color: var(--text-dark);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
         }
 
         /* レスポンシブ */
         @media (max-width: 768px) {
-            .map-grid {
-                grid-template-columns: repeat(2, 1fr);
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
             }
-
-            /* スマホでのジグザグ配置調整 */
-            .stage-node:nth-child(odd) {
-                order: initial;
-            }
-            .stage-node:nth-child(even) {
-                order: initial;
-            }
-            
-            .stage-node:nth-child(n+3):nth-child(-n+4) {
-                order: 4;
-            }
-            .stage-node:nth-child(4) {
-                order: 3;
-            }
-
-            .stage-node:nth-child(n+5):nth-child(-n+6) {
-                order: 5;
-            }
-
-            .stage-node:nth-child(n+7):nth-child(-n+8) {
-                order: 8;
-            }
-            .stage-node:nth-child(8) {
-                order: 7;
-            }
-
-            .stage-node:nth-child(n+9):nth-child(-n+10) {
-                order: 9;
-            }
-
-            .stage-node:nth-child(n+11):nth-child(-n+12) {
-                order: 12;
-            }
-            .stage-node:nth-child(12) {
-                order: 11;
-            }
-
-            .stage-node:nth-child(n+13):nth-child(-n+14) {
-                order: 13;
-            }
-
-            .stage-node:nth-child(n+15):nth-child(-n+16) {
-                order: 16;
-            }
-            .stage-node:nth-child(16) {
-                order: 15;
-            }
-
-            .stage-node:nth-child(n+17):nth-child(-n+18) {
-                order: 17;
-            }
-
-            .stage-node:nth-child(n+19):nth-child(-n+20) {
-                order: 20;
-            }
-            .stage-node:nth-child(20) {
-                order: 19;
-            }
-
-            .quest-start-btn {
-                bottom: 20px;
-                right: 20px;
-                padding: 16px 24px;
-                font-size: 16px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .map-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .stage-node {
-                order: initial !important;
-            }
-        }
-
-        /* ===== 追加スタイル ===== */
-        
-        /* 1. ハンバーガーメニュー */
-        .hamburger-menu {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 30px;
-            height: 24px;
-            cursor: pointer;
-            z-index: 1001;
-        }
-
-        .hamburger-menu span {
-            display: block;
-            width: 100%;
-            height: 3px;
-            background: var(--text-dark);
-            border-radius: 3px;
-            position: absolute;
-            transition: all 0.3s ease;
-        }
-
-        .hamburger-menu span:nth-child(1) { top: 0; }
-        .hamburger-menu span:nth-child(2) { top: 50%; transform: translateY(-50%); }
-        .hamburger-menu span:nth-child(3) { bottom: 0; }
-
-        .hamburger-menu.active span:nth-child(1) {
-            top: 50%;
-            transform: translateY(-50%) rotate(45deg);
-        }
-
-        .hamburger-menu.active span:nth-child(2) {
-            opacity: 0;
-        }
-
-        .hamburger-menu.active span:nth-child(3) {
-            bottom: 50%;
-            transform: translateY(50%) rotate(-45deg);
-        }
-
-        /* サイドナビゲーション */
-        .side-nav {
-            position: fixed;
-            top: 0;
-            left: -260px;
-            width: 260px;
-            height: 100%;
-            background: white;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-            transition: left 0.3s ease;
-            z-index: 1000;
-        }
-
-        .side-nav.active {
-            left: 0;
-        }
-
-        .side-nav-header {
-            padding: 20px;
-            background: var(--primary-blue);
-            color: white;
-        }
-
-        .side-nav-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .side-nav-item {
-            border-bottom: 1px solid #E5E7EB;
-        }
-
-        .side-nav-link {
-            display: block;
-            padding: 16px 20px;
-            text-decoration: none;
-            color: var(--text-dark);
-            transition: background 0.3s ease;
-        }
-
-        .side-nav-link:hover {
-            background: #F3F4F6;
-        }
-
-        .side-nav-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            z-index: 999;
-        }
-
-        .side-nav-overlay.active {
-            display: block;
-        }
-
-        /* 2. 背景・演出の追加 */
-        body {
-            background: 
-                radial-gradient(circle at 10% 20%, rgba(77, 182, 247, 0.1) 20%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(142, 227, 143, 0.1) 30%, transparent 50%),
-                radial-gradient(circle at 50% 50%, rgba(255, 235, 59, 0.05) 40%, transparent 70%),
-                linear-gradient(180deg, #E0F2FE 0%, #FEF3C7 100%);
-            position: relative;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
-                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.3)"/><circle cx="80" cy="80" r="1.5" fill="rgba(255,255,255,0.2)"/><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.4)"/></svg>');
-            background-size: 200px 200px;
-            pointer-events: none;
-            opacity: 0.5;
-            z-index: 0;
-        }
-
-        .map-container {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ボタンのホバーアニメーション強化 */
-        .quest-start-btn:hover {
-            animation: bounce-glow 0.5s ease;
-        }
-
-        @keyframes bounce-glow {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); box-shadow: 0 0 30px rgba(255, 107, 107, 0.8); }
-            100% { transform: scale(1.05); }
-        }
-
-        /* 3. モーダルの変更 */
-        .modal-message {
-            font-style: italic;
-            color: var(--primary-blue);
-            margin-bottom: 24px;
-            padding: 16px;
-            background: rgba(77, 182, 247, 0.1);
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 16px;
-            margin-top: 24px;
-        }
-
-        .modal-button {
-            flex: 1;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 24px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .modal-button.video {
-            background: var(--primary-blue);
-            color: white;
-        }
-
-        .modal-button.quest {
-            background: var(--cta-red);
-            color: white;
-        }
-
-        .modal-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        @media (max-width: 768px) {
-            .modal-buttons {
+            .container {
                 flex-direction: column;
             }
-
-            .side-nav {
+            .sidebar {
                 width: 100%;
-                left: -100%;
+                position: static;
+                height: auto;
+                display: flex;
+                overflow-x: auto;
+                padding: 10px 0;
+            }
+            .sidebar-item {
+                white-space: nowrap;
+                padding: 10px 20px; /* レスポンシブ時は左右パディングあり */
+                height: auto; /* レスポンシブ時は高さをautoに */
+                line-height: normal; /* line-heightもリセット */
+            }
+            .main-content {
+                flex-direction: column;
+                padding: 20px;
+            }
+            .left-column {
+                flex: 1;
+                flex-basis: auto; /* 幅を自動に */
+            }
+            .story-buttons {
+                flex-direction: column;
+            }
+            .skill-tabs {
+                flex-wrap: wrap;
             }
         }
 
-        /* 5. レイアウト調整 */
-        .map-container {
-            padding: 40px 16px 120px;
+        /* 修正ここから */
+        body {
+            background-color: #FFFCEB; /* 6. クリーム背景 */
+            font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif; /* フォント全体適用 */
         }
 
-        .map-grid {
-            gap: 16px;
+        .main-content {
+            padding-left: 32px; /* 6. メイン領域左右 padding */
+            padding-right: 32px; /* 6. メイン領域左右 padding */
         }
 
-        /* ホームボタンの位置調整 */
-        .home-btn {
-            margin-left: 50px;
+        /* 1. 左サイドメニュー */
+        .sidebar {
+            width: 160px; /* 1. 幅リサイズ */
+            font-family: 'M PLUS Rounded 1c', sans-serif; /* 1. フォント指定 */
         }
+
+        .sidebar-item {
+            font-family: 'M PLUS Rounded 1c', sans-serif; /* 1. フォント指定 */
+            font-weight: 500; /* 1. Medium */
+            text-align: center; /* 1. 項目文字を中央寄せ */
+            padding: 10px 0; /* 1. 上下パディング */
+            height: 44px; /* 1. 高さを44pxに統一 */
+            display: flex; /* 1. 中央寄せのため */
+            align-items: center; /* 1. 上下中央寄せ */
+            justify-content: center; /* 1. 左右中央寄せ */
+            line-height: 1.5; /* line-height調整 */
+        }
+
+        .sidebar-item.active {
+            /* 背景色と文字色は既存の .active で指定 */
+            /* height, padding, displayなどは .sidebar-item で共通化 */
+            background-color: var(--blue);
+            color: white;
+        }
+        .sidebar-item:not(.active):hover {
+             background-color: #EFF6FF; /* より薄いブルー系のホバー色 */
+        }
+
+
+        /* 2. プロフィールカード */
+        .profile-card .card-title {
+            text-align: left; /* 2. 見出し「プロフィール」をカード上部揃え (左寄せ) */
+        }
+
+        .blue-label {
+            width: 140px; /* 2. 幅修正 */
+            border-radius: 24px; /* 2. 角丸修正 */
+            margin-top: 5px; /* 2. 縦間隔 */
+            margin-bottom: 5px; /* 2. 縦間隔 (合計10px) */
+            display: block; 
+            margin-left: auto;
+            margin-right: auto;
+            padding: 8px 0; /* 上下パディングのみ */
+            text-align: center; /* テキストを中央に */
+            box-sizing: border-box; 
+            /* background-color, color, font-size, font-weightは既存のものを継承/利用 */
+        }
+
+        /* 3. ストーリーカード */
+        /* ストーリーカードを特定 (:hasが使えない場合、HTMLにクラス追加を推奨) */
+        .right-column > .card:first-of-type { /* ストーリーカードが最初のカードと仮定 */
+             padding-left: 24px; /* 3. 左パディング変更 */
+             /* padding-right: 24px; 右も合わせる場合は追加 */
+        }
+
+        .yellow-button {
+            min-width: 160px; /* 3. 均等幅 (min 160px) */
+            padding-top: 15px; /* 3. アイコンとテキスト上下中央揃えのため調整 */
+            padding-bottom: 15px;
+            gap: 8px; /* 3. アイコンとテキストの間隔 */
+            justify-content: center; /* 3. flex-direction:column と合わせて上下中央揃え */
+            min-height: 90px; /* 見た目の高さを調整 */
+        }
+
+        .yellow-button:hover {
+            transform: scale(1.03); /* 3. ホバー時のtransform変更 */
+        }
+        .button-icon {
+            margin-bottom: 0; /* gapで制御するためリセット */
+        }
+
+
+        /* 4. リテラシーカード */
+        .card-title i.fa-bolt { /* 4. FontAwesomeアイコン */
+            margin-right: 8px;
+            color: var(--blue); /* right.pngの見た目に合わせる */
+        }
+
+
+        /* 5. スキルカード */
+        /* スキルカードを特定 (:hasが使えない場合、HTMLにクラス追加を推奨) */
+        .right-column > .card:nth-of-type(3) { /* スキルカードが3番目のカードと仮定 */
+            margin-top: 24px; /* 5. カード上部余白 */
+        }
+
+        .skill-tabs {
+            gap: 12px; /* 5. 3タブボタンのgap調整 */
+        }
+
+        .skill-tab {
+            flex: 1; /* 5. 3タブボタンを均等幅 */
+            width: auto; /* flex:1 で幅は自動調整されるため */
+            border: 1px solid transparent; /* 枠線用のスペース確保 */
+        }
+
+        .skill-tab:not(.active) {
+            background-color: #F3F5F9; /* 5. 未アクティブ背景 */
+            color: #9CA3AF; /* 5. 未アクティブテキスト */
+            border-color: #E5E7EB; /* 5. 未アクティブ枠線 */
+        }
+        .skill-tab:not(.active):hover {
+            background-color: #E9ECEF; /* 未アクティブホバー色を少し濃く */
+            transform: scale(1.03); /* ホバーエフェクト追加 */
+        }
+
+        .skill-tab.active {
+             border-color: var(--blue); /* アクティブ時の枠線を背景色と合わせる */
+        }
+        .skill-tab.active:hover {
+            transform: scale(1.05); /* 元の挙動を維持 */
+        }
+
+        .skill-tab:not(.active) .skill-level {
+            background-color: #E5E7EB; /* 5. 未アクティブ時のレベルバッジ背景 */
+            color: #9CA3AF; /* 5. 未アクティブ時のレベルバッジテキスト */
+        }
+        /* 修正ここまで */
+
     </style>
 </head>
 <body>
     <!-- ヘッダー -->
-    <header class="map-header">
-        <!-- ハンバーガーメニュー -->
-        <div class="hamburger-menu" id="hamburgerMenu">
-            <span></span>
-            <span></span>
-            <span></span>
+    <header class="header">
+        <div class="header-left">
+            <h1>こんにちは、たろうさん！</h1>
+            <p>今日も冒険を始めましょう</p>
         </div>
-        <button class="home-btn" aria-label="ホームに戻る">🏠</button>
-        <h1 class="map-title heading-primary">クエストマップ</h1>
+        <div class="header-right">
+            <div class="stage-badge">
+                <span>🏆</span>
+                <span>ステージ 1-3</span>
+            </div>
+            <div class="stage-info">
+                <div>前回: 11月23日 15:40</div>
+                <div>総プレイ時間</div>
+            </div>
+        </div>
     </header>
 
-    <!-- サイドナビゲーション -->
-    <nav class="side-nav" id="sideNav">
-        <div class="side-nav-header">
-            <h2 class="heading-secondary">CLAFT</h2>
-        </div>
-        <ul class="side-nav-list">
-            <li class="side-nav-item">
-                <a href="#" class="side-nav-link">ホーム</a>
-            </li>
-            <li class="side-nav-item">
-                <a href="#" class="side-nav-link">ジブンクラフト</a>
-            </li>
-            <li class="side-nav-item">
-                <a href="#" class="side-nav-link">クエスト</a>
-            </li>
-            <li class="side-nav-item">
-                <a href="#" class="side-nav-link">Yononaka</a>
-            </li>
-            <li class="side-nav-item">
-                <a href="#" class="side-nav-link">ミライクラフト</a>
-            </li>
-        </ul>
-    </nav>
-    <div class="side-nav-overlay" id="sideNavOverlay"></div>
+    <div class="container">
+        <!-- サイドメニュー -->
+        <nav class="sidebar">
+            <a href="#home" class="sidebar-item active">ホーム</a>
+            <a href="#jibun-craft" class="sidebar-item">ジブンクラフト</a>
+            <a href="#quest" class="sidebar-item">クエスト</a>
+            <a href="#yononaka" class="sidebar-item">Yononaka</a>
+            <a href="#mirai-craft" class="sidebar-item">ミライクラフト</a>
+            <a href="#other" class="sidebar-item">その他のメニュー</a>
+        </nav>
 
-    <!-- マップコンテナ -->
-    <div class="map-container">
-        <div class="map-grid" id="mapGrid">
-            <!-- ステージはJavaScriptで生成 -->
-        </div>
-    </div>
-
-    <!-- クエスト開始ボタン（固定） -->
-    <button class="quest-start-btn" aria-label="クエストに挑戦する">
-        <span class="sword-icon">⚔️</span>
-        <span class="btn-text">クエストに挑む！</span>
-    </button>
-
-    <!-- ステージ詳細モーダル -->
-    <div class="stage-modal" id="stageModal" role="dialog" aria-modal="true">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal()" aria-label="モーダルを閉じる">×</button>
-            <h2 class="stage-title heading-secondary" id="modalTitle">ステージ3: 試練の山</h2>
-            <p class="stage-description" id="modalDescription">
-                山の頂上に住む賢者から、計算の極意を学ぼう！
-            </p>
-            <div class="modal-message" id="modalMessage">
-                「自分のスキルツリーを育てるのは、君自身だ」
+        <!-- メインコンテンツ -->
+        <main class="main-content">
+            <!-- 左カラム -->
+            <div class="left-column">
+                <div class="card profile-card">
+                    <h2 class="card-title">プロフィール</h2>
+                    <div class="profile-icon">👤</div>
+                    <div class="blue-label">ニックネーム</div>
+                    <div class="blue-label">キャラ（特性）</div>
+                    <div class="blue-label">セリフ</div>
+                    <div class="blue-label">とくい（スキル）</div>
+                    <div class="blue-label">よわみ（苦手）</div>
+                    <div class="blue-label">すきな時間・場所</div>
+                    <div class="blue-label">エネルギーチャージ</div>
+                    <div class="blue-label">一緒に冒険したい人</div>
+                    <div class="blue-label">ひとこと</div>
+                </div>
             </div>
-            <div class="modal-buttons">
-                <button class="modal-button video">
-                    <span>🎬</span>
-                    <span>動画を見る</span>
-                </button>
-                <button class="modal-button quest">
-                    <span>⚔️</span>
-                    <span>クエストに挑む</span>
-                </button>
-            </div>
-        </div>
-    </div>
 
-    <script>
-        // ステージデータ（20ステージ）- 1~6を更新
-        const stages = [
-            { id: 1, name: "君はどんな冒険者？", icon: "🏘️", completed: true },
-            { id: 2, name: "ワクもやエネルギー", icon: "🌳", completed: true },
-            { id: 3, name: "君はどんなキャラ？", icon: "⛰️", current: true },
-            { id: 4, name: "どんな道具を持ってる？", icon: "🌊" },
-            { id: 5, name: "仲間と冒険するって？", icon: "🏜️" },
-            { id: 6, name: "未来のボスと向き合う", icon: "🏰" },
-            { id: 7, name: "雪原の道", icon: "❄️" },
-            { id: 8, name: "火山の洞窟", icon: "🌋" },
-            { id: 9, name: "天空の塔", icon: "🗼" },
-            { id: 10, name: "海底神殿", icon: "🏛️" },
-            { id: 11, name: "魔法の図書館", icon: "📚" },
-            { id: 12, name: "妖精の花園", icon: "🌸" },
-            { id: 13, name: "闇の迷宮", icon: "🌑" },
-            { id: 14, name: "虹の橋", icon: "🌈" },
-            { id: 15, name: "時の神殿", icon: "⏰" },
-            { id: 16, name: "星の祭壇", icon: "⭐" },
-            { id: 17, name: "嵐の峡谷", icon: "⛈️" },
-            { id: 18, name: "黄金の都", icon: "🏆" },
-            { id: 19, name: "竜の巣", icon: "🐉" },
-            { id: 20, name: "終焉の門", icon: "🚪" }
-        ];
-
-        // ステージ詳細データ - 1~6を更新
-        const stageDetails = {
-            1: {
-                description: "この世界の地図をひらいて、CLAFTを冒険しよう！",
-                message: "「この世界をどう歩くかは、自分で決めていい」",
-                progress: 100
-            },
-            2: {
-                description: "ワクワク・もやもやは問いの原動力になる",
-                message: "「君の感じた"もやもや"が、冒険の出発点」",
-                progress: 100
-            },
-            3: {
-                description: "自分を育てる育成ゲーム",
-                message: "「自分のスキルツリーを育てるのは、君自身だ」",
-                progress: 30
-            },
-            4: {
-                description: "この世界の地図をひらいて、CLAFTを冒険しよう！",
-                message: "「自分のスキルツリーを育てるのは、君自身だ」",
-                progress: 0
-            },
-            5: {
-                description: "この世界の地図をひらいて、CLAFTを冒険しよう！",
-                message: "「自分のスキルツリーを育てるのは、君自身だ」",
-                progress: 0
-            },
-            6: {
-                description: "この世界の地図をひらいて、CLAFTを冒険しよう！",
-                message: "「自分のスキルツリーを育てるのは、君自身だ」",
-                progress: 0
-            }
-            // ... 他のステージ詳細も必要に応じて追加
-        };
-
-        // マップグリッドの生成
-        function generateMap() {
-            const mapGrid = document.getElementById('mapGrid');
-            mapGrid.innerHTML = ''; // 既存のコンテンツをクリア
-
-            stages.forEach((stage, index) => {
-                const stageNode = document.createElement('div');
-                stageNode.className = 'stage-node';
-                
-                if (stage.completed) {
-                    stageNode.classList.add('completed');
-                } else if (stage.current) {
-                    stageNode.classList.add('current');
-                }
-
-                stageNode.setAttribute('aria-label', `ステージ${stage.id}: ${stage.name}`);
-                stageNode.onclick = () => openModal(stage.id);
-
-                stageNode.innerHTML = `
-                    ${stage.current ? '<div class="current-marker">現在地</div>' : ''}
-                    <div class="stage-icon">
-                        ${stage.icon}
-                        <div class="stage-number">${stage.id}</div>
+            <!-- 右カラム -->
+            <div class="right-column">
+                <!-- ストーリーカード -->
+                <div class="card"> <!-- HTML構造に依存しないように専用クラス(例: story-card)の付与を推奨 -->
+                    <h2 class="card-title">ストーリー</h2>
+                    <div class="story-section">
+                        <span class="pink-label">短期目標</span>
+                        <span class="pink-label">長期目標</span>
                     </div>
-                    <div class="stage-name">${stage.name}</div>
-                `;
+                    <div class="story-buttons">
+                        <a href="#ability" class="yellow-button">
+                            <span class="button-icon">📊</span>
+                            <span>能力データ</span>
+                        </a>
+                        <a href="#talk" class="yellow-button">
+                            <span class="button-icon">💬</span>
+                            <span>話したこと</span>
+                        </a>
+                        <a href="#works" class="yellow-button">
+                            <span class="button-icon">🎨</span>
+                            <span>つくったもの</span>
+                        </a>
+                    </div>
+                </div>
 
-                mapGrid.appendChild(stageNode);
-            });
-        }
+                <!-- リテラシーカード -->
+                <div class="card">
+                    <!-- 修正ここから -->
+                    <h2 class="card-title"><i class="fas fa-bolt"></i> リテラシー</h2>
+                    <!-- 修正ここまで -->
+                    <div class="literacy-item">
+                        <span class="literacy-label">つなぐ</span>
+                        <div class="literacy-bar">
+                            <!-- 修正ここから (right.pngの比率に調整) -->
+                            <div class="literacy-fill" style="width: 40%;"></div>
+                            <!-- 修正ここまで -->
+                        </div>
+                        <span class="literacy-level">Lv.2</span>
+                    </div>
+                    <div class="literacy-item">
+                        <span class="literacy-label">ひらく</span>
+                        <div class="literacy-bar">
+                            <!-- 修正ここから (right.pngの比率に調整) -->
+                            <div class="literacy-fill" style="width: 75%;"></div>
+                            <!-- 修正ここまで -->
+                        </div>
+                        <span class="literacy-level">Lv.3</span>
+                    </div>
+                    <div class="literacy-item">
+                        <span class="literacy-label">えがく</span>
+                        <div class="literacy-bar">
+                            <!-- 修正ここから (right.pngの比率に調整) -->
+                            <div class="literacy-fill" style="width: 60%;"></div>
+                            <!-- 修正ここまで -->
+                        </div>
+                        <span class="literacy-level">Lv.3</span>
+                    </div>
+                    <div class="literacy-item">
+                        <span class="literacy-label">なりきる</span>
+                        <div class="literacy-bar">
+                            <!-- 修正ここから (right.pngの比率に調整) -->
+                            <div class="literacy-fill" style="width: 30%;"></div>
+                            <!-- 修正ここまで -->
+                        </div>
+                        <span class="literacy-level">Lv.2</span>
+                    </div>
+                    <div class="literacy-item">
+                        <span class="literacy-label">まきこむ</span>
+                        <div class="literacy-bar">
+                            <!-- 修正ここから (right.pngの比率に調整) -->
+                            <div class="literacy-fill" style="width: 45%;"></div>
+                            <!-- 修正ここまで -->
+                        </div>
+                        <span class="literacy-level">Lv.2</span>
+                    </div>
+                </div>
 
-        // モーダルを開く
-        function openModal(stageId) {
-            const modal = document.getElementById('stageModal');
-            const stage = stages.find(s => s.id === stageId);
-            const details = stageDetails[stageId] || {
-                description: "このステージの詳細情報は準備中です。",
-                message: "「冒険の準備を整えよう」",
-                progress: 0 // stageDetailsに存在しない場合のデフォルト値
-            };
-            
-            document.getElementById('modalTitle').textContent = `ステージ${stage.id}: ${stage.name}`;
-            document.getElementById('modalDescription').textContent = details.description;
-            document.getElementById('modalMessage').textContent = details.message;
-            
-            modal.classList.add('active');
-        }
-
-        // モーダルを閉じる
-        function closeModal() {
-            const modal = document.getElementById('stageModal');
-            modal.classList.remove('active');
-        }
-
-        // モーダルの外側をクリックしたら閉じる
-        document.getElementById('stageModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
-        });
-
-        // ESCキーでモーダルを閉じる
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && document.getElementById('stageModal').classList.contains('active')) {
-                closeModal();
-            }
-        });
-
-        // ハンバーガーメニューの制御
-        const hamburgerMenu = document.getElementById('hamburgerMenu');
-        const sideNav = document.getElementById('sideNav');
-        const sideNavOverlay = document.getElementById('sideNavOverlay');
-
-        hamburgerMenu.addEventListener('click', function() {
-            this.classList.toggle('active');
-            sideNav.classList.toggle('active');
-            sideNavOverlay.classList.toggle('active');
-        });
-
-        sideNavOverlay.addEventListener('click', function() {
-            hamburgerMenu.classList.remove('active');
-            sideNav.classList.remove('active');
-            sideNavOverlay.classList.remove('active');
-        });
-
-        // サイドナビのリンククリック時に閉じる
-        document.querySelectorAll('.side-nav-link').forEach(link => {
-            link.addEventListener('click', function() {
-                hamburgerMenu.classList.remove('active');
-                sideNav.classList.remove('active');
-                sideNavOverlay.classList.remove('active');
-            });
-        });
-
-        // === ここからが改善点 ===
-        // HTMLドキュメントの解析と読み込みが完了した時点で generateMap 関数を実行します。
-        // これにより、DOM要素が確実に利用可能な状態でスクリプトが動作します。
-        document.addEventListener('DOMContentLoaded', function() {
-            generateMap();
-
-            // もし他の初期化処理でDOM要素へのアクセスが早すぎる問題が起きる場合は、
-            // それらの処理もこの DOMContentLoaded イベントリスナー内に移動させると
-            // より安定性が増します。今回はまず generateMap() のみで試してみましょう。
-        });
-        // === ここまでが改善点 ===
-
-    </script>
+                <!-- スキルカード -->
+                <div class="card"> <!-- HTML構造に依存しないように専用クラス(例: skill-card)の付与を推奨 -->
+                    <h2 class="card-title">スキル</h2>
+                    <div class="skill-tabs">
+                        <a href="#skill-money" class="skill-tab active">
+                            <span class="skill-level">Lv.2</span>
+                            <span class="skill-icon">💰</span>
+                            <span class="skill-label">金融/お金</span>
+                        </a>
+                        <a href="#skill-ai" class="skill-tab">
+                            <span class="skill-icon">🤖</span>
+                            <span class="skill-label">AI</span>
+                        </a>
+                        <a href="#skill-presentation" class="skill-tab">
+                            <span class="skill-icon">🎤</span>
+                            <span class="skill-label">発表</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 </body>
 </html>
