@@ -820,12 +820,13 @@
                 message: "「自分のスキルツリーを育てるのは、君自身だ」",
                 progress: 0
             }
+            // ... 他のステージ詳細も必要に応じて追加
         };
 
         // マップグリッドの生成
         function generateMap() {
             const mapGrid = document.getElementById('mapGrid');
-            mapGrid.innerHTML = '';
+            mapGrid.innerHTML = ''; // 既存のコンテンツをクリア
 
             stages.forEach((stage, index) => {
                 const stageNode = document.createElement('div');
@@ -860,7 +861,7 @@
             const details = stageDetails[stageId] || {
                 description: "このステージの詳細情報は準備中です。",
                 message: "「冒険の準備を整えよう」",
-                progress: 0
+                progress: 0 // stageDetailsに存在しない場合のデフォルト値
             };
             
             document.getElementById('modalTitle').textContent = `ステージ${stage.id}: ${stage.name}`;
@@ -915,6 +916,13 @@
                 sideNavOverlay.classList.remove('active');
             });
         });
+
+        // === ここからが改善点 ===
+        // ページが読み込まれた時点でマップを生成するために、generateMap関数を呼び出します。
+        // DOMContentLoadedを使うと、HTMLの解析が終わってから実行されるためより安全ですが、
+        // scriptタグがbodyの最後にある場合は、この位置での直接呼び出しでも通常問題ありません。
+        generateMap();
+        // === ここまでが改善点 ===
 
     </script>
 </body>
