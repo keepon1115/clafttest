@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>プロフィールダッシュボード</title>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- 修正ここから -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- 修正ここまで -->
     <style>
         * {
             margin: 0;
@@ -16,17 +14,20 @@
         }
 
         :root {
-            --blue: #4DB6F7;
+            --blue: #29B6F6;
             --yellow: #F6CF3F;
             --pink: #FF5FA0;
             --gray: #F5F5F5;
             --text-dark: #333;
-            --shadow: rgba(0, 0, 0, 0.06) 0 4px 12px; /* 6. カードのbox-shadow (既存でOK) */
+            --shadow: rgba(0, 0, 0, 0.06) 0 4px 12px;
+            --sidebar-bg: #3A3F45;
+            --sidebar-active: #4A4E54;
+            --cream-bg: #FFFCEB;
         }
 
         body {
             font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif;
-            background-color: #FAFAFA;
+            background-color: var(--cream-bg);
             color: var(--text-dark);
         }
 
@@ -58,14 +59,26 @@
         }
 
         .stage-badge {
-            background-color: white;
-            color: var(--pink);
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+        }
+
+        .stage-icon {
+            background-color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .stage-text {
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
         }
 
         .stage-info {
@@ -77,14 +90,13 @@
         /* レイアウト */
         .container {
             display: flex;
-            min-height: calc(100vh - 80px); /* ヘッダーの高さを仮に80pxとして計算 */
+            min-height: calc(100vh - 80px);
         }
 
         /* サイドメニュー */
         .sidebar {
-            width: 240px;
-            background-color: white;
-            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+            width: 200px;
+            background-color: var(--sidebar-bg);
             padding: 20px 0;
             position: sticky;
             top: 0;
@@ -92,38 +104,62 @@
         }
 
         .sidebar-item {
-            padding: 15px 25px;
-            font-size: 16px;
+            padding: 12px 20px;
+            font-size: 15px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 12px;
             text-decoration: none;
-            color: var(--text-dark);
+            color: #D1D5DB;
+            position: relative;
+        }
+
+        .sidebar-item i {
+            width: 20px;
+            text-align: center;
         }
 
         .sidebar-item:hover {
-            background-color: var(--gray);
+            background-color: var(--sidebar-active);
+            color: white;
         }
 
         .sidebar-item.active {
-            background-color: var(--blue);
+            background-color: var(--sidebar-active);
             color: white;
+            border-left: 4px solid var(--blue);
+        }
+
+        .sidebar-item.active i {
+            color: white;
+        }
+
+        .yononaka-indicator {
+            width: 8px;
+            height: 8px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            position: absolute;
+            left: 12px;
         }
 
         /* メインコンテンツ */
         .main-content {
             flex: 1;
-            padding: 30px;
+            padding: 30px 40px;
             display: flex;
             gap: 30px;
+            background-color: var(--cream-bg);
         }
 
         /* カード共通 */
         .card {
             background-color: white;
-            border-radius: 10px; /* デザイン定数 */
-            box-shadow: var(--shadow); /* 6. 既存の変数でOK */
+            border-radius: 10px;
+            box-shadow: var(--shadow);
             padding: 25px;
             margin-bottom: 20px;
         }
@@ -140,31 +176,75 @@
         }
 
         .profile-card {
+            position: relative;
+        }
+
+        .profile-card .card-title {
+            text-align: left;
+            margin-bottom: 25px;
+        }
+
+        .profile-icon-container {
             text-align: center;
+            margin-bottom: 25px;
         }
 
         .profile-icon {
-            width: 80px;
-            height: 80px;
-            background-color: var(--yellow);
+            width: 60px;
+            height: 60px;
+            background-color: #7E57C2;
             border-radius: 50%;
-            margin: 0 auto 20px;
+            margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
+            color: white;
+            font-size: 24px;
         }
 
-        /* ラベル - 青いラベルテキスト */
-        .blue-label {
+        .profile-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .profile-item-label {
             background-color: var(--blue);
             color: white;
-            padding: 8px 20px;
+            padding: 6px 15px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .profile-item-value {
+            font-size: 14px;
+            color: var(--text-dark);
+            text-align: right;
+            max-width: 150px;
+        }
+
+        .edit-jibun-craft-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background-color: #E0E0E0;
+            color: var(--text-dark);
+            padding: 10px 15px;
+            border: none;
             border-radius: 20px;
-            margin: 8px 5px;
-            display: inline-block;
             font-size: 14px;
             font-weight: 500;
+            margin: 20px auto 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .edit-jibun-craft-button:hover {
+            background-color: #D0D0D0;
+            transform: scale(1.05);
         }
 
         /* 右カラム */
@@ -177,15 +257,14 @@
             margin-bottom: 20px;
         }
 
-        /* ラベル - ピンクラベル */
         .pink-label {
             background-color: var(--pink);
             color: white;
-            padding: 6px 16px;
-            border-radius: 16px;
+            padding: 4px 12px;
+            border-radius: 12px;
             display: inline-block;
             margin-right: 10px;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 500;
         }
 
@@ -195,12 +274,11 @@
             margin-top: 20px;
         }
 
-        /* リンクボタン - 黄色ボタン */
         .yellow-button {
             background-color: var(--yellow);
             color: var(--text-dark);
             padding: 20px;
-            border-radius: 16px;
+            border-radius: 10px;
             text-decoration: none;
             flex: 1;
             text-align: center;
@@ -210,6 +288,8 @@
             flex-direction: column;
             align-items: center;
             gap: 10px;
+            min-height: 90px;
+            justify-content: center;
         }
 
         .yellow-button:hover {
@@ -218,10 +298,33 @@
 
         .button-icon {
             font-size: 24px;
-            margin-bottom: 5px;
         }
 
         /* リテラシー */
+        .literacy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .literacy-header .card-title {
+            margin-bottom: 0;
+        }
+
+        .literacy-help-link {
+            font-size: 12px;
+            color: #757575;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .literacy-help-link:hover {
+            color: var(--blue);
+        }
+
         .literacy-item {
             display: flex;
             align-items: center;
@@ -231,15 +334,15 @@
 
         .literacy-label {
             font-size: 14px;
-            width: 80px; /* 固定幅 */
-            flex-shrink: 0; /* 縮まないように */
+            width: 80px;
+            flex-shrink: 0;
         }
 
         .literacy-bar {
             flex: 1;
-            height: 20px;
+            height: 10px;
             background-color: #E0E0E0;
-            border-radius: 10px;
+            border-radius: 5px;
             overflow: hidden;
             position: relative;
         }
@@ -247,39 +350,40 @@
         .literacy-fill {
             height: 100%;
             background-color: var(--blue);
-            border-radius: 10px;
+            border-radius: 5px;
             transition: width 0.3s ease;
         }
 
         .literacy-level {
             font-size: 12px;
-            color: #999;
+            color: #757575;
             margin-left: 10px;
-            width: 35px; /* Lv.X の表示幅を確保 */
+            width: 35px;
             flex-shrink: 0;
         }
 
         /* スキル */
         .skill-tabs {
             display: flex;
-            gap: 20px;
+            gap: 12px;
             justify-content: center;
         }
 
-        /* リンクボタン - スキルタブ */
         .skill-tab {
-            width: 100px;
+            flex: 1;
             height: 100px;
-            background-color: #F0F0F0;
-            border-radius: 16px;
+            background-color: #F5F5F5;
+            border: 1px solid #E0E0E0;
+            border-radius: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-decoration: none;
-            color: var(--text-dark);
+            color: #757575;
             transition: all 0.2s ease;
             position: relative;
+            padding: 8px;
         }
 
         .skill-tab:hover {
@@ -290,6 +394,17 @@
         .skill-tab.active {
             background-color: var(--blue);
             color: white;
+            border-color: var(--blue);
+        }
+
+        .skill-tab.active .skill-icon,
+        .skill-tab.active .skill-label {
+            color: white;
+        }
+
+        .skill-tab.active .skill-level {
+            background-color: white;
+            color: var(--blue);
         }
 
         .skill-icon {
@@ -306,11 +421,11 @@
             position: absolute;
             top: 8px;
             right: 12px;
-            background-color: white;
-            color: var(--text-dark);
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 11px;
+            background-color: #E0E0E0;
+            color: #757575;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 10px;
             font-weight: 700;
         }
 
@@ -334,9 +449,13 @@
             }
             .sidebar-item {
                 white-space: nowrap;
-                padding: 10px 20px; /* レスポンシブ時は左右パディングあり */
-                height: auto; /* レスポンシブ時は高さをautoに */
-                line-height: normal; /* line-heightもリセット */
+                padding: 10px 20px;
+                border-left: none;
+                border-bottom: 4px solid transparent;
+            }
+            .sidebar-item.active {
+                border-left: none;
+                border-bottom: 4px solid var(--blue);
             }
             .main-content {
                 flex-direction: column;
@@ -344,7 +463,7 @@
             }
             .left-column {
                 flex: 1;
-                flex-basis: auto; /* 幅を自動に */
+                flex-basis: auto;
             }
             .story-buttons {
                 flex-direction: column;
@@ -353,136 +472,6 @@
                 flex-wrap: wrap;
             }
         }
-
-        /* 修正ここから */
-        body {
-            background-color: #FFFCEB; /* 6. クリーム背景 */
-            font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif; /* フォント全体適用 */
-        }
-
-        .main-content {
-            padding-left: 32px; /* 6. メイン領域左右 padding */
-            padding-right: 32px; /* 6. メイン領域左右 padding */
-        }
-
-        /* 1. 左サイドメニュー */
-        .sidebar {
-            width: 160px; /* 1. 幅リサイズ */
-            font-family: 'M PLUS Rounded 1c', sans-serif; /* 1. フォント指定 */
-        }
-
-        .sidebar-item {
-            font-family: 'M PLUS Rounded 1c', sans-serif; /* 1. フォント指定 */
-            font-weight: 500; /* 1. Medium */
-            text-align: center; /* 1. 項目文字を中央寄せ */
-            padding: 10px 0; /* 1. 上下パディング */
-            height: 44px; /* 1. 高さを44pxに統一 */
-            display: flex; /* 1. 中央寄せのため */
-            align-items: center; /* 1. 上下中央寄せ */
-            justify-content: center; /* 1. 左右中央寄せ */
-            line-height: 1.5; /* line-height調整 */
-        }
-
-        .sidebar-item.active {
-            /* 背景色と文字色は既存の .active で指定 */
-            /* height, padding, displayなどは .sidebar-item で共通化 */
-            background-color: var(--blue);
-            color: white;
-        }
-        .sidebar-item:not(.active):hover {
-             background-color: #EFF6FF; /* より薄いブルー系のホバー色 */
-        }
-
-
-        /* 2. プロフィールカード */
-        .profile-card .card-title {
-            text-align: left; /* 2. 見出し「プロフィール」をカード上部揃え (左寄せ) */
-        }
-
-        .blue-label {
-            width: 140px; /* 2. 幅修正 */
-            border-radius: 24px; /* 2. 角丸修正 */
-            margin-top: 5px; /* 2. 縦間隔 */
-            margin-bottom: 5px; /* 2. 縦間隔 (合計10px) */
-            display: block; 
-            margin-left: auto;
-            margin-right: auto;
-            padding: 8px 0; /* 上下パディングのみ */
-            text-align: center; /* テキストを中央に */
-            box-sizing: border-box; 
-            /* background-color, color, font-size, font-weightは既存のものを継承/利用 */
-        }
-
-        /* 3. ストーリーカード */
-        /* ストーリーカードを特定 (:hasが使えない場合、HTMLにクラス追加を推奨) */
-        .right-column > .card:first-of-type { /* ストーリーカードが最初のカードと仮定 */
-             padding-left: 24px; /* 3. 左パディング変更 */
-             /* padding-right: 24px; 右も合わせる場合は追加 */
-        }
-
-        .yellow-button {
-            min-width: 160px; /* 3. 均等幅 (min 160px) */
-            padding-top: 15px; /* 3. アイコンとテキスト上下中央揃えのため調整 */
-            padding-bottom: 15px;
-            gap: 8px; /* 3. アイコンとテキストの間隔 */
-            justify-content: center; /* 3. flex-direction:column と合わせて上下中央揃え */
-            min-height: 90px; /* 見た目の高さを調整 */
-        }
-
-        .yellow-button:hover {
-            transform: scale(1.03); /* 3. ホバー時のtransform変更 */
-        }
-        .button-icon {
-            margin-bottom: 0; /* gapで制御するためリセット */
-        }
-
-
-        /* 4. リテラシーカード */
-        .card-title i.fa-bolt { /* 4. FontAwesomeアイコン */
-            margin-right: 8px;
-            color: var(--blue); /* right.pngの見た目に合わせる */
-        }
-
-
-        /* 5. スキルカード */
-        /* スキルカードを特定 (:hasが使えない場合、HTMLにクラス追加を推奨) */
-        .right-column > .card:nth-of-type(3) { /* スキルカードが3番目のカードと仮定 */
-            margin-top: 24px; /* 5. カード上部余白 */
-        }
-
-        .skill-tabs {
-            gap: 12px; /* 5. 3タブボタンのgap調整 */
-        }
-
-        .skill-tab {
-            flex: 1; /* 5. 3タブボタンを均等幅 */
-            width: auto; /* flex:1 で幅は自動調整されるため */
-            border: 1px solid transparent; /* 枠線用のスペース確保 */
-        }
-
-        .skill-tab:not(.active) {
-            background-color: #F3F5F9; /* 5. 未アクティブ背景 */
-            color: #9CA3AF; /* 5. 未アクティブテキスト */
-            border-color: #E5E7EB; /* 5. 未アクティブ枠線 */
-        }
-        .skill-tab:not(.active):hover {
-            background-color: #E9ECEF; /* 未アクティブホバー色を少し濃く */
-            transform: scale(1.03); /* ホバーエフェクト追加 */
-        }
-
-        .skill-tab.active {
-             border-color: var(--blue); /* アクティブ時の枠線を背景色と合わせる */
-        }
-        .skill-tab.active:hover {
-            transform: scale(1.05); /* 元の挙動を維持 */
-        }
-
-        .skill-tab:not(.active) .skill-level {
-            background-color: #E5E7EB; /* 5. 未アクティブ時のレベルバッジ背景 */
-            color: #9CA3AF; /* 5. 未アクティブ時のレベルバッジテキスト */
-        }
-        /* 修正ここまで */
-
     </style>
 </head>
 <body>
@@ -494,11 +483,11 @@
         </div>
         <div class="header-right">
             <div class="stage-badge">
-                <span>🏆</span>
-                <span>ステージ 1-3</span>
+                <div class="stage-icon">🏰</div>
+                <div class="stage-text">ステージ 1-3</div>
             </div>
             <div class="stage-info">
-                <div>前回: 11月23日 15:40</div>
+                <div>前回: 12月23日 15:30</div>
                 <div>総プレイ時間</div>
             </div>
         </div>
@@ -507,12 +496,30 @@
     <div class="container">
         <!-- サイドメニュー -->
         <nav class="sidebar">
-            <a href="#home" class="sidebar-item active">ホーム</a>
-            <a href="#jibun-craft" class="sidebar-item">ジブンクラフト</a>
-            <a href="#quest" class="sidebar-item">クエスト</a>
-            <a href="#yononaka" class="sidebar-item">Yononaka</a>
-            <a href="#mirai-craft" class="sidebar-item">ミライクラフト</a>
-            <a href="#other" class="sidebar-item">その他のメニュー</a>
+            <a href="#home" class="sidebar-item active">
+                <i class="fas fa-home"></i>
+                <span>ホーム</span>
+            </a>
+            <a href="#jibun-craft" class="sidebar-item">
+                <i class="fas fa-magic"></i>
+                <span>ジブンクラフト</span>
+            </a>
+            <a href="#quest" class="sidebar-item">
+                <i class="fas fa-scroll"></i>
+                <span>クエスト</span>
+            </a>
+            <a href="#yononaka" class="sidebar-item">
+                <span class="yononaka-indicator"></span>
+                <span style="margin-left: 20px;">Yononaka</span>
+            </a>
+            <a href="#mirai-craft" class="sidebar-item">
+                <i class="fas fa-rocket"></i>
+                <span>ミライクラフト</span>
+            </a>
+            <a href="#other" class="sidebar-item">
+                <i class="fas fa-ellipsis-h"></i>
+                <span>その他のメニュー</span>
+            </a>
         </nav>
 
         <!-- メインコンテンツ -->
@@ -521,23 +528,58 @@
             <div class="left-column">
                 <div class="card profile-card">
                     <h2 class="card-title">プロフィール</h2>
-                    <div class="profile-icon">👤</div>
-                    <div class="blue-label">ニックネーム</div>
-                    <div class="blue-label">キャラ（特性）</div>
-                    <div class="blue-label">セリフ</div>
-                    <div class="blue-label">とくい（スキル）</div>
-                    <div class="blue-label">よわみ（苦手）</div>
-                    <div class="blue-label">すきな時間・場所</div>
-                    <div class="blue-label">エネルギーチャージ</div>
-                    <div class="blue-label">一緒に冒険したい人</div>
-                    <div class="blue-label">ひとこと</div>
+                    <div class="profile-icon-container">
+                        <div class="profile-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-item-label">ニックネーム</span>
+                        <span class="profile-item-value">たろう</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-item-label">キャラ（特性）</span>
+                        <span class="profile-item-value"></span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-item-label">セリフ</span>
+                        <span class="profile-item-value"></span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-item-label">とくい（スキル）</span>
+                        <span class="profile-item-value"></span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-item-label">よわみ（苦手）</span>
+                        <span class="profile-item-value"></span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-item-label">すきな時間・場所</span>
+                        <span class="profile-item-value"></span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-item-label">エネルギーチャージ</span>
+                        <span class="profile-item-value"></span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-item-label">一緒に冒険したい人</span>
+                        <span class="profile-item-value"></span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-item-label">ひとこと</span>
+                        <span class="profile-item-value"></span>
+                    </div>
+                    <button class="edit-jibun-craft-button">
+                        <i class="fas fa-pencil-alt"></i>
+                        ジブンクラフト編集
+                    </button>
                 </div>
             </div>
 
             <!-- 右カラム -->
             <div class="right-column">
                 <!-- ストーリーカード -->
-                <div class="card"> <!-- HTML構造に依存しないように専用クラス(例: story-card)の付与を推奨 -->
+                <div class="card">
                     <h2 class="card-title">ストーリー</h2>
                     <div class="story-section">
                         <span class="pink-label">短期目標</span>
@@ -545,15 +587,15 @@
                     </div>
                     <div class="story-buttons">
                         <a href="#ability" class="yellow-button">
-                            <span class="button-icon">📊</span>
+                            <i class="fas fa-chart-bar button-icon"></i>
                             <span>能力データ</span>
                         </a>
                         <a href="#talk" class="yellow-button">
-                            <span class="button-icon">💬</span>
+                            <i class="fas fa-comment-dots button-icon"></i>
                             <span>話したこと</span>
                         </a>
                         <a href="#works" class="yellow-button">
-                            <span class="button-icon">🎨</span>
+                            <i class="fas fa-palette button-icon"></i>
                             <span>つくったもの</span>
                         </a>
                     </div>
@@ -561,71 +603,64 @@
 
                 <!-- リテラシーカード -->
                 <div class="card">
-                    <!-- 修正ここから -->
-                    <h2 class="card-title"><i class="fas fa-bolt"></i> リテラシー</h2>
-                    <!-- 修正ここまで -->
+                    <div class="literacy-header">
+                        <h2 class="card-title">リテラシー</h2>
+                        <a href="#" class="literacy-help-link">
+                            リテラシーって？ <i class="fas fa-question-circle"></i>
+                        </a>
+                    </div>
                     <div class="literacy-item">
                         <span class="literacy-label">つなぐ</span>
                         <div class="literacy-bar">
-                            <!-- 修正ここから (right.pngの比率に調整) -->
                             <div class="literacy-fill" style="width: 40%;"></div>
-                            <!-- 修正ここまで -->
                         </div>
                         <span class="literacy-level">Lv.2</span>
                     </div>
                     <div class="literacy-item">
                         <span class="literacy-label">ひらく</span>
                         <div class="literacy-bar">
-                            <!-- 修正ここから (right.pngの比率に調整) -->
                             <div class="literacy-fill" style="width: 75%;"></div>
-                            <!-- 修正ここまで -->
                         </div>
                         <span class="literacy-level">Lv.3</span>
                     </div>
                     <div class="literacy-item">
                         <span class="literacy-label">えがく</span>
                         <div class="literacy-bar">
-                            <!-- 修正ここから (right.pngの比率に調整) -->
                             <div class="literacy-fill" style="width: 60%;"></div>
-                            <!-- 修正ここまで -->
                         </div>
                         <span class="literacy-level">Lv.3</span>
                     </div>
                     <div class="literacy-item">
                         <span class="literacy-label">なりきる</span>
                         <div class="literacy-bar">
-                            <!-- 修正ここから (right.pngの比率に調整) -->
                             <div class="literacy-fill" style="width: 30%;"></div>
-                            <!-- 修正ここまで -->
                         </div>
                         <span class="literacy-level">Lv.2</span>
                     </div>
                     <div class="literacy-item">
                         <span class="literacy-label">まきこむ</span>
                         <div class="literacy-bar">
-                            <!-- 修正ここから (right.pngの比率に調整) -->
                             <div class="literacy-fill" style="width: 45%;"></div>
-                            <!-- 修正ここまで -->
                         </div>
                         <span class="literacy-level">Lv.2</span>
                     </div>
                 </div>
 
                 <!-- スキルカード -->
-                <div class="card"> <!-- HTML構造に依存しないように専用クラス(例: skill-card)の付与を推奨 -->
+                <div class="card">
                     <h2 class="card-title">スキル</h2>
                     <div class="skill-tabs">
                         <a href="#skill-money" class="skill-tab active">
                             <span class="skill-level">Lv.2</span>
-                            <span class="skill-icon">💰</span>
+                            <i class="fas fa-coins skill-icon"></i>
                             <span class="skill-label">金融/お金</span>
                         </a>
                         <a href="#skill-ai" class="skill-tab">
-                            <span class="skill-icon">🤖</span>
+                            <i class="fas fa-robot skill-icon"></i>
                             <span class="skill-label">AI</span>
                         </a>
                         <a href="#skill-presentation" class="skill-tab">
-                            <span class="skill-icon">🎤</span>
+                            <i class="fas fa-microphone skill-icon"></i>
                             <span class="skill-label">発表</span>
                         </a>
                     </div>
