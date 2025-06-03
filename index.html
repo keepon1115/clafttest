@@ -30,6 +30,8 @@
             --gold: #FFD700;
             --silver: #C0C0C0;
             --bronze: #CD7F32;
+            --cyan: #00BCD4;
+            --teal: #009688;
         }
 
         body {
@@ -87,7 +89,7 @@
             width: 100px;
             height: 40px;
             top: 20%;
-            animation: drift 45s infinite;
+            animation: drift 45s infinite linear; /* linearを追加 */
         }
 
         .cloud1::before {
@@ -108,7 +110,7 @@
             width: 80px;
             height: 35px;
             top: 40%;
-            animation: drift 60s infinite;
+            animation: drift 60s infinite linear; /* linearを追加 */
             animation-delay: -20s;
         }
 
@@ -123,7 +125,7 @@
             width: 120px;
             height: 45px;
             top: 60%;
-            animation: drift 50s infinite;
+            animation: drift 50s infinite linear; /* linearを追加 */
             animation-delay: -35s;
         }
 
@@ -149,199 +151,86 @@
             z-index: 3;
         }
 
-        /* 強化されたヘッダー */
-        .header {
-            background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
-            color: white;
-            padding: 20px 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            position: relative;
-            z-index: 100;
-            overflow: hidden;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-            animation: rotate 30s linear infinite;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            z-index: 1;
-        }
-
-        .player-info {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .level-badge {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid white;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            animation: pulse 2s ease infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .level-text {
-            font-size: 10px;
-            opacity: 0.9;
-        }
-
-        .level-number {
-            font-size: 20px;
-        }
-
-        .greeting-section h1 {
-            font-size: 28px;
-            font-weight: 900;
-            margin-bottom: 5px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .greeting-section p {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-
-        .achievements {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .achievement-badge {
+        /* ハンバーガーメニュー */
+        .hamburger-menu {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001; /* sidebarより手前 */
             width: 40px;
             height: 40px;
-            border-radius: 50%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
-            font-size: 20px;
+            align-items: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
         }
 
-        .achievement-badge:hover {
-            transform: translateY(-3px) scale(1.1);
+        .hamburger-menu:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         }
 
-        .achievement-badge.gold {
-            background: linear-gradient(135deg, var(--gold), #FFE55C);
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
-        }
-
-        .achievement-badge.silver {
-            background: linear-gradient(135deg, var(--silver), #E0E0E0);
-            box-shadow: 0 4px 15px rgba(192, 192, 192, 0.4);
-        }
-
-        .achievement-badge.bronze {
-            background: linear-gradient(135deg, var(--bronze), #E4A676);
-            box-shadow: 0 4px 15px rgba(205, 127, 50, 0.4);
-        }
-
-        .achievement-badge .tooltip {
-            position: absolute;
-            bottom: -35px;
-            left: 50%;
-            transform: translateX(-50%);
+        .hamburger-menu span {
+            width: 24px;
+            height: 3px;
             background: var(--text-dark);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            white-space: nowrap;
+            margin: 3px 0;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .hamburger-menu.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .hamburger-menu.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-menu.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+
+        /* サイドバー（ドロワー） */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
+            z-index: 999;
         }
 
-        .achievement-badge:hover .tooltip {
+        .sidebar-overlay.active {
             opacity: 1;
             visibility: visible;
-            bottom: -40px;
         }
 
-        .exp-bar-container {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 8px;
-            background: rgba(0, 0, 0, 0.1);
-        }
-
-        .exp-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--yellow) 0%, var(--gold) 100%);
-            width: 65%;
-            position: relative;
-            overflow: hidden;
-            transition: width 0.5s ease;
-        }
-
-        .exp-bar::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(100%); }
-        }
-
-        /* レイアウト */
-        .container {
-            display: flex;
-            min-height: calc(100vh - 100px);
-            position: relative;
-        }
-
-        /* 強化されたサイドバー */
         .sidebar {
-            width: 220px;
-            background: linear-gradient(180deg, var(--sidebar-bg) 0%, #2C3035 100%);
-            padding: 20px 0;
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: -280px;
+            width: 280px;
             height: 100vh;
+            background: linear-gradient(180deg, var(--sidebar-bg) 0%, #2C3035 100%);
+            padding: 80px 0 20px;
+            transition: all 0.3s ease;
+            z-index: 1000;
             box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
-            z-index: 50;
+            overflow-y: auto;
+        }
+
+        .sidebar.active {
+            left: 0;
         }
 
         .sidebar-item {
@@ -415,10 +304,10 @@
             justify-content: center;
             font-size: 12px;
             font-weight: 700;
-            animation: bounce 2s ease infinite;
+            animation: bounce-badge 2s ease infinite; /* アニメーション名変更 */
         }
 
-        @keyframes bounce {
+        @keyframes bounce-badge { /* アニメーション名変更 */
             0%, 100% { transform: translateY(-50%); }
             50% { transform: translateY(-60%); }
         }
@@ -429,28 +318,193 @@
             background-color: #4CAF50;
             border-radius: 50%;
             position: absolute;
-            left: 25px;
+            left: 25px; /* sidebar-item padding考慮 */
             animation: blink 1s ease infinite;
         }
+         .sidebar-item .yononaka-indicator + i { /* yononaka-indicatorがある場合のアイコンのマージン調整 */
+            margin-left: 12px; /* 元の20pxから調整 */
+        }
+
 
         @keyframes blink {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.3; }
         }
 
-        /* メインコンテンツ */
-        .main-content {
-            flex: 1;
-            padding: 40px;
-            display: grid;
-            grid-template-columns: 400px 1fr;
-            gap: 40px;
+        /* 改良されたヘッダー */
+        .header {
+            background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
+            color: white;
+            padding: 15px 30px 15px 80px; /* 左パディング調整 */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             position: relative;
+            z-index: 90; /* sidebarより下 */
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: rotate-bg 30s linear infinite; /* アニメーション名変更 */
+        }
+
+        @keyframes rotate-bg { /* アニメーション名変更 */
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .greeting-section h1 {
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .greeting-section p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .achievements {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .achievement-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .achievement-badge:hover {
+            transform: translateY(-3px) scale(1.1);
+        }
+
+        .achievement-badge.gold {
+            background: linear-gradient(135deg, var(--gold), #FFE55C);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .achievement-badge.silver {
+            background: linear-gradient(135deg, var(--silver), #E0E0E0);
+            box-shadow: 0 4px 15px rgba(192, 192, 192, 0.4);
+        }
+
+        .achievement-badge.bronze {
+            background: linear-gradient(135deg, var(--bronze), #E4A676);
+            box-shadow: 0 4px 15px rgba(205, 127, 50, 0.4);
+        }
+
+        .achievement-badge .tooltip {
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-dark);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
             z-index: 10;
         }
 
-        /* 超強化されたプロフィールカード */
+        .achievement-badge:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+            bottom: -40px;
+        }
+
+        .exp-bar-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .exp-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--yellow) 0%, var(--gold) 100%);
+            width: 65%;
+            position: relative;
+            overflow: hidden;
+            transition: width 0.5s ease;
+        }
+
+        .exp-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(100%); }
+        }
+
+        /* メインコンテンツ - 改良版 */
+        .main-content {
+            padding: 40px;
+            display: flex;
+            gap: 40px;
+            align-items: stretch; /* 左右のカードの高さを揃える */
+            position: relative;
+            z-index: 10;
+             margin-left: 0; /* サイドバー非表示時のマージン */
+            transition: margin-left 0.3s ease;
+        }
+        /* サイドバー表示時にメインコンテンツを押し出す (オプション) */
+        /*
+        body.sidebar-active .main-content {
+            margin-left: 280px;
+        }
+        body.sidebar-active .header {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+        }
+        */
+
+
+        /* プロフィールカード - 画面の50%に拡張 */
         .profile-card {
+            flex: 0 0 calc(50% - 20px); /* gapの半分を引く */
             background: linear-gradient(145deg, #ffffff, #f0f0f0);
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
@@ -458,7 +512,8 @@
             overflow: hidden;
             transform-style: preserve-3d;
             transition: all 0.3s ease;
-            height: fit-content;
+            display: flex;
+            flex-direction: column;
         }
 
         .profile-card:hover {
@@ -475,13 +530,13 @@
             height: 200%;
             background: radial-gradient(circle, var(--purple) 0%, transparent 70%);
             opacity: 0.05;
-            animation: rotate 20s linear infinite;
+            animation: rotate-bg 20s linear infinite; /* アニメーション名変更 */
         }
 
         /* プロフィール基本情報エリア */
         .profile-header {
             text-align: center;
-            padding: 30px 30px 20px;
+            padding: 35px 35px 25px;
             position: relative;
             background: linear-gradient(180deg, rgba(126, 87, 194, 0.1) 0%, transparent 100%);
         }
@@ -491,10 +546,10 @@
             height: 120px;
             margin: 0 auto 20px;
             position: relative;
-            animation: float 4s ease-in-out infinite;
+            animation: float-avatar 4s ease-in-out infinite; /* アニメーション名変更 */
         }
 
-        @keyframes float {
+        @keyframes float-avatar { /* アニメーション名変更 */
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
         }
@@ -528,10 +583,10 @@
 
         .avatar-container i {
             z-index: 1;
-            animation: breathe 3s ease-in-out infinite;
+            animation: breathe-icon 3s ease-in-out infinite; /* アニメーション名変更 */
         }
 
-        @keyframes breathe {
+        @keyframes breathe-icon { /* アニメーション名変更 */
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
         }
@@ -546,14 +601,19 @@
             border: 3px solid white;
             border-radius: 50%;
             box-shadow: 0 2px 10px rgba(76, 175, 80, 0.4);
-            animation: pulse 2s ease infinite;
+            animation: pulse-indicator 2s ease infinite; /* アニメーション名変更 */
         }
+         @keyframes pulse-indicator { /* アニメーション名変更 */
+            0%, 100% { transform: scale(1); box-shadow: 0 2px 10px rgba(76, 175, 80, 0.4); }
+            50% { transform: scale(1.1); box-shadow: 0 4px 15px rgba(76, 175, 80, 0.6); }
+        }
+
 
         .profile-name {
             font-size: 28px;
             font-weight: 900;
             color: var(--text-dark);
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
@@ -561,21 +621,21 @@
             color: var(--purple);
             font-size: 16px;
             font-weight: 500;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
         }
 
         .profile-character::before,
         .profile-character::after {
             content: '✨';
             font-size: 14px;
-            animation: twinkle 2s ease infinite;
+            animation: twinkle-emoji 2s ease infinite; /* アニメーション名変更 */
         }
 
-        @keyframes twinkle {
+        @keyframes twinkle-emoji { /* アニメーション名変更 */
             0%, 100% { opacity: 0.5; transform: scale(1); }
             50% { opacity: 1; transform: scale(1.2); }
         }
@@ -584,50 +644,55 @@
             background: linear-gradient(135deg, var(--yellow) 0%, var(--gold) 100%);
             color: var(--text-dark);
             padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 14px;
+            border-radius: 25px;
+            font-size: 15px;
             font-weight: 700;
             margin-top: 15px;
             position: relative;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(246, 207, 63, 0.3);
-            animation: glow 3s ease infinite;
+            animation: glow-catchphrase 3s ease infinite alternate; /* アニメーション名変更, alternate追加 */
+            display: inline-block;
         }
 
-        @keyframes glow {
-            0%, 100% { box-shadow: 0 4px 15px rgba(246, 207, 63, 0.3); }
-            50% { box-shadow: 0 4px 25px rgba(246, 207, 63, 0.5); }
+        @keyframes glow-catchphrase { /* アニメーション名変更 */
+            0% { box-shadow: 0 4px 15px rgba(246, 207, 63, 0.3); }
+            100% { box-shadow: 0 4px 25px rgba(246, 207, 63, 0.5), 0 0 10px var(--gold); }
         }
+
 
         .profile-catchphrase::before {
             content: '💭';
             position: absolute;
-            left: 10px;
+            left: 15px;
             top: 50%;
             transform: translateY(-50%);
             font-size: 16px;
         }
 
         .profile-catchphrase-text {
-            margin-left: 20px;
+            margin-left: 25px;
         }
 
         /* プロフィール詳細情報エリア */
         .profile-details {
-            padding: 0 30px 30px;
+            padding: 0 35px 35px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         /* 能力・特性エリア */
         .profile-abilities {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
         }
 
         .ability-card {
+            flex: 1;
             background: white;
-            border-radius: 15px;
+            border-radius: 18px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
@@ -658,28 +723,28 @@
         }
 
         .ability-card.strength {
-            border-top: 3px solid var(--green);
+            border-top: 4px solid var(--green);
         }
 
         .ability-card.weakness {
-            border-top: 3px solid var(--pink);
+            border-top: 4px solid var(--pink);
         }
 
         .ability-header {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
         }
 
         .ability-icon {
-            width: 35px;
-            height: 35px;
-            border-radius: 10px;
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 20px;
         }
 
         .ability-card.strength .ability-icon {
@@ -693,7 +758,7 @@
         }
 
         .ability-title {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 700;
             color: #666;
         }
@@ -707,9 +772,9 @@
         .ability-tag {
             background: var(--gray);
             color: var(--text-dark);
-            padding: 5px 12px;
+            padding: 6px 12px;
             border-radius: 15px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 500;
             transition: all 0.3s ease;
         }
@@ -729,9 +794,8 @@
         /* パーソナル情報エリア */
         .profile-personal {
             background: linear-gradient(145deg, #f8f8f8, #ffffff);
-            border-radius: 15px;
+            border-radius: 18px;
             padding: 20px;
-            margin-bottom: 20px;
             box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
@@ -753,13 +817,13 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 12px;
+            font-size: 13px;
             color: #666;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
         }
 
         .personal-value {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 500;
             color: var(--text-dark);
             line-height: 1.5;
@@ -769,9 +833,8 @@
         .adventure-partner {
             background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%);
             color: white;
-            border-radius: 15px;
+            border-radius: 18px;
             padding: 20px;
-            margin-bottom: 20px;
             position: relative;
             overflow: hidden;
             box-shadow: 0 5px 20px rgba(126, 87, 194, 0.3);
@@ -785,7 +848,7 @@
             width: 200%;
             height: 200%;
             background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
-            animation: rotate 15s linear infinite;
+            animation: rotate-bg 15s linear infinite; /* アニメーション名変更 */
         }
 
         .adventure-partner-content {
@@ -811,9 +874,8 @@
         /* ひとことエリア */
         .profile-comment {
             background: white;
-            border-radius: 15px;
+            border-radius: 18px;
             padding: 20px;
-            margin-bottom: 20px;
             border: 2px solid var(--gray);
             position: relative;
             transition: all 0.3s ease;
@@ -834,8 +896,8 @@
         }
 
         .comment-text {
-            font-size: 14px;
-            line-height: 1.7;
+            font-size: 15px;
+            line-height: 1.6;
             color: var(--text-dark);
         }
 
@@ -846,13 +908,14 @@
             background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
             color: white;
             border: none;
-            border-radius: 15px;
+            border-radius: 18px;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            margin-top: auto; /* 親がflex-direction: column の場合に下寄せ */
         }
 
         .edit-profile-btn::before {
@@ -878,77 +941,25 @@
             box-shadow: 0 10px 30px rgba(41, 182, 246, 0.3);
         }
 
-        /* プロフィール完成度 */
-        .profile-completion {
-            background: white;
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .completion-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .completion-label {
-            font-size: 14px;
-            font-weight: 700;
-            color: #666;
-        }
-
-        .completion-percentage {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--blue);
-        }
-
-        .completion-bar {
-            height: 8px;
-            background: var(--gray);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .completion-progress {
-            height: 100%;
-            background: linear-gradient(90deg, var(--blue) 0%, var(--purple) 100%);
-            transition: width 0.5s ease;
-            position: relative;
-        }
-
-        .completion-progress::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
-            animation: shimmer 2s infinite;
-        }
-
         /* 右側のコンテンツエリア */
         .content-area {
+            flex: 0 0 calc(50% - 20px); /* gapの半分を引く */
             display: flex;
             flex-direction: column;
             gap: 30px;
         }
 
-        /* ストーリーカード */
-        .story-card {
+        /* クラフトストーリーカード */
+        .craft-story-card {
             background: white;
             border-radius: 20px;
-            padding: 30px;
+            padding: 35px;
             box-shadow: var(--shadow);
             position: relative;
             overflow: hidden;
         }
 
-        .story-card::before {
+        .craft-story-card::before {
             content: '';
             position: absolute;
             top: -100px;
@@ -963,79 +974,157 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
 
         .card-title {
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 700;
             color: var(--text-dark);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .card-title i {
             color: var(--purple);
         }
 
-        .quest-badges {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
+        /* 目標セクション */
+        .goals-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
-        .quest-badge {
-            background: var(--pink);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .goal-card {
+            background: linear-gradient(145deg, #f8f8f8, #ffffff);
+            border-radius: 16px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
             transition: all 0.3s ease;
             cursor: pointer;
+            border: 2px solid transparent;
         }
 
-        .quest-badge:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 95, 160, 0.3);
+        .goal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--orange) 0%, var(--pink) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
         }
 
-        .quest-badge.completed {
-            background: var(--green);
+        .goal-card:hover::before {
+            opacity: 0.1;
         }
 
-        .quest-badge i {
+        .goal-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: var(--orange);
+        }
+
+        .goal-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .goal-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--orange) 0%, var(--pink) 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .goal-card:hover .goal-icon {
+            transform: rotate(10deg) scale(1.1);
+        }
+
+        .goal-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .goal-label::after {
+            content: '🎯'; /* アイコンはCSSで指定 */
             font-size: 16px;
         }
+        .goal-card:nth-child(1) .goal-icon i { /* 短期目標 */
+             /* font-awesomeのクラスをHTML側で指定するのでここでは不要 */
+        }
+        .goal-card:nth-child(2) .goal-icon i { /* 長期目標 */
+             /* font-awesomeのクラスをHTML側で指定するのでここでは不要 */
+        }
 
-        .action-buttons {
+
+        .goal-text {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1.4;
+        }
+
+        .goal-progress {
+            margin-top: 12px;
+            background: rgba(0, 0, 0, 0.05);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .goal-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--orange) 0%, var(--pink) 100%);
+            width: 60%; /* デフォルト値、HTML側で上書き可能 */
+            transition: width 0.3s ease;
+        }
+
+        /* アクションセクション */
+        .actions-section {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
 
-        .action-button {
-            background: linear-gradient(145deg, var(--yellow), #F4C430);
-            color: var(--text-dark);
+        .action-link {
+            background: linear-gradient(135deg, var(--cyan) 0%, var(--teal) 100%);
+            color: white;
             border: none;
-            border-radius: 15px;
+            border-radius: 16px;
             padding: 25px;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 15px;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 188, 212, 0.3);
         }
 
-        .action-button::before {
+        .action-link::before {
             content: '';
             position: absolute;
             top: -50%;
@@ -1047,114 +1136,227 @@
             transition: transform 0.5s ease;
         }
 
-        .action-button:hover::before {
+        .action-link:hover::before {
             transform: rotate(90deg);
         }
 
-        .action-button:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 10px 30px rgba(246, 207, 63, 0.4);
+        .action-link:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(0, 188, 212, 0.4);
         }
 
-        .action-button i {
-            font-size: 32px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .action-button span {
-            font-size: 16px;
-            font-weight: 700;
-            position: relative;
-            z-index: 1;
-        }
-
-        .action-button .badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--pink);
-            color: white;
-            width: 25px;
-            height: 25px;
+        .action-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
-            font-weight: 700;
+            font-size: 24px;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
         }
 
-        /* スキルツリーカード */
-        .skills-card {
+        .action-link:hover .action-icon {
+            transform: rotate(360deg);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .action-content {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+        }
+
+        .action-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .action-desc {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .action-arrow {
+            position: relative;
+            z-index: 1;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .action-link:hover .action-arrow {
+            transform: translateX(5px);
+        }
+
+        /* ジブンクラフトカード */
+        .jibun-craft-card {
             background: white;
             border-radius: 20px;
-            padding: 30px;
+            padding: 35px;
             box-shadow: var(--shadow);
             position: relative;
+            flex: 1; /* 残りの高さを埋める */
+            display: flex;
+            flex-direction: column;
+        }
+         .jibun-craft-card .card-title i { /* ジブンクラフトカードのアイコン色 */
+            color: var(--green);
         }
 
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
+
+        /* 5つの力メーター */
+        .powers-section {
+            margin-bottom: 30px;
         }
 
-        .skill-tree {
-            background: linear-gradient(145deg, #f5f5f5, #e0e0e0);
-            border-radius: 15px;
-            padding: 25px;
-            position: relative;
-            overflow: hidden;
+        .power-meter {
+            margin-bottom: 20px;
+        }
+        .power-meter:last-child {
+            margin-bottom: 0;
         }
 
-        .skill-tree-header {
+        .power-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 8px;
         }
 
-        .skill-tree-title {
-            font-size: 18px;
-            font-weight: 700;
+        .power-name {
+            font-size: 15px;
+            font-weight: 600;
             color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .skill-tree-level {
+        .power-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px; /* アイコンサイズ調整 */
+        }
+
+        .power-icon.tsunagu {
+            background: rgba(41, 182, 246, 0.2);
+            color: var(--blue);
+        }
+
+        .power-icon.hiraku {
+            background: rgba(126, 87, 194, 0.2);
+            color: var(--purple);
+        }
+
+        .power-icon.egaku {
+            background: rgba(255, 152, 0, 0.2);
+            color: var(--orange);
+        }
+
+        .power-icon.narikiru {
+            background: rgba(255, 95, 160, 0.2);
+            color: var(--pink);
+        }
+
+        .power-icon.makikomu {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--green);
+        }
+
+        .power-level {
             font-size: 14px;
             color: #666;
+            font-weight: 500;
         }
 
-        .skill-pentagon {
-            width: 200px;
-            height: 200px;
-            margin: 0 auto;
+        .power-bar-container {
+            background: #E0E0E0;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
             position: relative;
         }
 
-        .skill-pentagon canvas {
-            width: 100%;
+        .power-bar {
             height: 100%;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            transition: width 0.5s ease;
         }
 
-        .skill-tabs {
+        .power-bar.tsunagu {
+            background: linear-gradient(90deg, var(--blue) 0%, #03A9F4 100%);
+            /* width: 40%; HTML側で指定 */
+        }
+
+        .power-bar.hiraku {
+            background: linear-gradient(90deg, var(--purple) 0%, #5E35B1 100%);
+            /* width: 60%; HTML側で指定 */
+        }
+
+        .power-bar.egaku {
+            background: linear-gradient(90deg, var(--orange) 0%, #FB8C00 100%);
+            /* width: 60%; HTML側で指定 */
+        }
+
+        .power-bar.narikiru {
+            background: linear-gradient(90deg, var(--pink) 0%, #F06292 100%);
+            /* width: 40%; HTML側で指定 */
+        }
+
+        .power-bar.makikomu {
+            background: linear-gradient(90deg, var(--green) 0%, #43A047 100%);
+            /* width: 40%; HTML側で指定 */
+        }
+
+        .power-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+            animation: shimmer 2s infinite;
+        }
+
+        /* スキルタブセクション */
+        .skills-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-top: 20px; /* powers-sectionとの間にマージン */
+        }
+
+        .skills-tabs {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 15px;
-            margin-top: 20px;
         }
 
         .skill-tab {
-            background: white;
-            border: 2px solid #E0E0E0;
-            border-radius: 15px;
-            padding: 20px;
+            background: linear-gradient(145deg, #f5f5f5, #e0e0e0);
+            border: 2px solid transparent;
+            border-radius: 16px;
+            padding: 20px 10px; /* パディング調整 */
             cursor: pointer;
             transition: all 0.3s ease;
             text-align: center;
             position: relative;
             overflow: hidden;
+            display: flex; /* アイコンとラベルを中央揃え */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .skill-tab::before {
@@ -1167,11 +1369,13 @@
             background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
             opacity: 0;
             transition: opacity 0.3s ease;
+            z-index: 0;
         }
 
         .skill-tab:hover {
             transform: translateY(-3px);
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            border-color: var(--blue);
         }
 
         .skill-tab.active {
@@ -1182,15 +1386,29 @@
         .skill-tab.active::before {
             opacity: 1;
         }
+        .skill-tab.active i, .skill-tab.active .skill-tab-label {
+            color: white;
+        }
+
 
         .skill-tab.locked {
-            opacity: 0.5;
+            opacity: 0.6;
             cursor: not-allowed;
+            background: #E0E0E0;
+        }
+        .skill-tab.locked i, .skill-tab.locked .skill-tab-label {
+            color: #999;
         }
 
         .skill-tab.locked:hover {
             transform: none;
+            box-shadow: none;
+            border-color: transparent;
         }
+        .skill-tab.locked:hover::before {
+            opacity: 0;
+        }
+
 
         .skill-tab-content {
             position: relative;
@@ -1198,15 +1416,28 @@
         }
 
         .skill-tab i {
-            font-size: 28px;
-            margin-bottom: 10px;
+            font-size: 28px; /* アイコンサイズ調整 */
+            margin-bottom: 10px; /* マージン調整 */
             display: block;
+            transition: all 0.3s ease;
+            color: var(--purple); /* デフォルトアイコン色 */
+        }
+        .skill-tab.active i { color: white; } /* アクティブ時のアイコン色 */
+        .skill-tab.locked i { color: #777; } /* ロック時のアイコン色 */
+
+
+        .skill-tab:hover i:not(.fa-lock) {
+            transform: rotate(10deg) scale(1.1);
         }
 
         .skill-tab-label {
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 14px; /* ラベルサイズ調整 */
+            font-weight: 600;
+            color: var(--text-dark); /* デフォルトラベル色 */
         }
+        .skill-tab.active .skill-tab-label { color: white; } /* アクティブ時のラベル色 */
+        .skill-tab.locked .skill-tab-label { color: #777; } /* ロック時のラベル色 */
+
 
         .skill-tab-level {
             position: absolute;
@@ -1214,15 +1445,17 @@
             right: 10px;
             background: var(--green);
             color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 12px;
+            padding: 3px 8px; /* パディング調整 */
+            border-radius: 12px;
+            font-size: 11px; /* フォントサイズ調整 */
             font-weight: 700;
             z-index: 2;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
         }
 
         .skill-tab.locked .skill-tab-level {
             background: #999;
+            box-shadow: none;
         }
 
         /* レベルアップモーダル */
@@ -1236,10 +1469,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 1001; /* hamburger menuと同等かそれ以上 */
             opacity: 0;
             visibility: hidden;
-            transition: all 0.3s ease;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
 
         .levelup-modal.active {
@@ -1253,19 +1486,29 @@
             padding: 40px;
             text-align: center;
             position: relative;
-            transform: scale(0.8);
-            transition: transform 0.3s ease;
+            transform: scale(0.8) translateY(20px);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+            max-width: 500px;
+            width: 90%;
         }
 
         .levelup-modal.active .levelup-content {
-            transform: scale(1);
+            transform: scale(1) translateY(0);
+            opacity: 1;
         }
 
         .levelup-icon {
             font-size: 80px;
             color: var(--gold);
             margin-bottom: 20px;
-            animation: bounce 0.5s ease;
+            animation: bounce-levelup-icon 0.8s ease; /* アニメーション名変更 */
+        }
+        @keyframes bounce-levelup-icon { /* アニメーション名変更 */
+            0% { transform: scale(0.5); opacity: 0; }
+            60% { transform: scale(1.2); opacity: 1; }
+            80% { transform: scale(0.9); }
+            100% { transform: scale(1); }
         }
 
         .levelup-title {
@@ -1286,6 +1529,7 @@
             gap: 20px;
             justify-content: center;
             margin-bottom: 30px;
+            flex-wrap: wrap;
         }
 
         .reward-item {
@@ -1327,9 +1571,10 @@
         /* 通知システム */
         .notification-container {
             position: fixed;
-            top: 20px;
+            top: 80px; /* ヘッダーとかぶらないように調整 */
             right: 20px;
-            z-index: 1000;
+            z-index: 1005; /* モーダルより手前など、必要に応じて調整 */
+            width: 320px;
         }
 
         .notification {
@@ -1341,13 +1586,29 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            transform: translateX(400px);
-            animation: slideIn 0.3s ease forwards;
+            transform: translateX(120%); /* 初期位置を画面外右へ */
+            opacity: 0;
+            transition: transform 0.4s ease, opacity 0.4s ease;
+            animation: slideInNotification 0.4s ease forwards; /* アニメーション名変更 */
+        }
+        .notification.show { /* JSで付与するクラス */
+            transform: translateX(0);
+            opacity: 1;
+        }
+        .notification.hide { /* JSで付与するクラス */
+            transform: translateX(120%);
+            opacity: 0;
         }
 
-        @keyframes slideIn {
-            to { transform: translateX(0); }
+
+        @keyframes slideInNotification { /* アニメーション名変更 */
+            to { transform: translateX(0); opacity: 1; }
         }
+        @keyframes slideOutNotification { /* アニメーション名変更 */
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(120%); opacity: 0; }
+        }
+
 
         .notification-icon {
             width: 40px;
@@ -1358,6 +1619,7 @@
             justify-content: center;
             font-size: 20px;
             color: white;
+            flex-shrink: 0;
         }
 
         .notification-icon.success {
@@ -1371,292 +1633,139 @@
         .notification-icon.achievement {
             background: var(--gold);
         }
+         .notification-icon.error { /* エラータイプ追加 */
+            background: var(--pink);
+        }
 
         .notification-content h4 {
             font-size: 16px;
             margin-bottom: 2px;
+            font-weight: 700;
         }
 
         .notification-content p {
             font-size: 14px;
             color: #666;
+            line-height: 1.4;
         }
 
-        /* レスポンシブ */
+        /* レスポンシブ対応 */
+        @media (max-width: 1400px) {
+            .main-content {
+                padding: 30px;
+            }
+        }
+
         @media (max-width: 1200px) {
             .main-content {
-                grid-template-columns: 1fr;
+                flex-direction: column;
+                align-items: stretch; /* 引き続き高さを揃える */
             }
             
-            .profile-card {
-                max-width: 500px;
-                margin: 0 auto;
+            .profile-card,
+            .content-area {
+                flex: 1 1 auto; /* flex-basisをautoに */
+                width: 100%; /* 幅を100%に */
+            }
+             .profile-card {
+                margin-bottom: 30px; /* カード間のマージン */
             }
         }
 
         @media (max-width: 768px) {
+            .hamburger-menu {
+                top: 15px;
+                left: 15px;
+            }
+            
+            .header {
+                padding: 15px 20px 15px 60px; /* ハンバーガー分左パディング */
+            }
+            
             .header-content {
                 flex-direction: column;
-                gap: 20px;
+                gap: 15px;
                 text-align: center;
             }
-            
-            .container {
-                flex-direction: column;
+             .achievements { /* スマホ表示でアチーブメントを中央揃え */
+                justify-content: center;
             }
             
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: static;
-                display: flex;
-                overflow-x: auto;
-                padding: 10px 0;
+            .greeting-section h1 {
+                font-size: 24px;
             }
             
-            .sidebar-item {
-                white-space: nowrap;
-                border-left: none;
-                border-bottom: 4px solid transparent;
-                min-width: fit-content;
-            }
-            
-            .sidebar-item.active {
-                border-left: none;
-                border-bottom: 4px solid var(--blue);
-            }
-            
-            .main-content {
-                padding: 20px;
-            }
-            
-            .action-buttons {
-                grid-template-columns: 1fr;
-            }
-            
-            .skill-tabs {
-                grid-template-columns: 1fr;
+            .greeting-section p {
+                font-size: 14px;
             }
             
             .achievements {
                 flex-wrap: wrap;
             }
+            
+            .main-content {
+                padding: 20px;
+                gap: 20px;
+            }
+            
+            .goals-section,
+            .actions-section {
+                grid-template-columns: 1fr; /* 1列表示 */
+            }
+            
+            .skills-tabs {
+                grid-template-columns: repeat(2, 1fr); /* 2列表示 */
+            }
+            .profile-abilities {
+                flex-direction: column;
+            }
+             .notification-container {
+                width: calc(100% - 40px);
+                top: 70px;
+                left: 20px;
+                right: 20px;
+            }
+        }
+        @media (max-width: 480px) {
+            .skills-tabs {
+                grid-template-columns: 1fr; /* スマホ縦では1列表示 */
+            }
+            .greeting-section h1 {
+                font-size: 20px;
+            }
+            .card-title {
+                font-size: 22px;
+            }
+             .levelup-content {
+                padding: 30px 20px;
+            }
+            .levelup-title {
+                font-size: 26px;
+            }
+            .levelup-message {
+                font-size: 16px;
+            }
+
         }
 
-        /* フローティングアクションボタン */
-        .fab {
+        /* アニメーション (重複定義を避けるため、必要なものだけ残す) */
+        /* @keyframes slideOut は notification.hide で実現 */
+        
+        @keyframes confettifall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        .confetti {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--pink) 0%, var(--purple) 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 5px 20px rgba(255, 95, 160, 0.4);
-            transition: all 0.3s ease;
-            z-index: 100;
-        }
-
-        .fab:hover {
-            transform: scale(1.1) rotate(90deg);
-            box-shadow: 0 8px 30px rgba(255, 95, 160, 0.5);
-        }
-
-        .fab-menu {
-            position: absolute;
-            bottom: 80px;
-            right: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .fab.active .fab-menu {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .fab-item {
-            width: 50px;
-            height: 50px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--purple);
-            font-size: 20px;
-            cursor: pointer;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            transform: scale(0);
-        }
-
-        .fab.active .fab-item {
-            transform: scale(1);
-        }
-
-        .fab.active .fab-item:nth-child(1) { transition-delay: 0.1s; }
-        .fab.active .fab-item:nth-child(2) { transition-delay: 0.2s; }
-        .fab.active .fab-item:nth-child(3) { transition-delay: 0.3s; }
-
-        .fab-item:hover {
-            transform: scale(1.1);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        /* デイリーボーナスモーダル */
-        .daily-bonus-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .daily-bonus-modal.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .daily-bonus-content {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 500px;
-            text-align: center;
-            transform: scale(0.8);
-            transition: transform 0.3s ease;
-        }
-
-        .daily-bonus-modal.active .daily-bonus-content {
-            transform: scale(1);
-        }
-
-        .daily-bonus-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 20px;
-        }
-
-        .daily-bonus-calendar {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-
-        .daily-bonus-day {
-            aspect-ratio: 1;
-            background: var(--gray);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: 700;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .daily-bonus-day.claimed {
-            background: var(--green);
-            color: white;
-        }
-
-        .daily-bonus-day.today {
-            background: var(--yellow);
-            animation: pulse 1s ease infinite;
-            cursor: pointer;
-        }
-
-        .daily-bonus-day.today:hover {
-            transform: scale(1.1);
-        }
-
-        .daily-bonus-day.future {
-            opacity: 0.5;
-        }
-
-        .daily-bonus-reward {
-            background: linear-gradient(135deg, var(--yellow) 0%, var(--gold) 100%);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 20px rgba(246, 207, 63, 0.3);
-        }
-
-        .daily-bonus-reward-icon {
-            font-size: 48px;
-            margin-bottom: 10px;
-        }
-
-        .daily-bonus-reward-text {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-dark);
-        }
-
-        .daily-bonus-claim {
-            background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 15px 40px;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .daily-bonus-claim:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(41, 182, 246, 0.3);
-        }
-
-        .daily-bonus-claim:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* データ未入力時のプレースホルダー */
-        .profile-placeholder {
-            color: #999;
-            font-style: italic;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 20px;
-            color: #999;
-        }
-
-        .empty-state i {
-            font-size: 48px;
-            margin-bottom: 10px;
-            opacity: 0.3;
-        }
-
-        .empty-state p {
-            font-size: 14px;
+            width: 10px;
+            height: 10px;
+            top: -10px; /* 初期位置を画面上部外に */
+            z-index: 1002; /* モーダルより手前、通知よりは奥など */
+            animation: confettifall 3s linear forwards;
+            pointer-events: none; /* クリックイベントを透過 */
         }
     </style>
 </head>
@@ -1672,14 +1781,50 @@
         <div class="city-silhouette"></div>
     </div>
 
+    <!-- ハンバーガーメニュー -->
+    <div class="hamburger-menu" id="hamburgerMenu" aria-label="メニューを開く">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <!-- サイドバーオーバーレイ -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- サイドバー -->
+    <nav class="sidebar" id="sidebar">
+        <a href="#home" class="sidebar-item active">
+            <i class="fas fa-home"></i>
+            <span>ホーム</span>
+        </a>
+        <a href="#jibun-craft-card-anchor" class="sidebar-item"> <!-- アンカー名を修正 -->
+            <i class="fas fa-magic"></i>
+            <span>ジブンクラフト</span>
+        </a>
+        <a href="#quest" class="sidebar-item">
+            <i class="fas fa-scroll"></i>
+            <span>クエスト</span>
+            <span class="notification-badge">3</span>
+        </a>
+        <a href="#yononaka" class="sidebar-item">
+            <span class="yononaka-indicator"></span>
+            <i class="fas fa-globe"></i> <!-- style削除 -->
+            <span>Yononaka</span>
+        </a>
+        <a href="#mirai-craft" class="sidebar-item">
+            <i class="fas fa-rocket"></i>
+            <span>ミライクラフト</span>
+        </a>
+        <a href="#other" class="sidebar-item">
+            <i class="fas fa-ellipsis-h"></i>
+            <span>その他のメニュー</span>
+        </a>
+    </nav>
+
     <!-- ヘッダー -->
     <header class="header">
         <div class="header-content">
             <div class="player-info">
-                <div class="level-badge">
-                    <span class="level-text">Lv</span>
-                    <span class="level-number">12</span>
-                </div>
                 <div class="greeting-section">
                     <h1 id="greeting">こんにちは、<span id="playerName">たろう</span>さん！</h1>
                     <p id="subGreeting">今日も素晴らしい冒険を始めましょう</p>
@@ -1701,861 +1846,475 @@
             </div>
         </div>
         <div class="exp-bar-container">
-            <div class="exp-bar" id="expBar"></div>
+            <div class="exp-bar" id="expBar" style="width: 65%;"></div> <!-- styleで初期幅指定 -->
         </div>
     </header>
 
-    <!-- メインコンテナ -->
-    <div class="container">
-        <!-- サイドバー -->
-        <nav class="sidebar">
-            <a href="#home" class="sidebar-item active">
-                <i class="fas fa-home"></i>
-                <span>ホーム</span>
-            </a>
-            <a href="#jibun-craft" class="sidebar-item">
-                <i class="fas fa-magic"></i>
-                <span>ジブンクラフト</span>
-            </a>
-            <a href="#quest" class="sidebar-item">
-                <i class="fas fa-scroll"></i>
-                <span>クエスト</span>
-                <span class="notification-badge">3</span>
-            </a>
-            <a href="#yononaka" class="sidebar-item">
-                <span class="yononaka-indicator"></span>
-                <i class="fas fa-globe" style="margin-left: 20px;"></i>
-                <span>Yononaka</span>
-            </a>
-            <a href="#mirai-craft" class="sidebar-item">
-                <i class="fas fa-rocket"></i>
-                <span>ミライクラフト</span>
-            </a>
-            <a href="#other" class="sidebar-item">
-                <i class="fas fa-ellipsis-h"></i>
-                <span>その他のメニュー</span>
-            </a>
-        </nav>
-
-        <!-- メインコンテンツ -->
-        <main class="main-content">
-            <!-- 拡張プロフィールカード -->
-            <div class="profile-card">
-                <!-- 基本情報エリア -->
-                <div class="profile-header">
-                    <div class="profile-avatar">
-                        <div class="avatar-container">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="status-indicator"></div>
+    <!-- メインコンテンツ -->
+    <main class="main-content">
+        <!-- プロフィールカード（画面の50%） -->
+        <div class="profile-card">
+            <!-- 基本情報エリア -->
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <div class="avatar-container">
+                        <i class="fas fa-user"></i>
                     </div>
-                    <h2 class="profile-name" id="profileName">たろう</h2>
-                    <p class="profile-character" id="profileCharacter">
-                        <span id="characterText">冒険大好き！挑戦者タイプ</span>
-                    </p>
-                    <div class="profile-catchphrase" id="profileCatchphrase">
-                        <span class="profile-catchphrase-text" id="catchphraseText">「新しいことにチャレンジだ！」</span>
-                    </div>
+                    <div class="status-indicator"></div>
                 </div>
-
-                <!-- 詳細情報エリア -->
-                <div class="profile-details">
-                    <!-- 完成度 -->
-                    <div class="profile-completion">
-                        <div class="completion-header">
-                            <span class="completion-label">プロフィール完成度</span>
-                            <span class="completion-percentage" id="completionPercentage">20%</span>
-                        </div>
-                        <div class="completion-bar">
-                            <div class="completion-progress" id="completionProgress" style="width: 20%"></div>
-                        </div>
-                    </div>
-
-                    <!-- 能力・特性 -->
-                    <div class="profile-abilities">
-                        <div class="ability-card strength">
-                            <div class="ability-header">
-                                <div class="ability-icon">💪</div>
-                                <div class="ability-title">とくい（スキル）</div>
-                            </div>
-                            <div class="ability-tags" id="strengthTags">
-                                <span class="ability-tag">プログラミング</span>
-                                <span class="ability-tag">デザイン</span>
-                                <span class="ability-tag">問題解決</span>
-                            </div>
-                        </div>
-                        <div class="ability-card weakness">
-                            <div class="ability-header">
-                                <div class="ability-icon">😅</div>
-                                <div class="ability-title">よわみ（苦手）</div>
-                            </div>
-                            <div class="ability-tags" id="weaknessTags">
-                                <span class="ability-tag">時間管理</span>
-                                <span class="ability-tag">朝起き</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- パーソナル情報 -->
-                    <div class="profile-personal">
-                        <div class="personal-item">
-                            <div class="personal-label">
-                                <span>🏖️</span>
-                                <span>すきな時間・場所</span>
-                            </div>
-                            <div class="personal-value" id="favoriteTime">
-                                カフェでコーヒーを飲みながらコーディング
-                            </div>
-                        </div>
-                        <div class="personal-item">
-                            <div class="personal-label">
-                                <span>⚡</span>
-                                <span>エネルギーチャージ方法</span>
-                            </div>
-                            <div class="personal-value" id="energyCharge">
-                                音楽を聴きながら散歩する
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 一緒に冒険したい人 -->
-                    <div class="adventure-partner">
-                        <div class="adventure-partner-content">
-                            <div class="adventure-partner-label">
-                                <span>🤝</span>
-                                <span>一緒に冒険したい人</span>
-                            </div>
-                            <div class="adventure-partner-value" id="adventurePartner">
-                                新しいアイデアをシェアできるクリエイティブな仲間
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ひとこと -->
-                    <div class="profile-comment">
-                        <div class="comment-header">
-                            <span>📝</span>
-                            <span>ひとこと</span>
-                        </div>
-                        <div class="comment-text" id="commentText">
-                            毎日が新しい冒険！プログラミングを通じて、世界をもっと便利で楽しい場所にしたいです。一緒に素晴らしいものを作りましょう！
-                        </div>
-                    </div>
-
-                    <!-- 編集ボタン -->
-                    <button class="edit-profile-btn" onclick="goToJibunCraft()">
-                        <i class="fas fa-pencil-alt"></i> ジブンクラフト編集
-                    </button>
+                <h2 class="profile-name" id="profileName">たろう</h2>
+                <p class="profile-character" id="profileCharacter">
+                    <span id="characterText">冒険大好き！挑戦者タイプ</span>
+                </p>
+                <div class="profile-catchphrase" id="profileCatchphrase">
+                    <span class="profile-catchphrase-text" id="catchphraseText">「新しいことにチャレンジだ！」</span>
                 </div>
             </div>
 
-            <!-- コンテンツエリア -->
-            <div class="content-area">
-                <!-- ストーリーカード -->
-                <div class="story-card">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="fas fa-book"></i>
-                            ストーリー
-                        </h3>
-                    </div>
-                    
-                    <div class="quest-badges">
-                        <div class="quest-badge">
-                            <i class="fas fa-flag"></i>
-                            短期目標：プログラミング基礎習得
+            <!-- 詳細情報エリア -->
+            <div class="profile-details">
+                <!-- 能力・特性 -->
+                <div class="profile-abilities">
+                    <div class="ability-card strength">
+                        <div class="ability-header">
+                            <div class="ability-icon">💪</div>
+                            <div class="ability-title">とくい</div>
                         </div>
-                        <div class="quest-badge completed">
-                            <i class="fas fa-check-circle"></i>
-                            長期目標：アプリ開発者になる
+                        <div class="ability-tags" id="strengthTags">
+                            <span class="ability-tag">プログラミング</span>
+                            <span class="ability-tag">デザイン</span>
+                            <span class="ability-tag">問題解決</span>
                         </div>
                     </div>
-                    
-                    <div class="action-buttons">
-                        <button class="action-button">
-                            <i class="fas fa-chart-line"></i>
-                            <span>能力データ</span>
-                            <span class="badge">!</span>
-                        </button>
-                        <button class="action-button">
-                            <i class="fas fa-comments"></i>
-                            <span>話したこと</span>
-                        </button>
-                        <button class="action-button">
+                    <div class="ability-card weakness">
+                        <div class="ability-header">
+                            <div class="ability-icon">😅</div>
+                            <div class="ability-title">よわみ</div>
+                        </div>
+                        <div class="ability-tags" id="weaknessTags">
+                            <span class="ability-tag">時間管理</span>
+                            <span class="ability-tag">朝起き</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- パーソナル情報 -->
+                <div class="profile-personal">
+                    <div class="personal-item">
+                        <div class="personal-label">
+                            <span>🏖️</span>
+                            <span>すきな時間・場所</span>
+                        </div>
+                        <div class="personal-value" id="favoriteTime">
+                            カフェでコーヒーを飲みながらコーディング
+                        </div>
+                    </div>
+                    <div class="personal-item">
+                        <div class="personal-label">
+                            <span>⚡</span>
+                            <span>エネルギーチャージ方法</span>
+                        </div>
+                        <div class="personal-value" id="energyCharge">
+                            音楽を聴きながら散歩する
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 一緒に冒険したい人 -->
+                <div class="adventure-partner">
+                    <div class="adventure-partner-content">
+                        <div class="adventure-partner-label">
+                            <span>🤝</span>
+                            <span>一緒に冒険したい人</span>
+                        </div>
+                        <div class="adventure-partner-value" id="adventurePartner">
+                            新しいアイデアをシェアできるクリエイティブな仲間
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ひとこと -->
+                <div class="profile-comment">
+                    <div class="comment-header">
+                        <span>📝</span>
+                        <span>ひとこと</span>
+                    </div>
+                    <div class="comment-text" id="commentText">
+                        毎日が新しい冒険！プログラミングを通じて、世界をもっと便利で楽しい場所にしたいです。一緒に素晴らしいものを作りましょう！
+                    </div>
+                </div>
+
+                <!-- 編集ボタン -->
+                <button class="edit-profile-btn" onclick="goToProfileEdit()">
+                    <i class="fas fa-pencil-alt"></i> プロフィール編集
+                </button>
+            </div>
+        </div>
+
+        <!-- コンテンツエリア（画面の50%） -->
+        <div class="content-area">
+            <!-- クラフトストーリーカード -->
+            <div class="craft-story-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-book-open"></i>
+                        クラフトストーリー
+                    </h3>
+                </div>
+                
+                <!-- 目標セクション -->
+                <div class="goals-section">
+                    <div class="goal-card">
+                        <div class="goal-content">
+                            <div class="goal-icon">
+                                <i class="fas fa-flag-checkered"></i> <!-- 短期目標アイコン -->
+                            </div>
+                            <div class="goal-label">短期目標</div>
+                            <div class="goal-text">プログラミング基礎習得</div>
+                            <div class="goal-progress">
+                                <div class="goal-progress-bar" style="width: 75%;"></div> <!-- 進捗例 -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="goal-card">
+                        <div class="goal-content">
+                            <div class="goal-icon">
+                                <i class="fas fa-mountain"></i> <!-- 長期目標アイコン -->
+                            </div>
+                            <div class="goal-label">長期目標</div>
+                            <div class="goal-text">アプリ開発者になる</div>
+                            <div class="goal-progress">
+                                <div class="goal-progress-bar" style="width: 30%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- アクションセクション -->
+                <div class="actions-section">
+                    <a href="#created" class="action-link">
+                        <div class="action-icon">
                             <i class="fas fa-palette"></i>
-                            <span>つくったもの</span>
-                        </button>
+                        </div>
+                        <div class="action-content">
+                            <div class="action-title">つくったもの</div>
+                            <div class="action-desc">作品ギャラリーを見る</div>
+                        </div>
+                        <div class="action-arrow">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </a>
+                    <a href="#talked" class="action-link">
+                        <div class="action-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="action-content">
+                            <div class="action-title">はなしたこと</div>
+                            <div class="action-desc">会話の記録を見る</div>
+                        </div>
+                        <div class="action-arrow">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </a>
+                </div>
+            </div> <!-- .craft-story-card 終了 -->
+
+            <!-- ジブンクラフトカード (新規追加) -->
+            <div class="jibun-craft-card" id="jibun-craft-card-anchor"> <!-- id追加 -->
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-cogs"></i> <!-- ジブンクラフト アイコン例 -->
+                        ジブンクラフト
+                    </h3>
+                </div>
+
+                <!-- 5つの力メーター -->
+                <div class="powers-section">
+                    <div class="power-meter">
+                        <div class="power-header">
+                            <span class="power-name">
+                                <span class="power-icon tsunagu"><i class="fas fa-link"></i></span>
+                                つなぐ力
+                            </span>
+                            <span class="power-level">Lv. 4</span>
+                        </div>
+                        <div class="power-bar-container">
+                            <div class="power-bar tsunagu" style="width: 40%;"></div>
+                        </div>
+                    </div>
+                    <div class="power-meter">
+                        <div class="power-header">
+                            <span class="power-name">
+                                <span class="power-icon hiraku"><i class="fas fa-lightbulb"></i></span>
+                                ひらく力
+                            </span>
+                            <span class="power-level">Lv. 6</span>
+                        </div>
+                        <div class="power-bar-container">
+                            <div class="power-bar hiraku" style="width: 60%;"></div>
+                        </div>
+                    </div>
+                    <div class="power-meter">
+                        <div class="power-header">
+                            <span class="power-name">
+                                <span class="power-icon egaku"><i class="fas fa-pencil-ruler"></i></span>
+                                えがく力
+                            </span>
+                            <span class="power-level">Lv. 6</span>
+                        </div>
+                        <div class="power-bar-container">
+                            <div class="power-bar egaku" style="width: 60%;"></div>
+                        </div>
+                    </div>
+                    <div class="power-meter">
+                        <div class="power-header">
+                            <span class="power-name">
+                                <span class="power-icon narikiru"><i class="fas fa-theater-masks"></i></span>
+                                なりきる力
+                            </span>
+                            <span class="power-level">Lv. 4</span>
+                        </div>
+                        <div class="power-bar-container">
+                            <div class="power-bar narikiru" style="width: 40%;"></div>
+                        </div>
+                    </div>
+                    <div class="power-meter">
+                        <div class="power-header">
+                            <span class="power-name">
+                                <span class="power-icon makikomu"><i class="fas fa-users"></i></span>
+                                まきこむ力
+                            </span>
+                            <span class="power-level">Lv. 4</span>
+                        </div>
+                        <div class="power-bar-container">
+                            <div class="power-bar makikomu" style="width: 40%;"></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- スキルカード -->
-                <div class="skills-card">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="fas fa-star"></i>
-                            スキル＆リテラシー
-                        </h3>
-                    </div>
-                    
-                    <div class="skills-grid">
-                        <div class="skill-tree">
-                            <div class="skill-tree-header">
-                                <h4 class="skill-tree-title">リテラシー</h4>
-                                <span class="skill-tree-level">総合 Lv.12</span>
+                <!-- スキルタブ -->
+                <div class="skills-section">
+                    <div class="skills-tabs">
+                        <div class="skill-tab active"> <!-- 初期アクティブ例 -->
+                            <div class="skill-tab-content">
+                                <i class="fas fa-yen-sign"></i>
+                                <div class="skill-tab-label">お金</div>
                             </div>
-                            <div class="skill-pentagon">
-                                <canvas id="literacyChart"></canvas>
-                            </div>
+                            <span class="skill-tab-level">Lv.5</span>
                         </div>
-                        
-                        <div class="skill-tabs">
-                            <div class="skill-tab active">
-                                <span class="skill-tab-level">Lv.2</span>
-                                <div class="skill-tab-content">
-                                    <i class="fas fa-coins"></i>
-                                    <span class="skill-tab-label">金融/お金</span>
-                                </div>
+                        <div class="skill-tab">
+                             <div class="skill-tab-content">
+                                <i class="fas fa-laptop-code"></i>
+                                <div class="skill-tab-label">技術</div>
                             </div>
-                            <div class="skill-tab">
-                                <span class="skill-tab-level">Lv.1</span>
-                                <div class="skill-tab-content">
-                                    <i class="fas fa-robot"></i>
-                                    <span class="skill-tab-label">AI</span>
-                                </div>
+                            <span class="skill-tab-level">Lv.3</span>
+                        </div>
+                        <div class="skill-tab">
+                            <div class="skill-tab-content">
+                                <i class="fas fa-comments"></i>
+                                <div class="skill-tab-label">対話力</div>
                             </div>
-                            <div class="skill-tab">
-                                <span class="skill-tab-level">Lv.3</span>
-                                <div class="skill-tab-content">
-                                    <i class="fas fa-microphone"></i>
-                                    <span class="skill-tab-label">発表</span>
-                                </div>
-                            </div>
-                            <div class="skill-tab locked">
-                                <span class="skill-tab-level">未解放</span>
-                                <div class="skill-tab-content">
-                                    <i class="fas fa-lock"></i>
-                                    <span class="skill-tab-label">???</span>
-                                </div>
-                            </div>
-                            <div class="skill-tab locked">
-                                <span class="skill-tab-level">未解放</span>
-                                <div class="skill-tab-content">
-                                    <i class="fas fa-lock"></i>
-                                    <span class="skill-tab-label">???</span>
-                                </div>
-                            </div>
-                            <div class="skill-tab locked">
-                                <span class="skill-tab-level">未解放</span>
-                                <div class="skill-tab-content">
-                                    <i class="fas fa-lock"></i>
-                                    <span class="skill-tab-label">???</span>
-                                </div>
+                             <span class="skill-tab-level">Lv.4</span>
+                        </div>
+                        <div class="skill-tab locked">
+                            <div class="skill-tab-content">
+                                <i class="fas fa-lock"></i>
+                                <div class="skill-tab-label">？？？</div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </main>
-    </div>
+            </div> <!-- .jibun-craft-card 終了 -->
+        </div> <!-- .content-area 終了 -->
+    </main> <!-- .main-content 終了 -->
 
-    <!-- フローティングアクションボタン -->
-    <div class="fab" id="fab">
-        <i class="fas fa-plus"></i>
-        <div class="fab-menu">
-            <div class="fab-item" onclick="showDailyBonus()">
-                <i class="fas fa-gift"></i>
+    <!-- レベルアップモーダル -->
+    <div class="levelup-modal" id="levelUpModal">
+        <div class="levelup-content">
+            <div class="levelup-icon">🎉</div>
+            <h3 class="levelup-title">レベルアップ！</h3>
+            <p class="levelup-message">新しいスキルと報酬を獲得しました！</p>
+            <div class="levelup-rewards">
+                <div class="reward-item">
+                    <span class="reward-icon"><i class="fas fa-star"></i></span>
+                    <span class="reward-text">+100 EXP</span>
+                </div>
+                <div class="reward-item">
+                    <span class="reward-icon"><i class="fas fa-gem"></i></span>
+                    <span class="reward-text">新しいバッジ</span>
+                </div>
             </div>
-            <div class="fab-item">
-                <i class="fas fa-chart-bar"></i>
-            </div>
-            <div class="fab-item">
-                <i class="fas fa-cog"></i>
-            </div>
+            <button class="levelup-close" onclick="closeLevelUpModal()">閉じる</button>
         </div>
     </div>
 
     <!-- 通知コンテナ -->
-    <div class="notification-container" id="notificationContainer"></div>
-
-    <!-- レベルアップモーダル -->
-    <div class="levelup-modal" id="levelupModal">
-        <div class="levelup-content">
-            <div class="levelup-icon">🎉</div>
-            <h2 class="levelup-title">レベルアップ！</h2>
-            <p class="levelup-message">レベル13に到達しました</p>
-            <div class="levelup-rewards">
-                <div class="reward-item">
-                    <i class="fas fa-gem reward-icon"></i>
-                    <span class="reward-text">ジェム +100</span>
-                </div>
-                <div class="reward-item">
-                    <i class="fas fa-unlock reward-icon"></i>
-                    <span class="reward-text">新スキル解放</span>
-                </div>
-            </div>
-            <button class="levelup-close" onclick="closeLevelupModal()">素晴らしい！</button>
-        </div>
-    </div>
-
-    <!-- デイリーボーナスモーダル -->
-    <div class="daily-bonus-modal" id="dailyBonusModal">
-        <div class="daily-bonus-content">
-            <h2 class="daily-bonus-title">デイリーボーナス</h2>
-            <div class="daily-bonus-calendar" id="dailyCalendar"></div>
-            <div class="daily-bonus-reward">
-                <div class="daily-bonus-reward-icon">💎</div>
-                <div class="daily-bonus-reward-text">本日のボーナス: 経験値 +50</div>
-            </div>
-            <button class="daily-bonus-claim" id="claimButton" onclick="claimDailyBonus()">受け取る</button>
-        </div>
+    <div class="notification-container" id="notificationContainer">
+        <!-- 通知はJavaScriptで動的に追加されます -->
     </div>
 
     <script>
-        // プロフィールデータのデフォルト値
-        const defaultProfileData = {
-            nickname: 'たろう',
-            character: '冒険大好き！挑戦者タイプ',
-            skills: ['プログラミング', 'デザイン', '問題解決'],
-            weaknesses: ['時間管理', '朝起き'],
-            favoriteTime: 'カフェでコーヒーを飲みながらコーディング',
-            energyCharge: '音楽を聴きながら散歩する',
-            adventurePartner: '新しいアイデアをシェアできるクリエイティブな仲間',
-            catchphrase: '「新しいことにチャレンジだ！」',
-            comment: '毎日が新しい冒険！プログラミングを通じて、世界をもっと便利で楽しい場所にしたいです。一緒に素晴らしいものを作りましょう！'
-        };
+        document.addEventListener('DOMContentLoaded', () => {
+            const hamburgerMenu = document.getElementById('hamburgerMenu');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            // const body = document.body; // サイドバー表示時にメインコンテンツを押し出す場合
 
-        // 初期化
-        document.addEventListener('DOMContentLoaded', function() {
-            // プロフィールデータの読み込み
-            loadProfileData();
-            
-            // 時間に応じた挨拶
-            updateGreeting();
-            
-            // リテラシーチャート描画
-            drawLiteracyChart();
-            
-            // イベントリスナー設定
-            setupEventListeners();
-            
-            // 初回訪問チェック
-            checkFirstVisit();
-            
-            // アニメーション開始
-            startAnimations();
-        });
+            if (hamburgerMenu && sidebar && sidebarOverlay) {
+                hamburgerMenu.addEventListener('click', () => {
+                    hamburgerMenu.classList.toggle('active');
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+                    // body.classList.toggle('sidebar-active'); // サイドバー表示時にメインコンテンツを押し出す場合
+                });
 
-        // プロフィールデータの読み込み
-        function loadProfileData() {
-            const savedData = localStorage.getItem('profileData');
-            const profileData = savedData ? JSON.parse(savedData) : defaultProfileData;
-            
-            // 各要素に反映
-            updateProfileDisplay(profileData);
-            
-            // プロフィール完成度の計算
-            calculateCompletion(profileData);
-        }
-
-        // プロフィール表示の更新
-        function updateProfileDisplay(data) {
-            // ニックネーム
-            document.getElementById('profileName').textContent = data.nickname || defaultProfileData.nickname;
-            document.getElementById('playerName').textContent = data.nickname || defaultProfileData.nickname;
-            
-            // キャラ特性
-            if (data.character) {
-                document.getElementById('characterText').textContent = data.character;
-            }
-            
-            // セリフ
-            if (data.catchphrase) {
-                document.getElementById('catchphraseText').textContent = data.catchphrase;
-            }
-            
-            // とくい
-            const strengthTags = document.getElementById('strengthTags');
-            if (data.skills && data.skills.length > 0) {
-                strengthTags.innerHTML = '';
-                data.skills.forEach(skill => {
-                    const tag = document.createElement('span');
-                    tag.className = 'ability-tag';
-                    tag.textContent = skill;
-                    strengthTags.appendChild(tag);
+                sidebarOverlay.addEventListener('click', () => {
+                    hamburgerMenu.classList.remove('active');
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                    // body.classList.remove('sidebar-active'); // サイドバー表示時にメインコンテンツを押し出す場合
                 });
             }
-            
-            // よわみ
-            const weaknessTags = document.getElementById('weaknessTags');
-            if (data.weaknesses && data.weaknesses.length > 0) {
-                weaknessTags.innerHTML = '';
-                data.weaknesses.forEach(weakness => {
-                    const tag = document.createElement('span');
-                    tag.className = 'ability-tag';
-                    tag.textContent = weakness;
-                    weaknessTags.appendChild(tag);
-                });
-            }
-            
-            // すきな時間・場所
-            if (data.favoriteTime) {
-                document.getElementById('favoriteTime').textContent = data.favoriteTime;
-            }
-            
-            // エネルギーチャージ方法
-            if (data.energyCharge) {
-                document.getElementById('energyCharge').textContent = data.energyCharge;
-            }
-            
-            // 一緒に冒険したい人
-            if (data.adventurePartner) {
-                document.getElementById('adventurePartner').textContent = data.adventurePartner;
-            }
-            
-            // ひとこと
-            if (data.comment) {
-                document.getElementById('commentText').textContent = data.comment;
-            }
-        }
 
-        // プロフィール完成度の計算
-        function calculateCompletion(data) {
-            const fields = [
-                'nickname',
-                'character',
-                'skills',
-                'weaknesses',
-                'favoriteTime',
-                'energyCharge',
-                'adventurePartner',
-                'catchphrase',
-                'comment'
-            ];
-            
-            let completed = 0;
-            fields.forEach(field => {
-                if (data[field]) {
-                    if (Array.isArray(data[field]) && data[field].length > 0) {
-                        completed++;
-                    } else if (typeof data[field] === 'string' && data[field].trim() !== '') {
-                        completed++;
-                    }
-                }
-            });
-            
-            const percentage = Math.round((completed / fields.length) * 100);
-            document.getElementById('completionPercentage').textContent = `${percentage}%`;
-            document.getElementById('completionProgress').style.width = `${percentage}%`;
-            
-            // 完成度に応じた通知
-            if (percentage === 100 && localStorage.getItem('profileCompleted') !== 'true') {
-                localStorage.setItem('profileCompleted', 'true');
-                setTimeout(() => {
-                    showNotification('achievement', 'プロフィール完成！', '全ての項目を入力しました！');
-                }, 1000);
-            }
-        }
-
-        // 時間に応じた挨拶
-        function updateGreeting() {
-            const hour = new Date().getHours();
-            const greetingEl = document.getElementById('greeting');
-            const subGreetingEl = document.getElementById('subGreeting');
-            const name = document.getElementById('playerName').textContent;
-            
-            if (hour < 6) {
-                greetingEl.innerHTML = `おはよう、<span id="playerName">${name}</span>さん！`;
-                subGreetingEl.textContent = '早起きですね！今日も頑張りましょう';
-            } else if (hour < 12) {
-                greetingEl.innerHTML = `おはようございます、<span id="playerName">${name}</span>さん！`;
-                subGreetingEl.textContent = '素晴らしい一日の始まりです';
-            } else if (hour < 17) {
-                greetingEl.innerHTML = `こんにちは、<span id="playerName">${name}</span>さん！`;
-                subGreetingEl.textContent = '今日も素晴らしい冒険を続けましょう';
-            } else if (hour < 22) {
-                greetingEl.innerHTML = `こんばんは、<span id="playerName">${name}</span>さん！`;
-                subGreetingEl.textContent = '今日の冒険はいかがでしたか？';
-            } else {
-                greetingEl.innerHTML = `こんばんは、<span id="playerName">${name}</span>さん！`;
-                subGreetingEl.textContent = '夜更かしは程々に、明日も冒険が待っています';
-            }
-        }
-
-        // リテラシーチャート描画
-        function drawLiteracyChart() {
-            const canvas = document.getElementById('literacyChart');
-            const ctx = canvas.getContext('2d');
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = 80;
-            
-            // キャンバスサイズ設定
-            canvas.width = 200;
-            canvas.height = 200;
-            
-            // データ
-            const skills = [
-                { name: 'つなぐ', level: 2, max: 5 },
-                { name: 'ひらく', level: 3, max: 5 },
-                { name: 'えがく', level: 3, max: 5 },
-                { name: 'なりきる', level: 2, max: 5 },
-                { name: 'まきこむ', level: 2, max: 5 }
-            ];
-            
-            // 背景の五角形を描画
-            ctx.strokeStyle = '#e0e0e0';
-            ctx.lineWidth = 2;
-            
-            for (let i = 1; i <= 5; i++) {
-                ctx.beginPath();
-                for (let j = 0; j < 5; j++) {
-                    const angle = (Math.PI * 2 / 5) * j - Math.PI / 2;
-                    const x = centerX + Math.cos(angle) * (radius * i / 5);
-                    const y = centerY + Math.sin(angle) * (radius * i / 5);
-                    
-                    if (j === 0) {
-                        ctx.moveTo(x, y);
-                    } else {
-                        ctx.lineTo(x, y);
-                    }
-                }
-                ctx.closePath();
-                ctx.stroke();
-            }
-            
-            // スキルの値を描画
-            ctx.fillStyle = 'rgba(41, 182, 246, 0.3)';
-            ctx.strokeStyle = '#29B6F6';
-            ctx.lineWidth = 3;
-            
-            ctx.beginPath();
-            skills.forEach((skill, index) => {
-                const angle = (Math.PI * 2 / 5) * index - Math.PI / 2;
-                const value = skill.level / skill.max;
-                const x = centerX + Math.cos(angle) * (radius * value);
-                const y = centerY + Math.sin(angle) * (radius * value);
-                
-                if (index === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
-                }
-            });
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            
-            // ラベルを描画
-            ctx.fillStyle = '#333';
-            ctx.font = '12px "M PLUS Rounded 1c"';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
-            skills.forEach((skill, index) => {
-                const angle = (Math.PI * 2 / 5) * index - Math.PI / 2;
-                const x = centerX + Math.cos(angle) * (radius + 20);
-                const y = centerY + Math.sin(angle) * (radius + 20);
-                ctx.fillText(skill.name, x, y);
-            });
-        }
-
-        // イベントリスナー設定
-        function setupEventListeners() {
-            // FABボタン
-            const fab = document.getElementById('fab');
-            fab.addEventListener('click', function() {
-                this.classList.toggle('active');
-            });
-            
-            // サイドバーアイテム
-            document.querySelectorAll('.sidebar-item').forEach(item => {
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+            sidebarItems.forEach(item => {
                 item.addEventListener('click', function(e) {
-                    if (!this.classList.contains('active')) {
-                        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-                        this.classList.add('active');
+                    // 標準のアンカー動作は維持しつつ、アクティブクラスを切り替える
+                    // e.preventDefault(); // ページ内リンクの場合はコメントアウトまたは削除
+
+                    sidebarItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // モバイル表示でサイドバーアイテムクリック時にサイドバーを閉じる
+                    if (window.innerWidth <= 768 && hamburgerMenu && sidebar && sidebarOverlay) {
+                        hamburgerMenu.classList.remove('active');
+                        sidebar.classList.remove('active');
+                        sidebarOverlay.classList.remove('active');
+                        // body.classList.remove('sidebar-active');
+                    }
+                    
+                    // スムーズスクロール (オプション)
+                    const targetId = this.getAttribute('href');
+                    if (targetId && targetId.startsWith('#') && targetId.length > 1) {
+                        const targetElement = document.getElementById(targetId.substring(1));
+                        if (targetElement) {
+                             e.preventDefault(); // スムーズスクロールのためにデフォルト動作をキャンセル
+                            targetElement.scrollIntoView({ behavior: 'smooth' });
+                        }
                     }
                 });
             });
-            
-            // スキルタブ
-            document.querySelectorAll('.skill-tab:not(.locked)').forEach(tab => {
+
+            // スキルタブのアクティブ切り替え (オプション)
+            const skillTabs = document.querySelectorAll('.skill-tab:not(.locked)');
+            skillTabs.forEach(tab => {
                 tab.addEventListener('click', function() {
-                    document.querySelectorAll('.skill-tab').forEach(t => t.classList.remove('active'));
+                    skillTabs.forEach(t => t.classList.remove('active'));
                     this.classList.add('active');
                 });
             });
-            
-            // 経験値バーのクリックでレベルアップデモ
-            document.getElementById('expBar').addEventListener('click', function() {
-                showLevelupModal();
-            });
-            
-            // 能力タグのホバーエフェクト
-            document.querySelectorAll('.ability-tag').forEach(tag => {
-                tag.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-2px)';
-                });
-                tag.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
-                });
-            });
+        });
+
+        function goToProfileEdit() {
+            console.log("プロフィール編集ページへ遷移します（仮実装）");
+            // 例: window.location.href = '/profile-edit.html';
+            showNotification('info', 'ページ遷移', 'プロフィール編集ページへ移動します。');
         }
 
-        // 初回訪問チェック
-        function checkFirstVisit() {
-            const lastVisit = localStorage.getItem('lastVisit');
-            const today = new Date().toDateString();
-            
-            if (lastVisit !== today) {
-                localStorage.setItem('lastVisit', today);
-                setTimeout(() => {
-                    showNotification('success', 'ログインボーナス', '本日のログインボーナスを獲得しました！');
-                }, 1000);
+        // --- レベルアップモーダル関連 ---
+        function showLevelUpModal(title = 'レベルアップ！', message = '新しいスキルと報酬を獲得しました！', icon = '🎉') {
+            const modal = document.getElementById('levelUpModal');
+            if (modal) {
+                modal.querySelector('.levelup-icon').textContent = icon;
+                modal.querySelector('.levelup-title').textContent = title;
+                modal.querySelector('.levelup-message').textContent = message;
+                modal.classList.add('active');
+                createConfetti(100); // 紙吹雪
             }
         }
 
-        // アニメーション開始
-        function startAnimations() {
-            // 経験値バーアニメーション
-            setTimeout(() => {
-                document.getElementById('expBar').style.width = '65%';
-            }, 500);
+        function closeLevelUpModal() {
+            const modal = document.getElementById('levelUpModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
         }
 
-        // 通知表示
-        function showNotification(type, title, message) {
+        // --- 通知システム関連 ---
+        function showNotification(type, title, message, duration = 3000) {
             const container = document.getElementById('notificationContainer');
+            if (!container) return;
+
             const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.innerHTML = `
-                <div class="notification-icon ${type}">
-                    <i class="fas fa-${type === 'success' ? 'check' : type === 'info' ? 'info' : 'trophy'}"></i>
-                </div>
-                <div class="notification-content">
-                    <h4>${title}</h4>
-                    <p>${message}</p>
-                </div>
-            `;
+            notification.classList.add('notification');
             
+            const iconDiv = document.createElement('div');
+            iconDiv.classList.add('notification-icon', type); 
+            let iconClass = 'fa-check'; // default for success
+            if (type === 'info') iconClass = 'fa-info-circle';
+            else if (type === 'achievement') iconClass = 'fa-trophy';
+            else if (type === 'error') iconClass = 'fa-times-circle';
+            iconDiv.innerHTML = `<i class="fas ${iconClass}"></i>`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('notification-content');
+            contentDiv.innerHTML = `<h4>${title}</h4><p>${message}</p>`;
+
+            notification.appendChild(iconDiv);
+            notification.appendChild(contentDiv);
             container.appendChild(notification);
-            
+
+            // 表示アニメーションのため少し遅延させる
             setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease forwards';
-                setTimeout(() => notification.remove(), 300);
-            }, 5000);
-        }
+                notification.classList.add('show');
+            }, 10);
 
-        // レベルアップモーダル表示
-        function showLevelupModal() {
-            document.getElementById('levelupModal').classList.add('active');
-            showNotification('achievement', 'レベルアップ！', 'レベル13に到達しました');
-            
-            // 紙吹雪エフェクト
-            createConfetti();
-        }
 
-        // レベルアップモーダルを閉じる
-        function closeLevelupModal() {
-            document.getElementById('levelupModal').classList.remove('active');
-        }
-
-        // デイリーボーナス表示
-        function showDailyBonus() {
-            const modal = document.getElementById('dailyBonusModal');
-            modal.classList.add('active');
-            
-            // カレンダー生成
-            generateDailyCalendar();
-        }
-
-        // デイリーカレンダー生成
-        function generateDailyCalendar() {
-            const calendar = document.getElementById('dailyCalendar');
-            calendar.innerHTML = '';
-            
-            const today = new Date().getDate();
-            const claimed = JSON.parse(localStorage.getItem('claimedDays') || '[]');
-            
-            for (let i = 1; i <= 7; i++) {
-                const day = document.createElement('div');
-                day.className = 'daily-bonus-day';
-                day.textContent = i;
-                
-                if (claimed.includes(i)) {
-                    day.classList.add('claimed');
-                    day.innerHTML = '<i class="fas fa-check"></i>';
-                } else if (i === today % 7 || (today % 7 === 0 && i === 7)) {
-                    day.classList.add('today');
-                } else if (i > today % 7 && today % 7 !== 0) {
-                    day.classList.add('future');
-                }
-                
-                calendar.appendChild(day);
-            }
-        }
-
-        // デイリーボーナス受け取り
-        function claimDailyBonus() {
-            const today = new Date().getDate();
-            const dayIndex = today % 7 || 7;
-            const claimed = JSON.parse(localStorage.getItem('claimedDays') || '[]');
-            
-            if (!claimed.includes(dayIndex)) {
-                claimed.push(dayIndex);
-                localStorage.setItem('claimedDays', JSON.stringify(claimed));
-                
-                // ボタン無効化
-                document.getElementById('claimButton').disabled = true;
-                document.getElementById('claimButton').textContent = '受け取り済み';
-                
-                // カレンダー更新
-                generateDailyCalendar();
-                
-                // 通知表示
-                showNotification('success', 'ボーナス獲得！', '経験値+50を獲得しました');
-                
-                // モーダルを閉じる
-                setTimeout(() => {
-                    document.getElementById('dailyBonusModal').classList.remove('active');
-                    document.getElementById('fab').classList.remove('active');
-                }, 1500);
-            }
-        }
-
-        // ジブンクラフトへ遷移
-        function goToJibunCraft() {
-            // 遷移アニメーション
-            document.body.style.opacity = '0';
             setTimeout(() => {
-                window.location.href = '#jibun-craft';
-            }, 300);
+                notification.classList.remove('show');
+                notification.classList.add('hide');
+                // アニメーション完了後に要素を削除
+                notification.addEventListener('transitionend', () => {
+                    notification.remove();
+                }, { once: true });
+            }, duration);
         }
-
-        // 紙吹雪エフェクト
-        function createConfetti() {
-            const colors = ['#29B6F6', '#F6CF3F', '#FF5FA0', '#7E57C2', '#4CAF50'];
-            const confettiCount = 50;
-            
-            for (let i = 0; i < confettiCount; i++) {
+        
+        // --- 紙吹雪アニメーション ---
+        function createConfetti(count = 50) {
+            const confettiContainer = document.body;
+            const colors = ['#29B6F6', '#F6CF3F', '#FF5FA0', '#7E57C2', '#4CAF50', '#FF9800'];
+            for (let i = 0; i < count; i++) {
                 const confetti = document.createElement('div');
-                confetti.style.cssText = `
-                    position: fixed;
-                    width: 10px;
-                    height: 10px;
-                    background: ${colors[Math.floor(Math.random() * colors.length)]};
-                    left: ${Math.random() * 100}%;
-                    top: -10px;
-                    opacity: ${Math.random() * 0.8 + 0.2};
-                    transform: rotate(${Math.random() * 360}deg);
-                    z-index: 1001;
-                `;
-                document.body.appendChild(confetti);
+                confetti.classList.add('confetti');
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's'; // 2-4秒
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                const size = Math.random() * 8 + 6; // 6-14px
+                confetti.style.width = size + 'px';
+                confetti.style.height = size + 'px';
+                confetti.style.opacity = Math.random() * 0.5 + 0.5; // 0.5-1.0
                 
-                // アニメーション
-                const duration = Math.random() * 3 + 2;
-                const rotateEnd = Math.random() * 720 - 360;
-                const translateX = Math.random() * 200 - 100;
-                
-                confetti.animate([
-                    { transform: `translateY(0) translateX(0) rotate(0deg)`, opacity: 1 },
-                    { transform: `translateY(${window.innerHeight}px) translateX(${translateX}px) rotate(${rotateEnd}deg)`, opacity: 0 }
-                ], {
-                    duration: duration * 1000,
-                    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-                }).onfinish = () => confetti.remove();
+                confettiContainer.appendChild(confetti);
+                // アニメーション完了後に要素を削除 (CSSのanimation-fill-mode: forwardsと併用)
+                confetti.addEventListener('animationend', () => {
+                    confetti.remove();
+                }, { once: true });
             }
         }
 
-        // パララックス効果
-        let ticking = false;
-        function updateParallax() {
-            if (!ticking) {
-                window.requestAnimationFrame(() => {
-                    const scrolled = window.pageYOffset;
-                    const clouds = document.querySelectorAll('.cloud');
-                    
-                    clouds.forEach((cloud, index) => {
-                        const speed = 0.5 + (index * 0.1);
-                        cloud.style.transform = `translateX(${scrolled * speed}px)`;
-                    });
-                    
-                    ticking = false;
-                });
-                ticking = true;
-            }
-        }
+        // --- テスト用呼び出し (開発後削除) ---
+        // setTimeout(() => {
+        //     showNotification('success', 'ようこそ！', 'ダッシュボードへようこそ！');
+        // }, 1000);
+        // setTimeout(() => {
+        //     showNotification('achievement', '実績解除！', '初ログインボーナスを獲得しました！');
+        // }, 2500);
+        // setTimeout(() => {
+        //    showLevelUpModal('ランクアップ！', 'ブロンズランクに到達しました！', '🏆');
+        // }, 4000);
 
-        window.addEventListener('scroll', updateParallax);
-
-        // モーダル外クリックで閉じる
-        document.querySelectorAll('.levelup-modal, .daily-bonus-modal').forEach(modal => {
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.remove('active');
-                }
-            });
-        });
-
-        // ローディング完了時のアニメーション
-        window.addEventListener('load', function() {
-            document.body.style.opacity = '0';
-            setTimeout(() => {
-                document.body.style.transition = 'opacity 0.5s ease';
-                document.body.style.opacity = '1';
-            }, 100);
-        });
-
-        // デバッグ用：プロフィールデータのサンプル設定
-        function setDebugProfileData() {
-            const debugData = {
-                nickname: 'クリエイター太郎',
-                character: '創造力豊か！アイデアマンタイプ',
-                skills: ['Webデザイン', 'イラスト', 'UI/UX', '3DCG'],
-                weaknesses: ['締切管理', '片付け', '運動'],
-                favoriteTime: '深夜のアトリエで黙々と作業する時間',
-                energyCharge: 'お気に入りのアニメを見ながらお絵描き',
-                adventurePartner: '一緒に作品を作り上げられる情熱的なクリエイター',
-                catchphrase: '「想像を形に、アイデアを現実に！」',
-                comment: 'デザインとテクノロジーの融合で、まだ誰も見たことのない体験を生み出したい。失敗を恐れず、常に新しいことにチャレンジし続けます！'
-            };
-            
-            localStorage.setItem('profileData', JSON.stringify(debugData));
-            location.reload();
-        }
-
-        // デバッグ用：各種アニメーションのトリガー
-        document.addEventListener('keypress', function(e) {
-            if (e.key === 'l') showLevelupModal();
-            if (e.key === 'd') showDailyBonus();
-            if (e.key === 'n') showNotification('info', 'お知らせ', '新しいクエストが追加されました！');
-            if (e.key === 'p') setDebugProfileData();
-        });
-
-        // アニメーション用CSS追加
-        const animationStyles = document.createElement('style');
-        animationStyles.textContent = `
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(400px); opacity: 0; }
-            }
-            
-            @keyframes confettifall {
-                to {
-                    transform: translateY(100vh) rotate(720deg);
-                    opacity: 0;
-                }
-            }
-            
-            .confetti {
-                position: fixed;
-                width: 10px;
-                height: 10px;
-                top: -10px;
-                z-index: 1001;
-                animation: confettifall 3s linear forwards;
-            }
-        `;
-        document.head.appendChild(animationStyles);
     </script>
 </body>
 </html>
