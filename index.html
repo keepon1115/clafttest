@@ -4,8 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>冒険者ダッシュボード - ホーム</title>
+    
+    <!-- PWA関連メタタグ -->
+    <meta name="theme-color" content="#29B6F6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CLAFT">
+    <link rel="apple-touch-icon" href="pages/icons/icon-192.png">
+    <link rel="manifest" href="/clafttest/manifest.json">
+    
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="pages/css/navigation.css">
     <style>
         * {
             margin: 0;
@@ -148,197 +158,20 @@
             right: 0;
             height: 200px;
             background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200"><path fill="%23000000" opacity="0.1" d="M0,200 L0,160 L50,160 L50,100 L100,100 L100,140 L150,140 L150,80 L200,80 L200,120 L300,120 L300,60 L350,60 L350,100 L400,100 L400,140 L500,140 L500,40 L550,40 L550,90 L600,90 L600,130 L700,130 L700,70 L750,70 L750,110 L800,110 L800,150 L900,150 L900,50 L950,50 L950,100 L1000,100 L1000,140 L1100,140 L1100,80 L1150,80 L1150,120 L1200,120 L1200,200 Z"/></svg>') repeat-x;
+            background-size: 1200px 200px;
             z-index: 3;
         }
 
-        /* ハンバーガーメニュー */
-        .hamburger-menu {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1001; /* sidebarより手前 */
-            width: 40px;
-            height: 40px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
 
-        .hamburger-menu:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .hamburger-menu span {
-            width: 24px;
-            height: 3px;
-            background: var(--text-dark);
-            margin: 3px 0;
-            transition: all 0.3s ease;
-            border-radius: 2px;
-        }
-
-        .hamburger-menu.active span:nth-child(1) {
-            transform: rotate(45deg) translate(5px, 5px);
-        }
-
-        .hamburger-menu.active span:nth-child(2) {
-            opacity: 0;
-        }
-
-        .hamburger-menu.active span:nth-child(3) {
-            transform: rotate(-45deg) translate(7px, -6px);
-        }
-
-        /* サイドバー（ドロワー） */
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            z-index: 999;
-        }
-
-        .sidebar-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: -280px;
-            width: 280px;
-            height: 100vh;
-            background: linear-gradient(180deg, var(--sidebar-bg) 0%, #2C3035 100%);
-            padding: 80px 0 20px;
-            transition: all 0.3s ease;
-            z-index: 1000;
-            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
-            overflow-y: auto;
-        }
-
-        .sidebar.active {
-            left: 0;
-        }
-
-        .sidebar-item {
-            padding: 15px 25px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            text-decoration: none;
-            color: #D1D5DB;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .sidebar-item::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 0;
-            background: linear-gradient(90deg, var(--blue) 0%, transparent 100%);
-            transition: width 0.3s ease;
-        }
-
-        .sidebar-item:hover::before {
-            width: 100%;
-        }
-
-        .sidebar-item:hover {
-            color: white;
-            transform: translateX(5px);
-        }
-
-        .sidebar-item.active {
-            background: var(--sidebar-active);
-            color: white;
-            border-left: 4px solid var(--blue);
-        }
-
-        .sidebar-item i {
-            width: 24px;
-            text-align: center;
-            font-size: 18px;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar-item:hover i {
-            transform: scale(1.2) rotate(5deg);
-        }
-
-        .sidebar-item.active i {
-            color: var(--blue);
-        }
-
-        .notification-badge {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: var(--pink);
-            color: white;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 700;
-            animation: bounce-badge 2s ease infinite; /* アニメーション名変更 */
-        }
-
-        @keyframes bounce-badge { /* アニメーション名変更 */
-            0%, 100% { transform: translateY(-50%); }
-            50% { transform: translateY(-60%); }
-        }
-
-        .yononaka-indicator {
-            width: 8px;
-            height: 8px;
-            background-color: #4CAF50;
-            border-radius: 50%;
-            position: absolute;
-            left: 25px; /* sidebar-item padding考慮 */
-            animation: blink 1s ease infinite;
-        }
-         .sidebar-item .yononaka-indicator + i { /* yononaka-indicatorがある場合のアイコンのマージン調整 */
-            margin-left: 12px; /* 元の20pxから調整 */
-        }
-
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
 
         /* 改良されたヘッダー */
         .header {
             background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
             color: white;
-            padding: 15px 30px 15px 80px; /* 左パディング調整 */
+            padding: 15px 30px; /* 左パディングを通常に戻す */
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             position: relative;
-            z-index: 90; /* sidebarより下 */
+            z-index: 90;
             overflow: hidden;
         }
 
@@ -487,19 +320,10 @@
             align-items: stretch; /* 左右のカードの高さを揃える */
             position: relative;
             z-index: 10;
-             margin-left: 0; /* サイドバー非表示時のマージン */
+            margin-left: 0; /* サイドバー非表示時のマージン */
             transition: margin-left 0.3s ease;
         }
-        /* サイドバー表示時にメインコンテンツを押し出す (オプション) */
-        /*
-        body.sidebar-active .main-content {
-            margin-left: 280px;
-        }
-        body.sidebar-active .header {
-            margin-left: 280px;
-            width: calc(100% - 280px);
-        }
-        */
+
 
 
         /* プロフィールカード - 画面の50%に拡張 */
@@ -1070,13 +894,6 @@
             content: '🎯'; /* アイコンはCSSで指定 */
             font-size: 16px;
         }
-        .goal-card:nth-child(1) .goal-icon i { /* 短期目標 */
-             /* font-awesomeのクラスをHTML側で指定するのでここでは不要 */
-        }
-        .goal-card:nth-child(2) .goal-icon i { /* 長期目標 */
-             /* font-awesomeのクラスをHTML側で指定するのでここでは不要 */
-        }
-
 
         .goal-text {
             font-size: 16px;
@@ -1770,6 +1587,9 @@
     </style>
 </head>
 <body>
+    <!-- ナビゲーション（共通） -->
+    <div data-include="pages/partials/navigation.html"></div>
+
     <!-- 背景 -->
     <div class="background-wrapper">
         <div class="parallax-layer sky-layer"></div>
@@ -1780,46 +1600,6 @@
         </div>
         <div class="city-silhouette"></div>
     </div>
-
-    <!-- ハンバーガーメニュー -->
-    <div class="hamburger-menu" id="hamburgerMenu" aria-label="メニューを開く">
-        <span></span>
-        <span></span>
-        <span></span>
-    </div>
-
-    <!-- サイドバーオーバーレイ -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-    <!-- サイドバー -->
-    <nav class="sidebar" id="sidebar">
-        <a href="#home" class="sidebar-item active">
-            <i class="fas fa-home"></i>
-            <span>ホーム</span>
-        </a>
-        <a href="#jibun-craft-card-anchor" class="sidebar-item"> <!-- アンカー名を修正 -->
-            <i class="fas fa-magic"></i>
-            <span>ジブンクラフト</span>
-        </a>
-        <a href="#quest" class="sidebar-item">
-            <i class="fas fa-scroll"></i>
-            <span>クエスト</span>
-            <span class="notification-badge">3</span>
-        </a>
-        <a href="#yononaka" class="sidebar-item">
-            <span class="yononaka-indicator"></span>
-            <i class="fas fa-globe"></i> <!-- style削除 -->
-            <span>Yononaka</span>
-        </a>
-        <a href="#mirai-craft" class="sidebar-item">
-            <i class="fas fa-rocket"></i>
-            <span>ミライクラフト</span>
-        </a>
-        <a href="#other" class="sidebar-item">
-            <i class="fas fa-ellipsis-h"></i>
-            <span>その他のメニュー</span>
-        </a>
-    </nav>
 
     <!-- ヘッダー -->
     <header class="header">
@@ -2155,56 +1935,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const hamburgerMenu = document.getElementById('hamburgerMenu');
-            const sidebar = document.getElementById('sidebar');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
-            // const body = document.body; // サイドバー表示時にメインコンテンツを押し出す場合
-
-            if (hamburgerMenu && sidebar && sidebarOverlay) {
-                hamburgerMenu.addEventListener('click', () => {
-                    hamburgerMenu.classList.toggle('active');
-                    sidebar.classList.toggle('active');
-                    sidebarOverlay.classList.toggle('active');
-                    // body.classList.toggle('sidebar-active'); // サイドバー表示時にメインコンテンツを押し出す場合
-                });
-
-                sidebarOverlay.addEventListener('click', () => {
-                    hamburgerMenu.classList.remove('active');
-                    sidebar.classList.remove('active');
-                    sidebarOverlay.classList.remove('active');
-                    // body.classList.remove('sidebar-active'); // サイドバー表示時にメインコンテンツを押し出す場合
-                });
-            }
-
-            const sidebarItems = document.querySelectorAll('.sidebar-item');
-            sidebarItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    // 標準のアンカー動作は維持しつつ、アクティブクラスを切り替える
-                    // e.preventDefault(); // ページ内リンクの場合はコメントアウトまたは削除
-
-                    sidebarItems.forEach(i => i.classList.remove('active'));
-                    this.classList.add('active');
-
-                    // モバイル表示でサイドバーアイテムクリック時にサイドバーを閉じる
-                    if (window.innerWidth <= 768 && hamburgerMenu && sidebar && sidebarOverlay) {
-                        hamburgerMenu.classList.remove('active');
-                        sidebar.classList.remove('active');
-                        sidebarOverlay.classList.remove('active');
-                        // body.classList.remove('sidebar-active');
-                    }
-                    
-                    // スムーズスクロール (オプション)
-                    const targetId = this.getAttribute('href');
-                    if (targetId && targetId.startsWith('#') && targetId.length > 1) {
-                        const targetElement = document.getElementById(targetId.substring(1));
-                        if (targetElement) {
-                             e.preventDefault(); // スムーズスクロールのためにデフォルト動作をキャンセル
-                            targetElement.scrollIntoView({ behavior: 'smooth' });
-                        }
-                    }
-                });
-            });
-
             // スキルタブのアクティブ切り替え (オプション)
             const skillTabs = document.querySelectorAll('.skill-tab:not(.locked)');
             skillTabs.forEach(tab => {
@@ -2316,7 +2046,21 @@
         // }, 4000);
 
     </script>
+    <script src="pages/js/include.js"></script>
+    
+    <!-- PWA Service Worker 登録 -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/clafttest/sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
-< ! - -   t e s t   - - >  
- 
