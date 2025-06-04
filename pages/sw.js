@@ -10,7 +10,8 @@ const urlsToCache = [
   '/js/include.js',
   '/partials/navigation.html',
   '/manifest.json',
-  '/icons/icon.svg'
+  '/icons/icon-192.png',
+  '/icons/icon-512.png'
 ];
 
 // Install event
