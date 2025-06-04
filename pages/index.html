@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CLAFT">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="/clafttest/manifest.json">
     
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -158,6 +158,7 @@
             right: 0;
             height: 200px;
             background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200"><path fill="%23000000" opacity="0.1" d="M0,200 L0,160 L50,160 L50,100 L100,100 L100,140 L150,140 L150,80 L200,80 L200,120 L300,120 L300,60 L350,60 L350,100 L400,100 L400,140 L500,140 L500,40 L550,40 L550,90 L600,90 L600,130 L700,130 L700,70 L750,70 L750,110 L800,110 L800,150 L900,150 L900,50 L950,50 L950,100 L1000,100 L1000,140 L1100,140 L1100,80 L1150,80 L1150,120 L1200,120 L1200,200 Z"/></svg>') repeat-x;
+            background-size: 1200px 200px;
             z-index: 3;
         }
 
@@ -319,7 +320,7 @@
             align-items: stretch; /* 左右のカードの高さを揃える */
             position: relative;
             z-index: 10;
-             margin-left: 0; /* サイドバー非表示時のマージン */
+            margin-left: 0; /* サイドバー非表示時のマージン */
             transition: margin-left 0.3s ease;
         }
 
@@ -2058,7 +2059,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('/clafttest/sw.js')
                     .then((registration) => {
                         console.log('Service Worker registered successfully:', registration.scope);
                     })
