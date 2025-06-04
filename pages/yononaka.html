@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yononaka - 正解が一つでない問いに対して自分の意見を共有する時間</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/navigation.css">
+    <style>
+        /* Google Fonts import */
+        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap');
+        
+        /* カスタムカラー定義 */
+        :root {
+            --primary-peach: #FFDAB9;
+            --secondary-peach: #FFE4C4;
+            --bg-peach: #FFF5E8;
+            --brown-dark: #3E2723;
+            --brown-medium: #5D4037;
+            --yellow-accent: #FFD700;
+            --blue-accent: #87CEEB;
+            --purple-accent: #B19CD9;
+            --pink-accent: #FFB6C1;
+            --green-accent: #98D8C8;
+            --text-dark: #333333;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: var(--bg-peach);
+            font-family: 'M PLUS Rounded 1c', 'ヒラギノ丸ゴ ProN', sans-serif;
+            overflow-x: hidden;
+        }
+        
+
+        
+        /* メインコンテンツ */
+        .main-content {
+            padding: 2rem;
+            min-height: 100vh;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(177, 156, 217, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 182, 193, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(152, 216, 200, 0.1) 0%, transparent 50%),
+                var(--bg-peach);
+        }
+        
+        /* タイトルバナー */
+        .title-banner {
+            background: linear-gradient(135deg, white 0%, var(--secondary-peach) 100%);
+            border: 4px solid var(--brown-medium);
+            border-radius: 24px;
+            padding: 3rem 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            position: relative;
+            max-width: 700px;
+            margin: 4rem auto 3rem;
+            text-align: center;
+            overflow: hidden;
+        }
+        
+        .title-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .title-banner h1 {
+            font-size: 2.5rem;
+            color: var(--brown-dark);
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .title-banner p {
+            font-size: 1.2rem;
+            color: var(--brown-medium);
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* セクションカード */
+        .section-card {
+            background: linear-gradient(135deg, white 0%, rgba(255, 255, 255, 0.9) 100%);
+            border: 3px solid var(--brown-medium);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .section-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.5) 50%, transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+        
+        .section-card:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* セクションヘッダー */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--purple-accent) 0%, var(--pink-accent) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            color: var(--brown-dark);
+            font-weight: bold;
+        }
+        
+        /* ちょこっとYononaka */
+        .chokotto-themes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .theme-item {
+            background: linear-gradient(135deg, var(--bg-peach) 0%, var(--secondary-peach) 100%);
+            border: 2px solid var(--primary-peach);
+            border-radius: 12px;
+            padding: 1.2rem;
+            font-weight: bold;
+            color: var(--brown-dark);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .theme-item:hover {
+            transform: translateX(5px) scale(1.02); /* 修正済み */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-color: var(--purple-accent);
+        }
+        
+        .theme-item.monthly {
+            background: linear-gradient(135deg, var(--purple-accent) 0%, var(--pink-accent) 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 5px 15px rgba(177, 156, 217, 0.3);
+        }
+        
+        .theme-item.monthly::before {
+            content: '⭐';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            opacity: 0.5;
+        }
+        
+        /* ボタン */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--yellow-accent) 0%, #FFA500 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-weight: bold;
+            color: var(--brown-dark);
+            box-shadow: 0 5px 15px rgba(255, 165, 0, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn-primary:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 165, 0, 0.4);
+        }
+
+        /* Yononakaワーク詳細グリッド */
+        .yononaka-work-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* モバイルでは1列 */
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .yononaka-work-item-card {
+            background: linear-gradient(135deg, var(--secondary-peach) 0%, var(--primary-peach) 100%);
+            border-radius: 16px;
+            padding: 1.5rem; /* パディング調整 */
+            display: flex;
+            flex-direction: column;
+            height: 100%; /* 親グリッドアイテムの高さを揃える */
+        }
+        .yononaka-work-item-card h3 {
+            color: var(--brown-dark);
+            font-size: 1.25rem; /* text-xl相当 */
+            font-weight: bold;
+            margin-bottom: 0.75rem; /* mb-3相当 */
+        }
+        .yononaka-work-item-card .theme-title {
+             color: var(--brown-dark);
+             font-size: 1.125rem; /* text-lg相当 */
+             font-weight: bold;
+             margin-bottom: 0.5rem; /* mb-2相当 */
+        }
+        .yononaka-work-item-card .event-details p {
+            color: var(--brown-medium);
+            font-size: 0.875rem; /* text-sm相当 */
+            margin-bottom: 0.25rem; /* mb-1相当 */
+        }
+         .yononaka-work-item-card .event-details {
+            margin-bottom: 1rem; /* mb-4相当 */
+        }
+
+        .yononaka-work-item-card .btn-primary {
+            margin-top: auto; /* ボタンをカード下部に配置 */
+            align-self: flex-start; /* ボタンを左寄せ */
+        }
+
+        /* デスクトップ（md以上）でYononakaワークを2列に */
+        @media (min-width: 768px) {
+            .yononaka-work-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        /* 動画ボタングループ (振り返りセクション用) */
+        .review-video-buttons { /* video-buttons からクラス名変更 */
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .review-video-btn { /* video-btn からクラス名変更 */
+            background: linear-gradient(135deg, var(--purple-accent) 0%, var(--pink-accent) 100%);
+            border: none;
+            border-radius: 16px;
+            padding: 1.5rem;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 5px 15px rgba(177, 156, 217, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        
+        .review-video-btn:nth-child(2) {
+            background: linear-gradient(135deg, var(--green-accent) 0%, #66D9C4 100%);
+        }
+        
+        .review-video-btn:nth-child(3) {
+            background: linear-gradient(135deg, var(--blue-accent) 0%, #6BB6FF 100%);
+        }
+        
+        .review-video-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .review-video-btn span {
+            font-size: 1.5rem;
+        }
+        
+        /* 冒険者アバター */
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .avatar-item {
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .avatar-item:hover {
+            transform: scale(1.1);
+        }
+        
+        .avatar-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid var(--purple-accent);
+            box-shadow: 0 5px 15px rgba(177, 156, 217, 0.3);
+            margin: 0 auto 0.5rem;
+            background: linear-gradient(135deg, var(--bg-peach) 0%, white 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .avatar-item:hover .avatar-img {
+            border-color: var(--pink-accent);
+            box-shadow: 0 8px 25px rgba(255, 182, 193, 0.4);
+        }
+        
+        /* カードゲーム */
+        .card-game-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .game-card {
+            width: 200px;
+            height: 280px;
+            background: linear-gradient(135deg, var(--yellow-accent) 0%, #FFD970 100%);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--brown-dark);
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease, box-shadow 0.3s ease; /* 修正済み */
+        }
+        
+        .game-card:hover {
+            transform: rotateY(10deg) rotateX(10deg) scale(1.1); /* 修正済み */
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3); /* 修正済み */
+        }
+        
+        .game-card.word {
+            background: linear-gradient(135deg, var(--green-accent) 0%, #7EE8D4 100%);
+        }
+        
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+        }
+        
+        .card-operator {
+            font-size: 3rem;
+            color: var(--brown-dark);
+            margin: 0 1rem;
+        }
+        
+        /* Yononaka story ボタン */
+        .story-buttons-container { /* 新しいラッパークラス */
+            display: grid;
+            grid-template-columns: 1fr; /* モバイルでは1列 */
+            gap: 1.5rem;
+            max-width: 600px; /* 横並び時の最大幅を調整 */
+            margin: 2rem auto;
+        }
+
+        @media (min-width: 640px) { /* smブレークポイント以上で2列に */
+            .story-buttons-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .story-btn {
+            background: linear-gradient(135deg, var(--purple-accent) 0%, var(--pink-accent) 100%);
+            border: none;
+            border-radius: 16px;
+            padding: 1.5rem 1rem; /* パディング調整 */
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 5px 15px rgba(177, 156, 217, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex; /* アイコンとテキストを中央揃え */
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            /* overflow: hidden; */ /* 絵文字が見えるようにコメントアウトまたは調整 */
+            word-break: break-word; /* 長いテキストの折り返し */
+            min-height: 80px; /* ボタンの高さをある程度担保 */
+        }
+        
+        .story-btn:nth-child(2) { /* この指定はGridレイアウトでは直接効かないので注意。個別にスタイル当てるか、Gridの子要素としての順序で判断 */
+             background: linear-gradient(135deg, var(--green-accent) 0%, #66D9C4 100%);
+        }
+        
+        .story-btn .story-icon { /* 絵文字をspanで囲む場合 */
+            margin-right: 0.5rem; /* アイコンとテキストの間隔 */
+            font-size: 1.5rem;
+        }
+        
+        .story-btn::before { /* 既存の絵文字スタイルを流用 */
+            content: '🎬';
+            font-size: 1.5rem;
+            margin-right: 0.75rem; /* テキストとの間隔 */
+            /* position, top, transformは削除または調整 */
+        }
+
+        .story-btn:hover {
+            transform: translateY(-5px) scale(1.03); /* Y方向の移動を減らし、スケールを少し追加 */
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+                padding-top: 80px;
+            }
+            
+            .title-banner h1 {
+                font-size: 1.8rem;
+            }
+            
+            .title-banner p {
+                font-size: 1rem;
+            }
+            
+            .section-card {
+                padding: 1.5rem;
+            }
+            
+            .review-video-buttons { /* video-buttons からクラス名変更 */
+                grid-template-columns: 1fr;
+            }
+            
+            .card-game-visual {
+                flex-direction: column;
+            }
+            
+            .game-card {
+                width: 150px;
+                height: 210px;
+            }
+        }
+        
+        /* アニメーション */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            /* animationプロパティはJSで制御するため、ここでは初期状態のみ定義 */
+        }
+        
+        /* 削除： .section-card:nth-child(n) の animation-delay はJSのIntersectionObserverで実現するため不要 */
+    </style>
+</head>
+<body>
+    <!-- ナビゲーション（共通） -->
+    <div data-include="partials/navigation.html"></div>
+
+    <!-- メインコンテンツ -->
+    <main class="main-content">
+        <!-- タイトルバナー -->
+        <div class="title-banner fade-in">
+            <h1>Yononaka</h1>
+            <p>正解が一つでない問いに対して自分の意見を共有する時間</p>
+        </div>
+
+        <!-- ① ちょこっとYononaka -->
+        <section class="section-card fade-in">
+            <div class="section-header">
+                <div class="section-icon">😊</div>
+                <h2 class="section-title">ちょこっとYononaka</h2>
+            </div>
+            <p class="text-gray-700 mb-4">Yononakaのちょこっとバージョン。かんたんなお題から、正解がひとつでない問いに向き合いましょう！</p>
+            
+            <div class="chokotto-themes">
+                <div class="theme-item">
+                    【Yo84】最近あったエピソードを教えてください
+                </div>
+                <div class="theme-item">
+                    【Yo85】おすすめの本を教えてください
+                </div>
+                <div class="theme-item">
+                    【Yo86】今日の気分を色で表すと？
+                </div>
+                <div class="theme-item monthly">
+                    【マンスリー】街で見つけた面白い看板をさがせ！
+                </div>
+            </div>
+            
+            <a href="#" class="btn-primary">
+                これまでのみんなの回答をチェック
+            </a>
+        </section>
+
+        <!-- ② Yononakaワーク -->
+        <section class="section-card fade-in">
+            <div class="section-header">
+                <div class="section-icon" style="background: linear-gradient(135deg, var(--green-accent) 0%, #66D9C4 100%);">🎯</div>
+                <h2 class="section-title">Yononakaワーク</h2>
+            </div>
+            <p class="text-gray-700 mb-4">オンラインで集まり、参加者同士がお題に対して話し合う、対話ワーク。</p>
+            
+            <div class="yononaka-work-grid">
+                <div class="yononaka-work-item-card">
+                    <h3>今月のテーマ</h3>
+                    <p class="theme-title">「AIと共に生きる未来の仕事観」</p>
+                    <div class="event-details">
+                        <p>📅 2025年6月15日（土）</p>
+                        <p>🕐 20:00 - 21:30</p>
+                    </div>
+                    <a href="#" class="btn-primary" style="background: linear-gradient(135deg, #4A90E2 0%, #5BA0F2 100%); color: white;">
+                        Zoomで参加する
+                    </a>
+                </div>
+                <div class="yononaka-work-item-card">
+                    <h3>次回のワーク</h3>
+                    <p class="theme-title">「地域コミュニティと新しいつながり方」</p>
+                     <div class="event-details">
+                        <p>📅 2025年7月20日（土）</p>
+                        <p>🕐 20:00 - 21:30</p>
+                    </div>
+                    <a href="#" class="btn-primary">
+                        詳細を見る
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ③ 振り返り (旧 動画コンテンツ) -->
+        <section class="section-card fade-in">
+            <div class="section-header">
+                <div class="section-icon" style="background: linear-gradient(135deg, var(--blue-accent) 0%, #6BB6FF 100%);">🎬</div>
+                <h2 class="section-title">振り返り</h2>
+            </div>
+            <p class="text-gray-700 mb-4">過去のYononakaの動画コンテンツを視聴して、対話や気づきを振り返りましょう。</p>
+            
+            <div class="review-video-buttons">
+                <a href="#" class="review-video-btn">
+                    <span>📹</span>
+                    アーカイブ動画
+                </a>
+                <a href="#" class="review-video-btn">
+                    <span>🎬</span>
+                    ダイジェスト動画
+                </a>
+                <a href="#" class="review-video-btn">
+                    <span>💭</span>
+                    参加者の声
+                </a>
+            </div>
+        </section>
+
+        <!-- (削除) ④ 振り返りセクション -->
+
+        <!-- ⑤ CLAFTの冒険者一覧 -->
+        <section class="section-card fade-in">
+            <div class="section-header">
+                <div class="section-icon" style="background: linear-gradient(135deg, var(--yellow-accent) 0%, #FFA500 100%);">⚔️</div>
+                <h2 class="section-title">CLAFTの冒険者一覧</h2>
+            </div>
+            <p class="text-gray-700 mb-4">YononakaやCLAFTで活動している、自分の問いで旅する冒険者たち。</p>
+            
+            <div class="avatar-grid">
+                <div class="avatar-item">
+                    <div class="avatar-img"></div>
+                    <p class="font-bold">冒険者タロウ</p>
+                </div>
+                <div class="avatar-item">
+                    <div class="avatar-img"></div>
+                    <p class="font-bold">魔法使いハナコ</p>
+                </div>
+                <div class="avatar-item">
+                    <div class="avatar-img"></div>
+                    <p class="font-bold">戦士ケンジ</p>
+                </div>
+                <div class="avatar-item">
+                    <div class="avatar-img"></div>
+                    <p class="font-bold">僧侶ユミ</p>
+                </div>
+                <div class="avatar-item">
+                    <div class="avatar-img"></div>
+                    <p class="font-bold">盗賊リュウ</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ⑥ 創造的会話カードゲーム -->
+        <section class="section-card fade-in">
+            <div class="section-header">
+                <div class="section-icon" style="background: linear-gradient(135deg, var(--purple-accent) 0%, var(--pink-accent) 100%);">🃏</div>
+                <h2 class="section-title">創造的会話カードゲーム ONLINE</h2>
+            </div>
+            <p class="text-gray-700 mb-4">Yononakaがカードゲームに！？遊び感覚で問いに向き合おう！</p>
+            
+            <div class="card-game-visual">
+                <div class="game-card">
+                    <div style="text-align: center;">
+                        <p style="font-size: 1rem; margin-bottom: 0.5rem;">未来の</p>
+                        <p style="font-size: 2rem;">○○</p>
+                    </div>
+                </div>
+                <div class="card-operator">×</div>
+                <div class="game-card word">
+                    <div style="text-align: center;">
+                        <p style="font-size: 1.5rem;">コーヒー</p>
+                    </div>
+                </div>
+                <div class="card-operator">=</div>
+                <div style="text-align: center;">
+                    <p style="font-size: 1.2rem; color: var(--purple-accent); font-weight: bold;">「未来のコーヒー」について語ろう！</p>
+                </div>
+            </div>
+            
+            <div class="text-center mt-6">
+                <a href="#" class="btn-primary">
+                    カードゲームの詳細を見る
+                </a>
+            </div>
+        </section>
+
+        <!-- ⑦ Yononaka story -->
+        <section class="section-card fade-in">
+            <div class="section-header">
+                <div class="section-icon" style="background: linear-gradient(135deg, var(--green-accent) 0%, #66D9C4 100%);">📖</div>
+                <h2 class="section-title">Yononaka story</h2>
+            </div>
+            <p class="text-gray-700 mb-4">過去に語られた様々なストーリー動画をご覧ください。</p>
+            
+            <div class="story-buttons-container">
+                <a href="#" class="story-btn">
+                    音響と照明のパイオニア
+                </a>
+                <a href="#" class="story-btn" style="background: linear-gradient(135deg, var(--green-accent) 0%, #66D9C4 100%);">
+                    心も癒す薬剤師
+                </a>
+            </div>
+        </section>
+    </main>
+    
+    <script>
+        
+        // スクロールアニメーション (IntersectionObserver)
+        const fadeInElements = document.querySelectorAll('.fade-in');
+        
+        const observerOptions = {
+            root: null, // ビューポートをルートとして使用
+            rootMargin: '0px 0px -100px 0px', // 下端から100px手前で発火
+            threshold: 0.1 // 10%表示されたら発火
+        };
+        
+        const fadeInObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    // アニメーションを適用
+                    entry.target.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                    // 一度表示されたら監視を解除 (オプション)
+                    // observer.unobserve(entry.target); 
+                }
+            });
+        }, observerOptions);
+
+        // .fade-inクラスを持つ各要素を監視
+        fadeInElements.forEach(el => {
+            // 初期状態をCSSで設定しているので、ここでは監視のみ
+            fadeInObserver.observe(el);
+        });
+        
+        // パフォーマンス最適化：アニメーション要素にwill-changeを適用
+        // CSSで直接指定する方が良い場合もありますが、JSで行う例
+        document.querySelectorAll('.section-card, .btn-primary, .theme-item, .game-card, .story-btn, .avatar-item, .review-video-btn').forEach(el => {
+            el.style.willChange = 'transform, opacity';
+        });
+                
+        // マウスオーバー時のインタラクション強化 (theme-itemはCSSで対応済み)
+        
+        // カードゲームのアニメーション (CSSで対応済み、JSでの強化も可能)
+        const gameCards = document.querySelectorAll('.game-card');
+        gameCards.forEach((card) => {
+            card.addEventListener('mouseenter', function() {
+                this.style.zIndex = '10'; // 重なり順を制御
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.zIndex = '1';
+            });
+        });
+    </script>
+    <script src="js/include.js"></script>
+</body>
+</html>

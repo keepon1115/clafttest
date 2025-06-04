@@ -1,0 +1,2033 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ミライクラフト - 未来を創る共創空間</title>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --mint-green: #00D9A3;
+            --sky-blue: #00BFFF;
+            --sunset-orange: #FF6B6B;
+            --gold: #FFD700;
+            --purple: #9B59B6;
+            --deep-purple: #8E44AD;
+            --light-mint: #E8FFF8;
+            --light-blue: #E6F7FF;
+            --light-orange: #FFE8E8;
+            --dark-bg: #1a1a2e;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-primary: #2C3E50;
+            --text-secondary: #7F8C8D;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --shadow-hover: rgba(0, 0, 0, 0.2);
+        }
+
+        body {
+            font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 背景アニメーション */
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .geometric-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+        }
+
+        .geometric-bg::before,
+        .geometric-bg::after {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background-image: 
+                radial-gradient(circle at 20% 80%, var(--mint-green) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, var(--sky-blue) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, var(--sunset-orange) 0%, transparent 50%);
+            animation: rotate 30s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* パーティクル */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            animation: float-up 10s infinite;
+        }
+
+        @keyframes float-up {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        /* ヘッダー */
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px 0;
+            position: relative;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--mint-green), var(--sky-blue));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 5px 15px rgba(0, 217, 163, 0.3);
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .level-badge {
+            background: linear-gradient(135deg, var(--gold), var(--sunset-orange));
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), var(--deep-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.3);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .avatar:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* メインコンテナ */
+        .main-container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 40px;
+            display: grid;
+            grid-template-columns: 1fr 400px 1fr;
+            gap: 40px;
+            min-height: calc(100vh - 200px);
+            position: relative;
+        }
+
+        /* カードスタイル */
+        .zone-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .zone-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .zone-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .zone-card:hover::before {
+            opacity: 0.5;
+        }
+
+        /* 発表会ゾーン */
+        .presentation-zone {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(232, 255, 248, 0.95));
+            position: relative;
+        }
+
+        .zone-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .zone-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .zone-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--mint-green), var(--sky-blue));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            box-shadow: 0 8px 20px rgba(0, 217, 163, 0.3);
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .zone-description {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* ステージエフェクト */
+        .stage-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(180deg, rgba(255, 215, 0, 0.1) 0%, transparent 100%);
+            overflow: hidden;
+        }
+
+        .spotlight {
+            position: absolute;
+            width: 100px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: spotlight-move 3s ease-in-out infinite;
+        }
+
+        @keyframes spotlight-move {
+            0% { transform: translateX(-100px); }
+            100% { transform: translateX(500px); }
+        }
+
+        /* 今月のテーマカード */
+        .current-theme {
+            background: linear-gradient(135deg, var(--mint-green), var(--sky-blue));
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 217, 163, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .current-theme:hover {
+            transform: scale(1.02);
+        }
+
+        .current-theme::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        .theme-label {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .theme-title {
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .theme-date {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .countdown {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: 700;
+        }
+
+        /* 参加者アバター */
+        .participants {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .participant-avatars {
+            display: flex;
+            margin-left: -10px;
+        }
+
+        .participant-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), var(--deep-purple));
+            border: 3px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            margin-left: -10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .participant-avatar:hover {
+            transform: scale(1.2) translateY(-5px);
+            z-index: 10;
+        }
+
+        .participant-count {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        /* アクションボタン */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.5s ease, height 0.5s ease;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--mint-green);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-3px);
+        }
+
+        /* リストセクション */
+        .list-section {
+            margin-top: 40px;
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .list-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .view-all {
+            color: var(--mint-green);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .view-all:hover {
+            transform: translateX(5px);
+        }
+
+        .list-items {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .list-item {
+            background: rgba(0, 217, 163, 0.05);
+            border: 1px solid rgba(0, 217, 163, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .list-item:hover {
+            background: rgba(0, 217, 163, 0.1);
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 217, 163, 0.2);
+        }
+
+        .list-item-info {
+            flex: 1;
+        }
+
+        .list-item-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .list-item-date {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .list-item-badge {
+            background: var(--mint-green);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* 中央の未来の木 */
+        .future-tree-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .tree-canvas {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            border-radius: 30px;
+            overflow: hidden;
+        }
+
+        /* 木のSVGアニメーション */
+        .tree-svg {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .tree-trunk {
+            fill: #8B6F47;
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.2));
+        }
+
+        .tree-leaves {
+            fill: url(#leafGradient);
+            filter: drop-shadow(0 5px 15px rgba(0, 217, 163, 0.3));
+            animation: sway 5s ease-in-out infinite;
+            transform-origin: center bottom;
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
+        }
+
+        .tree-flower {
+            fill: var(--sunset-orange);
+            animation: bloom 3s ease-in-out infinite;
+            transform-origin: center;
+        }
+
+        @keyframes bloom {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .tree-fruit {
+            fill: var(--gold);
+            animation: grow 4s ease-in-out infinite;
+            transform-origin: center;
+        }
+
+        @keyframes grow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        /* 水やりアニメーション */
+        .water-drops {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .water-drop {
+            position: absolute;
+            width: 10px;
+            height: 15px;
+            background: linear-gradient(180deg, rgba(0, 191, 255, 0.6), rgba(0, 191, 255, 0.3));
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            animation: fall 1s ease-in-out infinite;
+            opacity: 0;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+        }
+
+        /* ツリーステータス */
+        .tree-status {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 350px;
+            width: 100%;
+        }
+
+        .tree-level {
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--mint-green), var(--sky-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+
+        .tree-progress {
+            background: rgba(0, 217, 163, 0.1);
+            border-radius: 15px;
+            height: 20px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .tree-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--mint-green), var(--sky-blue));
+            width: 65%;
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tree-progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .tree-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .tree-stat {
+            text-align: center;
+        }
+
+        .tree-stat-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .tree-stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .tree-stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* 課題解決ゾーン */
+        .solution-zone {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 232, 232, 0.95));
+            position: relative;
+        }
+
+        .lab-effect {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 100px;
+            height: 100px;
+            opacity: 0.1;
+        }
+
+        .lab-effect::before,
+        .lab-effect::after {
+            content: '';
+            position: absolute;
+            border: 2px solid var(--sunset-orange);
+            border-radius: 50%;
+            animation: pulse-ring 2s ease-in-out infinite;
+        }
+
+        .lab-effect::before {
+            width: 100%;
+            height: 100%;
+        }
+
+        .lab-effect::after {
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .current-project {
+            background: linear-gradient(135deg, var(--sunset-orange), var(--purple));
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 20px;
+        }
+
+        .project-info {
+            flex: 1;
+        }
+
+        .project-partner {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .partner-logo {
+            width: 30px;
+            height: 30px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .project-progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .project-progress-bar {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .project-progress-fill {
+            height: 100%;
+            background: white;
+            width: 45%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /* インパクトメーター */
+        .impact-meter {
+            background: rgba(255, 107, 107, 0.05);
+            border: 1px solid rgba(255, 107, 107, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .impact-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+        }
+
+        .impact-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .impact-icon {
+            font-size: 48px;
+            color: var(--sunset-orange);
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .impact-value {
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--sunset-orange);
+        }
+
+        .impact-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* AIアシスタント */
+        .ai-assistant {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .ai-bubble {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--purple), var(--deep-purple));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(155, 89, 182, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .ai-bubble:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(155, 89, 182, 0.5);
+        }
+
+        .ai-bubble::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid var(--purple);
+            animation: pulse-ring 2s ease-in-out infinite;
+        }
+
+        .ai-message {
+            position: absolute;
+            bottom: 90px;
+            right: 0;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .ai-message.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .ai-message-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .ai-avatar {
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, var(--purple), var(--deep-purple));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .ai-name {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .ai-text {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* モバイルレスポンシブ */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .future-tree-container {
+                order: -1;
+            }
+
+            .tree-canvas {
+                height: 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .main-container {
+                padding: 0 20px;
+            }
+
+            .zone-card {
+                padding: 30px 20px;
+            }
+
+            .zone-title {
+                font-size: 24px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .tree-status {
+                max-width: 100%;
+            }
+
+            .ai-message {
+                width: 250px;
+                right: -180px;
+            }
+        }
+
+        /* ローディングアニメーション */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(103, 126, 234, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+
+        .loading-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .loading-text {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .loading-subtext {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        /* 実績バッジ */
+        .achievement-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .achievement-popup.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .achievement-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 1s ease infinite;
+        }
+
+        .achievement-title {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .achievement-description {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .achievement-reward {
+            background: linear-gradient(135deg, var(--gold), var(--sunset-orange));
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        /* ツールチップ */
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+
+        .tooltip-content {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-primary);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            margin-bottom: 10px;
+        }
+
+        .tooltip-content::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid var(--text-primary);
+        }
+
+        .tooltip:hover .tooltip-content {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* サウンドインジケーター */
+        .sound-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .sound-indicator:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .sound-indicator.muted {
+            color: var(--text-secondary);
+        }
+
+        .sound-indicator.playing {
+            color: var(--mint-green);
+        }
+
+        .sound-waves {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .sound-indicator.playing .sound-waves::before,
+        .sound-indicator.playing .sound-waves::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--mint-green);
+            border-radius: 50%;
+            animation: sound-wave 1.5s ease-out infinite;
+        }
+
+        .sound-indicator.playing .sound-waves::after {
+            animation-delay: 0.5s;
+        }
+
+        @keyframes sound-wave {
+            0% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ナビゲーション（共通） -->
+    <div data-include="partials/navigation.html"></div>
+
+    <!-- ローディング画面 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-icon">🌱</div>
+            <div class="loading-text">ミライクラフト</div>
+            <div class="loading-subtext">未来を創造中...</div>
+        </div>
+    </div>
+
+    <!-- 背景エフェクト -->
+    <div class="background-container">
+        <div class="geometric-bg"></div>
+        <div class="particles" id="particles"></div>
+    </div>
+
+    <!-- ヘッダー -->
+    <header class="header">
+        <div class="header-content">
+            <a href="#" class="logo">
+                <div class="logo-icon">🚀</div>
+                <span class="logo-text">ミライクラフト</span>
+            </a>
+            <div class="user-info">
+                <div class="level-badge">
+                    <i class="fas fa-star"></i>
+                    <span>芽生えレベル Lv.3</span>
+                </div>
+                <div class="avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="main-container">
+        <!-- 発表会ゾーン -->
+        <section class="zone-card presentation-zone">
+            <div class="stage-effect">
+                <div class="spotlight"></div>
+            </div>
+            
+            <div class="zone-header">
+                <h2 class="zone-title">
+                    <div class="zone-icon">🎭</div>
+                    発表会
+                </h2>
+                <p class="zone-description">
+                    3ヶ月に1回の定期開催。飛び入り参加OK。
+                </p>
+            </div>
+
+            <!-- 今月のテーマ -->
+            <div class="current-theme">
+                <div class="theme-label">今月のテーマ</div>
+                <h3 class="theme-title">AIと創る未来の教育</h3>
+                <div class="theme-date">
+                    <i class="fas fa-calendar"></i>
+                    <span>2024年3月15日（金）18:00〜</span>
+                    <span class="countdown">あと5日</span>
+                </div>
+                <div class="participants">
+                    <div class="participant-avatars">
+                        <div class="participant-avatar">A</div>
+                        <div class="participant-avatar" style="background: linear-gradient(135deg, #00D9A3, #00BFFF);">B</div>
+                        <div class="participant-avatar" style="background: linear-gradient(135deg, #FF6B6B, #FFD700);">C</div>
+                        <div class="participant-avatar">+</div>
+                    </div>
+                    <span class="participant-count">12名参加予定</span>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary">
+                        <i class="fas fa-rocket"></i>
+                        参加する
+                    </button>
+                    <a href="#quest" class="btn btn-secondary">
+                        <i class="fas fa-graduation-cap"></i>
+                        参加前にクエストに挑戦
+                    </a>
+                </div>
+            </div>
+
+            <!-- 過去の発表会 -->
+            <div class="list-section">
+                <div class="list-header">
+                    <h3 class="list-title">過去の発表会</h3>
+                    <a href="#" class="view-all">
+                        すべて見る
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="list-items">
+                    <div class="list-item">
+                        <div class="list-item-info">
+                            <div class="list-item-title">SDGsとテクノロジー</div>
+                            <div class="list-item-date">2024年12月 • 参加者18名</div>
+                        </div>
+                        <span class="list-item-badge">アーカイブ</span>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-item-info">
+                            <div class="list-item-title">メタバースの可能性</div>
+                            <div class="list-item-date">2024年9月 • 参加者25名</div>
+                        </div>
+                        <span class="list-item-badge">アーカイブ</span>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-item-info">
+                            <div class="list-item-title">未来の働き方</div>
+                            <div class="list-item-date">2024年6月 • 参加者22名</div>
+                        </div>
+                        <span class="list-item-badge">アーカイブ</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 中央：未来の木 -->
+        <section class="future-tree-container">
+            <div class="tree-canvas">
+                <svg class="tree-svg" viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="leafGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#00D9A3;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#00BFFF;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    
+                    <!-- 幹 -->
+                    <path class="tree-trunk" d="M180 400 Q200 350 200 300 Q200 250 190 200 L210 200 Q200 250 200 300 Q200 350 220 400 Z" />
+                    
+                    <!-- 葉っぱ -->
+                    <ellipse class="tree-leaves" cx="200" cy="150" rx="120" ry="140" />
+                    
+                    <!-- 花（進行中のプロジェクト） -->
+                    <circle class="tree-flower" cx="150" cy="120" r="15" />
+                    <circle class="tree-flower" cx="250" cy="140" r="15" />
+                    <circle class="tree-flower" cx="180" cy="180" r="15" />
+                    
+                    <!-- 実（完成したプロジェクト） -->
+                    <circle class="tree-fruit" cx="220" cy="100" r="20" />
+                    <circle class="tree-fruit" cx="170" cy="150" r="20" />
+                </svg>
+                
+                <!-- 水やりエフェクト -->
+                <div class="water-drops" id="waterDrops"></div>
+            </div>
+            
+            <!-- ツリーステータス -->
+            <div class="tree-status">
+                <h3 class="tree-level">未来の木 Lv.7</h3>
+                <div class="tree-progress">
+                    <div class="tree-progress-bar"></div>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                    みんなの活動で木が成長します
+                </p>
+                <div class="tree-stats">
+                    <div class="tree-stat">
+                        <div class="tree-stat-icon">🌸</div>
+                        <div class="tree-stat-value">5</div>
+                        <div class="tree-stat-label">進行中</div>
+                    </div>
+                    <div class="tree-stat">
+                        <div class="tree-stat-icon">🍎</div>
+                        <div class="tree-stat-value">12</div>
+                        <div class="tree-stat-label">完成</div>
+                    </div>
+                    <div class="tree-stat">
+                        <div class="tree-stat-icon">💧</div>
+                        <div class="tree-stat-value">89</div>
+                        <div class="tree-stat-label">貢献度</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 課題解決ゾーン -->
+        <section class="zone-card solution-zone">
+            <div class="lab-effect"></div>
+            
+            <div class="zone-header">
+                <h2 class="zone-title">
+                    <div class="zone-icon" style="background: linear-gradient(135deg, var(--sunset-orange), var(--purple));">
+                        🔬
+                    </div>
+                    課題解決
+                </h2>
+                <p class="zone-description">
+                    地域のお店と協力し商品開発・販売を目指そう。
+                </p>
+            </div>
+
+            <!-- 現在のプロジェクト -->
+            <div class="current-project">
+                <div class="project-header">
+                    <div class="project-info">
+                        <div class="theme-label">現在のプロジェクト</div>
+                        <h3 class="theme-title">地域カフェの新メニュー開発</h3>
+                    </div>
+                    <div class="project-partner">
+                        <div class="partner-logo">☕</div>
+                        <span>Cafe Mirai</span>
+                    </div>
+                </div>
+                
+                <div class="project-progress-info">
+                    <span>進捗状況</span>
+                    <span>45%</span>
+                </div>
+                <div class="project-progress-bar">
+                    <div class="project-progress-fill"></div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary">
+                        <i class="fas fa-users"></i>
+                        チームに参加
+                    </button>
+                    <a href="#quest" class="btn btn-secondary">
+                        <i class="fas fa-book"></i>
+                        参加前にクエストに挑戦
+                    </a>
+                </div>
+            </div>
+
+            <!-- インパクトメーター -->
+            <div class="impact-meter">
+                <h4 class="impact-title">社会へのインパクト</h4>
+                <div class="impact-visual">
+                    <div class="impact-icon">❤️</div>
+                    <div>
+                        <div class="impact-value">1,234</div>
+                        <div class="impact-label">人の笑顔を創出</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 過去のプロジェクト -->
+            <div class="list-section">
+                <div class="list-header">
+                    <h3 class="list-title">過去のプロジェクト</h3>
+                    <a href="#" class="view-all">
+                        すべて見る
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="list-items">
+                    <div class="list-item" style="background: rgba(255, 107, 107, 0.05); border-color: rgba(255, 107, 107, 0.2);">
+                        <div class="list-item-info">
+                            <div class="list-item-title">エコバッグデザインプロジェクト</div>
+                            <div class="list-item-date">2024年11月完了 • スーパーマーケット連携</div>
+                        </div>
+                        <span class="list-item-badge" style="background: var(--gold);">商品化</span>
+                    </div>
+                    <div class="list-item" style="background: rgba(255, 107, 107, 0.05); border-color: rgba(255, 107, 107, 0.2);">
+                        <div class="list-item-info">
+                            <div class="list-item-title">高齢者向けアプリ開発</div>
+                            <div class="list-item-date">2024年8月完了 • 福祉施設連携</div>
+                        </div>
+                        <span class="list-item-badge" style="background: var(--purple);">実装済</span>
+                    </div>
+                    <div class="list-item" style="background: rgba(255, 107, 107, 0.05); border-color: rgba(255, 107, 107, 0.2);">
+                        <div class="list-item-info">
+                            <div class="list-item-title">地域マップ作成</div>
+                            <div class="list-item-date">2024年5月完了 • 観光協会連携</div>
+                        </div>
+                        <span class="list-item-badge" style="background: var(--mint-green);">配布中</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- AIアシスタント -->
+    <div class="ai-assistant">
+        <div class="ai-bubble" id="aiBubble">
+            🤖
+        </div>
+        <div class="ai-message" id="aiMessage">
+            <div class="ai-message-header">
+                <div class="ai-avatar">🤖</div>
+                <span class="ai-name">ミライちゃん</span>
+            </div>
+            <p class="ai-text">
+                こんにちは！ミライクラフトへようこそ！<br>
+                発表会やプロジェクトに参加して、一緒に未来を創りましょう✨
+            </p>
+        </div>
+    </div>
+
+    <!-- サウンドインジケーター -->
+    <div class="sound-indicator muted" id="soundIndicator">
+        <i class="fas fa-volume-mute"></i>
+        <div class="sound-waves"></div>
+    </div>
+
+    <!-- 実績ポップアップ -->
+    <div class="achievement-popup" id="achievementPopup">
+        <div class="achievement-icon">🏆</div>
+        <h3 class="achievement-title">初めての訪問！</h3>
+        <p class="achievement-description">
+            ミライクラフトへようこそ！<br>
+            未来創造の第一歩を踏み出しました
+        </p>
+        <div class="achievement-reward">
+            <i class="fas fa-gem"></i>
+            <span>+100 ミライポイント</span>
+        </div>
+    </div>
+
+    <script>
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // ローディング画面を非表示
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                
+                // 初回訪問チェック
+                checkFirstVisit();
+                
+                // AIアシスタント表示
+                setTimeout(() => {
+                    showAIMessage();
+                }, 1000);
+            }, 1500);
+
+            // パーティクル生成
+            createParticles();
+            
+            // イベントリスナー設定
+            setupEventListeners();
+            
+            // アニメーション開始
+            startAnimations();
+        });
+
+        // パーティクル生成
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.animationDuration = (Math.random() * 5 + 10) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // 初回訪問チェック
+        function checkFirstVisit() {
+            const hasVisited = localStorage.getItem('miraiCraftVisited');
+            
+            if (!hasVisited) {
+                localStorage.setItem('miraiCraftVisited', 'true');
+                
+                // 実績ポップアップ表示
+                setTimeout(() => {
+                    showAchievement();
+                }, 2000);
+            }
+        }
+
+        // 実績表示
+        function showAchievement() {
+            const popup = document.getElementById('achievementPopup');
+            popup.classList.add('show');
+            
+            // 効果音（実装時）
+            playSound('achievement');
+            
+            // 5秒後に非表示
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 5000);
+        }
+
+        // AIメッセージ表示
+        function showAIMessage() {
+            const message = document.getElementById('aiMessage');
+            message.classList.add('show');
+            
+            // 5秒後に非表示
+            setTimeout(() => {
+                message.classList.remove('show');
+            }, 5000);
+        }
+
+        // イベントリスナー設定
+        function setupEventListeners() {
+            // AIアシスタント
+            const aiBubble = document.getElementById('aiBubble');
+            const aiMessage = document.getElementById('aiMessage');
+            
+            aiBubble.addEventListener('click', () => {
+                aiMessage.classList.toggle('show');
+            });
+            
+            // サウンドインジケーター
+            const soundIndicator = document.getElementById('soundIndicator');
+            soundIndicator.addEventListener('click', () => {
+                toggleSound();
+            });
+            
+            // カードホバーエフェクト
+            document.querySelectorAll('.list-item').forEach(item => {
+                item.addEventListener('mouseenter', () => {
+                    playSound('hover');
+                });
+            });
+            
+            // ボタンクリックエフェクト
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    createRipple(e);
+                    playSound('click');
+                });
+            });
+            
+            // 木に水やり
+            const treeCanvas = document.querySelector('.tree-canvas');
+            treeCanvas.addEventListener('click', () => {
+                waterTree();
+            });
+        }
+
+        // アニメーション開始
+        function startAnimations() {
+            // プログレスバーアニメーション
+            setTimeout(() => {
+                document.querySelector('.tree-progress-bar').style.width = '65%';
+                document.querySelector('.project-progress-fill').style.width = '45%';
+            }, 500);
+            
+            // カウントダウン更新
+            updateCountdown();
+            setInterval(updateCountdown, 60000); // 1分ごとに更新
+        }
+
+        // カウントダウン更新
+        function updateCountdown() {
+            const countdownEl = document.querySelector('.countdown');
+            const eventDate = new Date('2024-03-15T18:00:00');
+            const now = new Date();
+            const diff = eventDate - now;
+            
+            if (diff > 0) {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                
+                if (days > 0) {
+                    countdownEl.textContent = `あと${days}日`;
+                } else {
+                    countdownEl.textContent = `あと${hours}時間`;
+                }
+            } else {
+                countdownEl.textContent = '開催中！';
+                countdownEl.style.background = 'var(--mint-green)';
+            }
+        }
+
+        // 木に水やり
+        function waterTree() {
+            const waterDrops = document.getElementById('waterDrops');
+            
+            // 水滴を生成
+            for (let i = 0; i < 10; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'water-drop';
+                drop.style.left = (Math.random() * 80 + 10) + '%';
+                drop.style.animationDelay = (Math.random() * 0.5) + 's';
+                waterDrops.appendChild(drop);
+                
+                // アニメーション後に削除
+                setTimeout(() => {
+                    drop.remove();
+                }, 1500);
+            }
+            
+            // プログレスバー更新
+            const progressBar = document.querySelector('.tree-progress-bar');
+            const currentWidth = parseFloat(progressBar.style.width) || 65;
+            const newWidth = Math.min(currentWidth + 2, 100);
+            progressBar.style.width = newWidth + '%';
+            
+            // 効果音
+            playSound('water');
+            
+            // 貢献度更新
+            const statValue = document.querySelector('.tree-stat-value:last-child');
+            const currentValue = parseInt(statValue.textContent);
+            statValue.textContent = currentValue + 1;
+        }
+
+        // リップルエフェクト
+        function createRipple(e) {
+            const button = e.currentTarget;
+            const ripple = document.createElement('span');
+            const rect = button.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+            
+            ripple.style.cssText = `
+                position: absolute;
+                width: ${size}px;
+                height: ${size}px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.5);
+                left: ${x}px;
+                top: ${y}px;
+                transform: scale(0);
+                animation: ripple 0.6s ease-out;
+            `;
+            
+            button.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        }
+
+        // サウンド管理
+        let soundEnabled = false;
+        
+        function toggleSound() {
+            const indicator = document.getElementById('soundIndicator');
+            soundEnabled = !soundEnabled;
+            
+            if (soundEnabled) {
+                indicator.classList.add('playing');
+                indicator.innerHTML = '<i class="fas fa-volume-up"></i><div class="sound-waves"></div>';
+                playSound('toggle');
+            } else {
+                indicator.classList.remove('playing');
+                indicator.classList.add('muted');
+                indicator.innerHTML = '<i class="fas fa-volume-mute"></i><div class="sound-waves"></div>';
+            }
+        }
+        
+        function playSound(type) {
+            if (!soundEnabled) return;
+            
+            // 実際の実装では、Web Audio APIやHowler.jsなどを使用
+            console.log(`Playing sound: ${type}`);
+            
+            // サウンドタイプに応じた処理
+            switch(type) {
+                case 'click':
+                    // クリック音
+                    break;
+                case 'hover':
+                    // ホバー音
+                    break;
+                case 'water':
+                    // 水やり音
+                    break;
+                case 'achievement':
+                    // 実績獲得音
+                    break;
+                case 'toggle':
+                    // トグル音
+                    break;
+            }
+        }
+
+        // リップルアニメーション用CSS追加
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // ページ遷移アニメーション
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                if (link.getAttribute('href').startsWith('#')) {
+                    e.preventDefault();
+                    const target = link.getAttribute('href');
+                    
+                    // フェードアウト
+                    document.body.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        // 実際の遷移処理
+                        window.location.href = target;
+                    }, 300);
+                }
+            });
+        });
+
+        // スクロールパララックス効果
+        let ticking = false;
+        function updateParallax() {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const scrolled = window.pageYOffset;
+                    const geometricBg = document.querySelector('.geometric-bg');
+                    
+                    if (geometricBg) {
+                        geometricBg.style.transform = `translateY(${scrolled * 0.5}px)`;
+                    }
+                    
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }
+        
+        window.addEventListener('scroll', updateParallax);
+
+        // マウス追従エフェクト（デスクトップのみ）
+        if (window.innerWidth > 768) {
+            let mouseX = 0;
+            let mouseY = 0;
+            let currentX = 0;
+            let currentY = 0;
+            
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+            
+            function animateMouseFollower() {
+                currentX += (mouseX - currentX) * 0.1;
+                currentY += (mouseY - currentY) * 0.1;
+                
+                const cards = document.querySelectorAll('.zone-card');
+                cards.forEach((card, index) => {
+                    const rect = card.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    
+                    const angleX = (currentY - centerY) * 0.0001;
+                    const angleY = (currentX - centerX) * 0.0001;
+                    
+                    card.style.transform = `perspective(1000px) rotateX(${-angleX}deg) rotateY(${angleY}deg)`;
+                });
+                
+                requestAnimationFrame(animateMouseFollower);
+            }
+            
+            animateMouseFollower();
+        }
+
+        // デバッグ用ショートカット
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'a') {
+                showAchievement();
+            } else if (e.key === 'm') {
+                showAIMessage();
+            } else if (e.key === 'w') {
+                waterTree();
+            }
+        });
+
+        // パフォーマンス最適化：Intersection Observer
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    
+                    // アニメーションを一度だけ実行
+                    if (entry.target.classList.contains('tree-progress-bar')) {
+                        entry.target.style.width = '65%';
+                    } else if (entry.target.classList.contains('project-progress-fill')) {
+                        entry.target.style.width = '45%';
+                    }
+                }
+            });
+        }, observerOptions);
+
+        // 監視対象要素を追加
+        document.querySelectorAll('.zone-card, .tree-status, .list-item').forEach(el => {
+            observer.observe(el);
+        });
+
+        // タッチデバイス対応
+        if ('ontouchstart' in window) {
+            document.body.classList.add('touch-device');
+            
+            // タッチイベントでもリップルエフェクト
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.addEventListener('touchstart', (e) => {
+                    const touch = e.touches[0];
+                    const mockEvent = {
+                        currentTarget: btn,
+                        clientX: touch.clientX,
+                        clientY: touch.clientY
+                    };
+                    createRipple(mockEvent);
+                });
+            });
+        }
+
+        // ローカルストレージでの進捗保存
+        function saveProgress() {
+            const progress = {
+                treeLevel: document.querySelector('.tree-level').textContent,
+                treeProgress: document.querySelector('.tree-progress-bar').style.width,
+                contributions: document.querySelector('.tree-stat-value:last-child').textContent,
+                lastVisit: new Date().toISOString()
+            };
+            
+            localStorage.setItem('miraiCraftProgress', JSON.stringify(progress));
+        }
+
+        // 進捗の読み込み
+        function loadProgress() {
+            const saved = localStorage.getItem('miraiCraftProgress');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                // 必要に応じて進捗を復元
+                console.log('Previous progress:', progress);
+            }
+        }
+
+        // ページ離脱時に進捗を保存
+        window.addEventListener('beforeunload', saveProgress);
+
+        // 進捗を読み込み
+        loadProgress();
+
+        // レスポンシブ対応の追加処理
+        function handleResize() {
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                // モバイル用の調整
+                document.querySelectorAll('.particle').forEach(p => {
+                    p.style.width = '2px';
+                    p.style.height = '2px';
+                });
+            }
+        }
+
+        window.addEventListener('resize', handleResize);
+        handleResize();
+
+        // 完了メッセージ
+        console.log('🌱 ミライクラフトへようこそ！未来を一緒に創りましょう！');
+    </script>
+    <script src="js/include.js"></script>
+</body>
+</html>remove('muted');
+                indicator.classList.
