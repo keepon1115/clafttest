@@ -1,0 +1,39 @@
+{
+  "name": "CLAFT - Creative Learning and Future Thinking",
+  "short_name": "CLAFT",
+  "description": "創造的学習と未来思考のプラットフォーム",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFCEB",
+  "theme_color": "#29B6F6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["education", "productivity", "utilities"],
+  "screenshots": [
+    {
+      "src": "screenshots/desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "screenshots/mobile.png",
+      "sizes": "375x812",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ]
+} 
