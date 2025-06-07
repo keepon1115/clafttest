@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>users_profileテーブル作成ツール</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        button {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .sql-code {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .table-spec {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .column-spec {
+            display: grid;
+            grid-template-columns: 1fr 1fr 2fr;
+            gap: 10px;
+            padding: 8px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .column-spec:last-child {
+            border-bottom: none;
+        }
+        .column-name {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .column-type {
+            color: #28a745;
+            font-family: monospace;
+        }
+        .column-desc {
+            color: #6c757d;
+            font-size: 13px;
+        }
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .step-number {
+            background: #007bff;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗄️ users_profileテーブル作成ツール</h1>
+        <p><strong>プロジェクトURL:</strong> https://laqvpxecqvlufboquffe.supabase.co</p>
+        
+        <div id="status" class="status info">
+            Supabaseクライアント初期化中...
+        </div>
+
+        <div class="table-spec">
+            <h2>📋 テーブル仕様</h2>
+            <p><strong>テーブル名:</strong> users_profile</p>
+            <p><strong>説明:</strong> ユーザープロフィール情報を格納するテーブル</p>
+            
+            <h3>カラム構成</h3>
+            <div class="column-spec">
+                <div class="column-name">id</div>
+                <div class="column-type">UUID</div>
+                <div class="column-desc">Primary Key, auth.usersのidを参照</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">email</div>
+                <div class="column-type">TEXT</div>
+                <div class="column-desc">NOT NULL, メールアドレス</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">nickname</div>
+                <div class="column-type">TEXT</div>
+                <div class="column-desc">ニックネーム</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">character_type</div>
+                <div class="column-type">TEXT</div>
+                <div class="column-desc">キャラクタータイプ</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">catchphrase</div>
+                <div class="column-type">TEXT</div>
+                <div class="column-desc">キャッチフレーズ</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">strengths</div>
+                <div class="column-type">TEXT[]</div>
+                <div class="column-desc">強み（配列）</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">weaknesses</div>
+                <div class="column-type">TEXT[]</div>
+                <div class="column-desc">弱み（配列）</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">favorite_time_place</div>
+                <div class="column-type">TEXT</div>
+                <div class="column-desc">お気に入りの時間・場所</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">energy_charge_method</div>
+                <div class="column-type">TEXT</div>
+                <div class="column-desc">エネルギーチャージ方法</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">adventure_partner</div>
+                <div class="column-type">TEXT</div>
+                <div class="column-desc">冒険パートナー</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">comment</div>
+                <div class="column-type">TEXT</div>
+                <div class="column-desc">コメント</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">avatar_icon</div>
+                <div class="column-type">TEXT</div>
+                <div class="column-desc">デフォルト値: 'fa-user'</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">created_at</div>
+                <div class="column-type">TIMESTAMPTZ</div>
+                <div class="column-desc">デフォルト値: NOW()</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">updated_at</div>
+                <div class="column-type">TIMESTAMPTZ</div>
+                <div class="column-desc">デフォルト値: NOW()</div>
+            </div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>テーブル作成SQL</strong>
+            <div class="sql-code" id="createTableSQL">-- users_profileテーブル作成SQL
+CREATE TABLE public.users_profile (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT NOT NULL,
+    nickname TEXT,
+    character_type TEXT,
+    catchphrase TEXT,
+    strengths TEXT[],
+    weaknesses TEXT[],
+    favorite_time_place TEXT,
+    energy_charge_method TEXT,
+    adventure_partner TEXT,
+    comment TEXT,
+    avatar_icon TEXT DEFAULT 'fa-user',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- updated_at自動更新のためのトリガー関数
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- updated_atトリガー作成
+CREATE TRIGGER update_users_profile_updated_at
+    BEFORE UPDATE ON public.users_profile
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();</div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>RLS（Row Level Security）設定SQL</strong>
+            <div class="sql-code" id="rlsSQL">-- RLS有効化
+ALTER TABLE public.users_profile ENABLE ROW LEVEL SECURITY;
+
+-- 全員が全てのプロフィールを閲覧可能
+CREATE POLICY "Everyone can view all profiles" ON public.users_profile
+    FOR SELECT USING (true);
+
+-- 自分のプロフィールのみ挿入可能
+CREATE POLICY "Users can insert their own profile" ON public.users_profile
+    FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- 自分のプロフィールのみ更新可能
+CREATE POLICY "Users can update their own profile" ON public.users_profile
+    FOR UPDATE USING (auth.uid() = id);</div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">3</span>
+            <strong>インデックス作成SQL（オプション）</strong>
+            <div class="sql-code" id="indexSQL">-- パフォーマンス向上のためのインデックス
+CREATE INDEX idx_users_profile_email ON public.users_profile(email);
+CREATE INDEX idx_users_profile_nickname ON public.users_profile(nickname);
+CREATE INDEX idx_users_profile_character_type ON public.users_profile(character_type);</div>
+        </div>
+
+        <div>
+            <button onclick="checkTableExists()" id="checkBtn">🔍 テーブル存在確認</button>
+            <button onclick="copySQL()" id="copyBtn">📋 SQLをコピー</button>
+            <button onclick="openSupabaseDashboard()" id="dashboardBtn">🌐 Supabaseダッシュボードを開く</button>
+        </div>
+        
+        <div id="results"></div>
+
+        <div class="status warning">
+            <h3>⚠️ 重要な注意事項</h3>
+            <p><strong>テーブル作成方法:</strong></p>
+            <ol>
+                <li>「📋 SQLをコピー」ボタンでSQLをコピー</li>
+                <li>「🌐 Supabaseダッシュボードを開く」でダッシュボードにアクセス</li>
+                <li>SQL EditorでコピーしたSQLを実行</li>
+            </ol>
+            <p>JavaScriptクライアントからは直接DDL（テーブル作成）は実行できないため、ダッシュボードでの実行が必要です。</p>
+        </div>
+    </div>
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // Supabaseクライアント変数
+        let supabase;
+        
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                // Supabaseクライアントを初期化
+                const supabaseUrl = 'https://laqvpxecqvlufboquffe.supabase.co';
+                const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcXZweGVjcXZsdWZib3F1ZmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MzYwNjgsImV4cCI6MjA2NDAxMjA2OH0.IRkg1miEpOGIFQMnno_P0hsMe1IgwCi2kl_kNcrmZTw';
+                
+                if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                    supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+                    
+                    document.getElementById('status').innerHTML = '✅ Supabaseクライアント初期化完了！';
+                    document.getElementById('status').className = 'status success';
+                    
+                    console.log('Supabaseクライアント初期化成功:', supabase);
+                } else {
+                    throw new Error('Supabaseライブラリが読み込まれていません');
+                }
+                
+            } catch (error) {
+                console.error('初期化エラー:', error);
+                document.getElementById('status').innerHTML = '❌ 初期化エラー: ' + error.message;
+                document.getElementById('status').className = 'status error';
+            }
+        });
+
+        // テーブル存在確認
+        async function checkTableExists() {
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                statusDiv.innerHTML = '🔍 テーブル存在確認中...';
+                statusDiv.className = 'status info';
+                
+                // テーブルからデータを取得してみる
+                const { data, error, count } = await supabase
+                    .from('users_profile')
+                    .select('*', { count: 'exact' })
+                    .limit(1);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                statusDiv.innerHTML = '✅ テーブル存在確認完了';
+                statusDiv.className = 'status success';
+                
+                resultsDiv.innerHTML = `
+                    <div class="status success">
+                        <h3>✅ users_profileテーブルが存在します</h3>
+                        <p><strong>レコード数:</strong> ${count}件</p>
+                        <p><strong>確認時刻:</strong> ${new Date().toLocaleString('ja-JP')}</p>
+                        <p>テーブルは正常に作成されており、使用可能です。</p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                statusDiv.innerHTML = '❌ テーブルが存在しません';
+                statusDiv.className = 'status warning';
+                
+                resultsDiv.innerHTML = `
+                    <div class="status warning">
+                        <h3>⚠️ users_profileテーブルが見つかりません</h3>
+                        <p><strong>エラー:</strong> ${error.message}</p>
+                        <p><strong>対処法:</strong></p>
+                        <ol>
+                            <li>「📋 SQLをコピー」ボタンでSQLをコピー</li>
+                            <li>「🌐 Supabaseダッシュボードを開く」でダッシュボードにアクセス</li>
+                            <li>SQL EditorでコピーしたSQLを実行してテーブルを作成</li>
+                        </ol>
+                    </div>
+                `;
+            }
+        }
+
+        // SQLコピー
+        function copySQL() {
+            const createTableSQL = document.getElementById('createTableSQL').textContent;
+            const rlsSQL = document.getElementById('rlsSQL').textContent;
+            const indexSQL = document.getElementById('indexSQL').textContent;
+            
+            const fullSQL = `${createTableSQL}\n\n${rlsSQL}\n\n${indexSQL}`;
+            
+            navigator.clipboard.writeText(fullSQL).then(() => {
+                const statusDiv = document.getElementById('status');
+                statusDiv.innerHTML = '📋 SQLをクリップボードにコピーしました！Supabaseダッシュボードで実行してください。';
+                statusDiv.className = 'status success';
+                
+                setTimeout(() => {
+                    statusDiv.innerHTML = '✅ Supabaseクライアント初期化完了！';
+                    statusDiv.className = 'status success';
+                }, 3000);
+            }).catch(err => {
+                console.error('コピーエラー:', err);
+                alert('SQLのコピーに失敗しました。手動でコピーしてください。');
+            });
+        }
+
+        // Supabaseダッシュボードを開く
+        function openSupabaseDashboard() {
+            const projectUrl = 'https://supabase.com/dashboard/project/laqvpxecqvlufboquffe/editor';
+            window.open(projectUrl, '_blank');
+        }
+    </script>
+</body>
+</html>

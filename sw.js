@@ -1,4 +1,4 @@
-const CACHE_NAME = 'claft-cache-v2';
+const CACHE_NAME = 'claft-cache-v3';
 const urlsToCache = [
   './',
   './index.html',
@@ -6,9 +6,12 @@ const urlsToCache = [
   './quest.html',
   './mirai.html',
   './yononaka.html',
+  './admin.html',
   './css/navigation.css',
+  './css/auth.css',
   './js/include.js',
   './js/supabase.js',
+  './js/auth.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './manifest.json'

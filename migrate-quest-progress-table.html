@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>quest_progressテーブルマイグレーションツール</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .danger {
+            background-color: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+        button {
+            background: linear-gradient(135deg, #fd7e14 0%, #dc3545 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .sql-code {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .table-spec {
+            background: #fff3e0;
+            border: 1px solid #ffcc02;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .column-spec {
+            display: grid;
+            grid-template-columns: 1fr 1fr 2fr;
+            gap: 10px;
+            padding: 8px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .column-spec:last-child {
+            border-bottom: none;
+        }
+        .column-name {
+            font-weight: bold;
+            color: #fd7e14;
+        }
+        .column-type {
+            color: #dc3545;
+            font-family: monospace;
+        }
+        .column-desc {
+            color: #6c757d;
+            font-size: 13px;
+        }
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #fd7e14;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .step-number {
+            background: #fd7e14;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .migration-warning {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 quest_progressテーブルマイグレーションツール</h1>
+        <p><strong>プロジェクトURL:</strong> https://laqvpxecqvlufboquffe.supabase.co</p>
+        
+        <div id="status" class="status info">
+            Supabaseクライアント初期化中...
+        </div>
+
+        <div class="migration-warning">
+            <h2>⚠️ 重要な警告</h2>
+            <p><strong>このマイグレーションは以下の操作を行います：</strong></p>
+            <ul>
+                <li>🗑️ 既存の<code>claft-quest</code>テーブルを完全に削除</li>
+                <li>📊 新しい<code>quest_progress</code>テーブルを作成</li>
+                <li>💾 <strong>既存のデータは全て失われます</strong></li>
+            </ul>
+            <p><strong>実行前に必ずデータのバックアップを取ってください！</strong></p>
+        </div>
+
+        <div class="table-spec">
+            <h2>📋 新しいテーブル仕様</h2>
+            <p><strong>テーブル名:</strong> quest_progress</p>
+            <p><strong>説明:</strong> ユーザーのクエスト進行状況を管理するテーブル（承認機能付き）</p>
+            
+            <h3>カラム構成</h3>
+            <div class="column-spec">
+                <div class="column-name">id</div>
+                <div class="column-type">UUID</div>
+                <div class="column-desc">Primary Key, 自動生成</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">user_id</div>
+                <div class="column-type">UUID</div>
+                <div class="column-desc">auth.usersのidを参照</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">stage_id</div>
+                <div class="column-type">INTEGER</div>
+                <div class="column-desc">NOT NULL, ステージID</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">status</div>
+                <div class="column-type">TEXT</div>
+                <div class="column-desc">'locked', 'current', 'completed', 'pending_approval'</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">google_form_submitted</div>
+                <div class="column-type">BOOLEAN</div>
+                <div class="column-desc">デフォルト値: FALSE</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">submitted_at</div>
+                <div class="column-type">TIMESTAMPTZ</div>
+                <div class="column-desc">提出日時</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">approved_at</div>
+                <div class="column-type">TIMESTAMPTZ</div>
+                <div class="column-desc">承認日時</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">approved_by</div>
+                <div class="column-type">UUID</div>
+                <div class="column-desc">承認者のユーザーID</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">created_at</div>
+                <div class="column-type">TIMESTAMPTZ</div>
+                <div class="column-desc">デフォルト値: NOW()</div>
+            </div>
+            <div class="column-spec">
+                <div class="column-name">updated_at</div>
+                <div class="column-type">TIMESTAMPTZ</div>
+                <div class="column-desc">デフォルト値: NOW()</div>
+            </div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>既存テーブル削除SQL</strong>
+            <div class="sql-code" id="dropTableSQL">-- 既存のclaft-questテーブルを削除
+-- 注意: この操作は元に戻せません！
+DROP TABLE IF EXISTS public."claft-quest" CASCADE;</div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>新しいテーブル作成SQL</strong>
+            <div class="sql-code" id="createTableSQL">-- quest_progressテーブル作成SQL
+CREATE TABLE public.quest_progress (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    stage_id INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'locked',
+    google_form_submitted BOOLEAN DEFAULT FALSE NOT NULL,
+    submitted_at TIMESTAMPTZ,
+    approved_at TIMESTAMPTZ,
+    approved_by UUID REFERENCES auth.users(id),
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    
+    -- 制約の追加
+    CONSTRAINT quest_progress_user_stage_unique UNIQUE (user_id, stage_id),
+    CONSTRAINT quest_progress_status_check CHECK (status IN ('locked', 'current', 'completed', 'pending_approval')),
+    CONSTRAINT quest_progress_stage_id_check CHECK (stage_id > 0)
+);
+
+-- updated_at自動更新のためのトリガー関数
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- updated_atトリガー作成
+CREATE TRIGGER update_quest_progress_updated_at
+    BEFORE UPDATE ON public.quest_progress
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();</div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">3</span>
+            <strong>RLS（Row Level Security）設定SQL</strong>
+            <div class="sql-code" id="rlsSQL">-- RLS有効化
+ALTER TABLE public.quest_progress ENABLE ROW LEVEL SECURITY;
+
+-- 自分の進行状況のみ閲覧可能
+CREATE POLICY "Users can view their own progress" ON public.quest_progress
+    FOR SELECT USING (auth.uid() = user_id);
+
+-- 自分の進行状況のみ挿入可能
+CREATE POLICY "Users can insert their own progress" ON public.quest_progress
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- 自分の進行状況のみ更新可能
+CREATE POLICY "Users can update their own progress" ON public.quest_progress
+    FOR UPDATE USING (auth.uid() = user_id);
+
+-- 管理者は全て閲覧可能（管理者判定は別途実装が必要）
+-- 例: メタデータにroleを設定している場合
+-- CREATE POLICY "Admins can view all progress" ON public.quest_progress
+--     FOR SELECT USING (
+--         EXISTS (
+--             SELECT 1 FROM auth.users 
+--             WHERE id = auth.uid() 
+--             AND raw_user_meta_data->>'role' = 'admin'
+--         )
+--     );
+
+-- 管理者は全て編集可能
+-- CREATE POLICY "Admins can update all progress" ON public.quest_progress
+--     FOR UPDATE USING (
+--         EXISTS (
+--             SELECT 1 FROM auth.users 
+--             WHERE id = auth.uid() 
+--             AND raw_user_meta_data->>'role' = 'admin'
+--         )
+--     );</div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">4</span>
+            <strong>インデックス作成SQL（オプション）</strong>
+            <div class="sql-code" id="indexSQL">-- パフォーマンス向上のためのインデックス
+CREATE INDEX idx_quest_progress_user_id ON public.quest_progress(user_id);
+CREATE INDEX idx_quest_progress_stage_id ON public.quest_progress(stage_id);
+CREATE INDEX idx_quest_progress_status ON public.quest_progress(status);
+CREATE INDEX idx_quest_progress_submitted_at ON public.quest_progress(submitted_at);
+CREATE INDEX idx_quest_progress_approved_at ON public.quest_progress(approved_at);</div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">5</span>
+            <strong>便利な関数（オプション）</strong>
+            <div class="sql-code" id="functionsSQL">-- クエスト進行状況更新関数
+CREATE OR REPLACE FUNCTION update_quest_status(
+    p_user_id UUID,
+    p_stage_id INTEGER,
+    p_new_status TEXT,
+    p_google_form_submitted BOOLEAN DEFAULT NULL
+)
+RETURNS VOID AS $$
+BEGIN
+    -- 進行状況を更新
+    UPDATE public.quest_progress 
+    SET 
+        status = p_new_status,
+        google_form_submitted = COALESCE(p_google_form_submitted, google_form_submitted),
+        submitted_at = CASE 
+            WHEN p_new_status = 'pending_approval' AND submitted_at IS NULL 
+            THEN NOW() 
+            ELSE submitted_at 
+        END,
+        approved_at = CASE 
+            WHEN p_new_status = 'completed' AND approved_at IS NULL 
+            THEN NOW() 
+            ELSE approved_at 
+        END,
+        updated_at = NOW()
+    WHERE user_id = p_user_id AND stage_id = p_stage_id;
+    
+    -- レコードが存在しない場合は新規作成
+    IF NOT FOUND THEN
+        INSERT INTO public.quest_progress (user_id, stage_id, status, google_form_submitted, submitted_at, approved_at)
+        VALUES (
+            p_user_id, 
+            p_stage_id, 
+            p_new_status, 
+            COALESCE(p_google_form_submitted, FALSE),
+            CASE WHEN p_new_status = 'pending_approval' THEN NOW() ELSE NULL END,
+            CASE WHEN p_new_status = 'completed' THEN NOW() ELSE NULL END
+        );
+    END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ユーザーの進行状況取得関数
+CREATE OR REPLACE FUNCTION get_user_quest_progress(p_user_id UUID)
+RETURNS TABLE (
+    stage_id INTEGER,
+    status TEXT,
+    google_form_submitted BOOLEAN,
+    submitted_at TIMESTAMPTZ,
+    approved_at TIMESTAMPTZ
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        qp.stage_id,
+        qp.status,
+        qp.google_form_submitted,
+        qp.submitted_at,
+        qp.approved_at
+    FROM public.quest_progress qp
+    WHERE qp.user_id = p_user_id
+    ORDER BY qp.stage_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;</div>
+        </div>
+
+        <div>
+            <button onclick="checkOldTableExists()" id="checkOldBtn">🔍 既存テーブル確認</button>
+            <button onclick="checkNewTableExists()" id="checkNewBtn">🔍 新テーブル確認</button>
+            <button onclick="copySQL()" id="copyBtn">📋 マイグレーションSQLをコピー</button>
+            <button onclick="openSupabaseDashboard()" id="dashboardBtn">🌐 Supabaseダッシュボードを開く</button>
+        </div>
+        
+        <div id="results"></div>
+
+        <div class="status danger">
+            <h3>🚨 マイグレーション実行前の確認事項</h3>
+            <ol>
+                <li><strong>データバックアップ:</strong> 既存のclaft-questテーブルのデータをバックアップ</li>
+                <li><strong>アプリケーション停止:</strong> マイグレーション中はアプリケーションを停止</li>
+                <li><strong>SQL確認:</strong> コピーしたSQLの内容を十分に確認</li>
+                <li><strong>段階的実行:</strong> 一度に全てではなく、段階的にSQLを実行</li>
+            </ol>
+        </div>
+
+        <div class="status warning">
+            <h3>⚠️ 実行手順</h3>
+            <ol>
+                <li>「📋 マイグレーションSQLをコピー」ボタンでSQLをコピー</li>
+                <li>「🌐 Supabaseダッシュボードを開く」でダッシュボードにアクセス</li>
+                <li>SQL Editorで段階的にSQLを実行</li>
+                <li>「🔍 新テーブル確認」で作成を確認</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // Supabaseクライアント変数
+        let supabase;
+        
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                // Supabaseクライアントを初期化
+                const supabaseUrl = 'https://laqvpxecqvlufboquffe.supabase.co';
+                const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcXZweGVjcXZsdWZib3F1ZmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MzYwNjgsImV4cCI6MjA2NDAxMjA2OH0.IRkg1miEpOGIFQMnno_P0hsMe1IgwCi2kl_kNcrmZTw';
+                
+                if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                    supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+                    
+                    document.getElementById('status').innerHTML = '✅ Supabaseクライアント初期化完了！';
+                    document.getElementById('status').className = 'status success';
+                    
+                    console.log('Supabaseクライアント初期化成功:', supabase);
+                } else {
+                    throw new Error('Supabaseライブラリが読み込まれていません');
+                }
+                
+            } catch (error) {
+                console.error('初期化エラー:', error);
+                document.getElementById('status').innerHTML = '❌ 初期化エラー: ' + error.message;
+                document.getElementById('status').className = 'status error';
+            }
+        });
+
+        // 既存テーブル存在確認
+        async function checkOldTableExists() {
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                statusDiv.innerHTML = '🔍 既存テーブル確認中...';
+                statusDiv.className = 'status info';
+                
+                // 既存のclaft-questテーブルを確認
+                const { data, error, count } = await supabase
+                    .from('claft-quest')
+                    .select('*', { count: 'exact' })
+                    .limit(1);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                statusDiv.innerHTML = '✅ 既存テーブル確認完了';
+                statusDiv.className = 'status success';
+                
+                resultsDiv.innerHTML = `
+                    <div class="status warning">
+                        <h3>⚠️ claft-questテーブルが存在します</h3>
+                        <p><strong>レコード数:</strong> ${count}件</p>
+                        <p><strong>確認時刻:</strong> ${new Date().toLocaleString('ja-JP')}</p>
+                        <p><strong>注意:</strong> マイグレーション実行時にこのテーブルとデータは削除されます。</p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                statusDiv.innerHTML = '✅ 既存テーブルは存在しません';
+                statusDiv.className = 'status success';
+                
+                resultsDiv.innerHTML = `
+                    <div class="status success">
+                        <h3>✅ claft-questテーブルは存在しません</h3>
+                        <p><strong>エラー:</strong> ${error.message}</p>
+                        <p>マイグレーションを安全に実行できます。</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 新テーブル存在確認
+        async function checkNewTableExists() {
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                statusDiv.innerHTML = '🔍 新テーブル確認中...';
+                statusDiv.className = 'status info';
+                
+                // 新しいquest_progressテーブルを確認
+                const { data, error, count } = await supabase
+                    .from('quest_progress')
+                    .select('*', { count: 'exact' })
+                    .limit(1);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                statusDiv.innerHTML = '✅ 新テーブル確認完了';
+                statusDiv.className = 'status success';
+                
+                resultsDiv.innerHTML = `
+                    <div class="status success">
+                        <h3>✅ quest_progressテーブルが存在します</h3>
+                        <p><strong>レコード数:</strong> ${count}件</p>
+                        <p><strong>確認時刻:</strong> ${new Date().toLocaleString('ja-JP')}</p>
+                        <p>マイグレーションが正常に完了しています。</p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                statusDiv.innerHTML = '❌ 新テーブルが存在しません';
+                statusDiv.className = 'status warning';
+                
+                resultsDiv.innerHTML = `
+                    <div class="status warning">
+                        <h3>⚠️ quest_progressテーブルが見つかりません</h3>
+                        <p><strong>エラー:</strong> ${error.message}</p>
+                        <p><strong>対処法:</strong> マイグレーションSQLを実行してテーブルを作成してください。</p>
+                    </div>
+                `;
+            }
+        }
+
+        // SQLコピー
+        function copySQL() {
+            const dropTableSQL = document.getElementById('dropTableSQL').textContent;
+            const createTableSQL = document.getElementById('createTableSQL').textContent;
+            const rlsSQL = document.getElementById('rlsSQL').textContent;
+            const indexSQL = document.getElementById('indexSQL').textContent;
+            const functionsSQL = document.getElementById('functionsSQL').textContent;
+            
+            const fullSQL = `-- ===== quest_progressテーブルマイグレーション =====
+-- 注意: 既存のclaft-questテーブルとデータが削除されます！
+
+${dropTableSQL}
+
+${createTableSQL}
+
+${rlsSQL}
+
+${indexSQL}
+
+${functionsSQL}`;
+            
+            navigator.clipboard.writeText(fullSQL).then(() => {
+                const statusDiv = document.getElementById('status');
+                statusDiv.innerHTML = '📋 マイグレーションSQLをクリップボードにコピーしました！Supabaseダッシュボードで段階的に実行してください。';
+                statusDiv.className = 'status success';
+                
+                setTimeout(() => {
+                    statusDiv.innerHTML = '✅ Supabaseクライアント初期化完了！';
+                    statusDiv.className = 'status success';
+                }, 4000);
+            }).catch(err => {
+                console.error('コピーエラー:', err);
+                alert('SQLのコピーに失敗しました。手動でコピーしてください。');
+            });
+        }
+
+        // Supabaseダッシュボードを開く
+        function openSupabaseDashboard() {
+            const projectUrl = 'https://supabase.com/dashboard/project/laqvpxecqvlufboquffe/editor';
+            window.open(projectUrl, '_blank');
+        }
+    </script>
+</body>
+</html>
