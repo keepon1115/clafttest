@@ -16,6 +16,12 @@
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/navigation.css">
+    
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- 認証モジュール CSS -->
+    <link rel="stylesheet" href="css/auth.css">
     <style>
         * {
             margin: 0;
@@ -1584,6 +1590,78 @@
             animation: confettifall 3s linear forwards;
             pointer-events: none; /* クリックイベントを透過 */
         }
+
+        /* 認証状態表示スタイル */
+        .auth-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .auth-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .login-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .login-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .logout-btn {
+            background: rgba(220, 53, 69, 0.8);
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background: rgba(220, 53, 69, 1);
+            transform: translateY(-2px);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-details {
+            text-align: right;
+        }
+
+        .user-name {
+            display: block;
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .user-stats {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
     </style>
 </head>
 <body>
@@ -1610,18 +1688,30 @@
                     <p id="subGreeting">今日も素晴らしい冒険を始めましょう</p>
                 </div>
             </div>
-            <div class="achievements">
-                <div class="achievement-badge gold">
-                    🏆
-                    <span class="tooltip">初心者の証</span>
+            <div class="auth-status">
+                <!-- ログイン前 -->
+                <button data-auth-action="login" class="auth-btn login-btn" style="display: none;">
+                    <i class="fas fa-sign-in-alt"></i> ログイン/登録
+                </button>
+                
+                <!-- ログイン後 -->
+                <div class="user-info" id="userInfo" style="display: none;">
+                    <div class="user-details">
+                        <span class="user-name" id="headerUserName">ユーザー名</span>
+                        <div class="user-stats">
+                            <span class="stat-item">
+                                <i class="fas fa-calendar-check"></i>
+                                <span id="loginCount">0</span>回ログイン
+                            </span>
+                            <span class="stat-item">
+                                <i class="fas fa-trophy"></i>
+                                <span id="questClearCount">0</span>クエストクリア
+                            </span>
                 </div>
-                <div class="achievement-badge silver">
-                    ⭐
-                    <span class="tooltip">連続ログイン5日</span>
                 </div>
-                <div class="achievement-badge bronze">
-                    🎯
-                    <span class="tooltip">クエスト達成10回</span>
+                    <button data-auth-action="logout" class="auth-btn logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> ログアウト
+                    </button>
                 </div>
             </div>
         </div>
@@ -1934,7 +2024,258 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        // index.html用の動的データ読み込み関数
+
+        // 認証状態が変更されたときの処理
+        window.onAuthStateChanged = async function(user) {
+            if (user) {
+                // ログイン時の処理
+                await loadUserData();
+                await loadUserStats();
+                updateUIForLoggedIn(user);
+            } else {
+                // ログアウト時の処理
+                updateUIForLoggedOut();
+            }
+        };
+
+        // ユーザーデータの読み込み
+        async function loadUserData() {
+            const user = authManager.getCurrentUser();
+            if (!user) return;
+
+            try {
+                // プロフィールデータの取得
+                const { data: profile, error } = await supabase
+                    .from('users_profile')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (error) throw error;
+
+                if (profile) {
+                    // プロフィール情報の反映
+                    updateProfileDisplay(profile);
+                }
+            } catch (error) {
+                console.error('プロフィール読み込みエラー:', error);
+            }
+        }
+
+        // プロフィール表示の更新
+        function updateProfileDisplay(profile) {
+            // 基本情報
+            document.getElementById('profileName').textContent = profile.nickname || 'たろう';
+            document.getElementById('playerName').textContent = profile.nickname || 'たろう';
+            document.getElementById('characterText').textContent = profile.character_type || '冒険大好き！挑戦者タイプ';
+            document.getElementById('catchphraseText').textContent = profile.catchphrase || '「新しいことにチャレンジだ！」';
+
+            // 強み
+            const strengthTags = document.getElementById('strengthTags');
+            strengthTags.innerHTML = '';
+            if (profile.strengths && profile.strengths.length > 0) {
+                profile.strengths.forEach(strength => {
+                    const tag = document.createElement('span');
+                    tag.className = 'ability-tag';
+                    tag.textContent = strength;
+                    strengthTags.appendChild(tag);
+                });
+            } else {
+                strengthTags.innerHTML = '<span class="ability-tag">プログラミング</span><span class="ability-tag">デザイン</span><span class="ability-tag">問題解決</span>';
+            }
+
+            // 弱み
+            const weaknessTags = document.getElementById('weaknessTags');
+            weaknessTags.innerHTML = '';
+            if (profile.weaknesses && profile.weaknesses.length > 0) {
+                profile.weaknesses.forEach(weakness => {
+                    const tag = document.createElement('span');
+                    tag.className = 'ability-tag';
+                    tag.textContent = weakness;
+                    weaknessTags.appendChild(tag);
+                });
+            } else {
+                weaknessTags.innerHTML = '<span class="ability-tag">時間管理</span><span class="ability-tag">朝起き</span>';
+            }
+
+            // その他の情報
+            document.getElementById('favoriteTime').textContent = profile.favorite_time_place || 'カフェでコーヒーを飲みながらコーディング';
+            document.getElementById('energyCharge').textContent = profile.energy_charge_method || '音楽を聴きながら散歩する';
+            document.getElementById('adventurePartner').textContent = profile.adventure_partner || '新しいアイデアをシェアできるクリエイティブな仲間';
+            document.getElementById('commentText').textContent = profile.comment || '毎日が新しい冒険！プログラミングを通じて、世界をもっと便利で楽しい場所にしたいです。一緒に素晴らしいものを作りましょう！';
+
+            // アバターアイコンの更新
+            if (profile.avatar_icon) {
+                const avatarIcon = document.querySelector('.avatar-container i');
+                avatarIcon.className = `fas ${profile.avatar_icon}`;
+            }
+        }
+
+        // ユーザー統計の読み込み
+        async function loadUserStats() {
+            const user = authManager.getCurrentUser();
+            if (!user) return;
+
+            try {
+                // 統計データの取得
+                const { data: stats, error } = await supabase
+                    .from('user_stats')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') throw error;
+
+                if (stats) {
+                    updateStatsDisplay(stats);
+                }
+
+                // クエスト進行状況の取得
+                const { data: questProgress, error: questError } = await supabase
+                    .from('quest_progress')
+                    .select('*')
+                    .eq('user_id', user.id);
+
+                if (!questError && questProgress) {
+                    updateQuestStats(questProgress);
+                }
+            } catch (error) {
+                console.error('統計読み込みエラー:', error);
+            }
+        }
+
+        // 統計表示の更新
+        function updateStatsDisplay(stats) {
+            // ヘッダーの統計情報更新
+            document.getElementById('loginCount').textContent = stats.login_count || 0;
+            document.getElementById('questClearCount').textContent = stats.quest_clear_count || 0;
+
+            // レベルと経験値の計算
+            const level = stats.current_level || 1;
+            const exp = stats.total_exp || 0;
+            const expForNextLevel = level * 100; // レベル × 100 = 次のレベルに必要な経験値
+            const currentLevelExp = (level - 1) * 100;
+            const progressPercent = ((exp - currentLevelExp) / (expForNextLevel - currentLevelExp)) * 100;
+
+            // 経験値バーの更新
+            const expBar = document.getElementById('expBar');
+            if (expBar) {
+                expBar.style.width = `${Math.min(progressPercent, 100)}%`;
+            }
+
+            // レベル表示の更新（ヘッダーに追加する場合）
+            updateLevelDisplay(level);
+        }
+
+        // クエスト統計の更新
+        function updateQuestStats(questProgress) {
+            const completedCount = questProgress.filter(q => q.status === 'completed').length;
+            
+            // クエストクリア数をヘッダーに反映
+            document.getElementById('questClearCount').textContent = completedCount;
+        }
+
+        // レベル表示の更新
+        function updateLevelDisplay(level) {
+            // レベル表示要素が存在しない場合は作成
+            let levelDisplay = document.getElementById('userLevel');
+            if (!levelDisplay) {
+                const playerInfo = document.querySelector('.player-info');
+                if (playerInfo) {
+                    levelDisplay = document.createElement('div');
+                    levelDisplay.id = 'userLevel';
+                    levelDisplay.className = 'user-level';
+                    levelDisplay.style.cssText = 'background: linear-gradient(135deg, var(--gold), var(--yellow)); color: var(--text-dark); padding: 5px 15px; border-radius: 20px; font-weight: 700; font-size: 14px; margin-left: 20px;';
+                    playerInfo.appendChild(levelDisplay);
+                }
+            }
+            
+            if (levelDisplay) {
+                levelDisplay.textContent = `Lv.${level}`;
+            }
+        }
+
+        // ログイン時のUI更新
+        function updateUIForLoggedIn(user) {
+            // 認証状態表示の更新
+            const loginBtn = document.querySelector('[data-auth-action="login"]');
+            const userInfo = document.getElementById('userInfo');
+            
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (userInfo) {
+                userInfo.style.display = 'flex';
+                const headerUserName = document.getElementById('headerUserName');
+                if (headerUserName) {
+                    headerUserName.textContent = user.user_metadata?.display_name || user.email.split('@')[0];
+                }
+            }
+
+            // プロフィール編集ボタンを有効化
+            const editBtn = document.querySelector('.edit-profile-btn');
+            if (editBtn) {
+                editBtn.onclick = () => {
+                    window.location.href = 'profile.html';
+                };
+            }
+        }
+
+        // ログアウト時のUI更新
+        function updateUIForLoggedOut() {
+            // 認証状態表示の更新
+            const loginBtn = document.querySelector('[data-auth-action="login"]');
+            const userInfo = document.getElementById('userInfo');
+            
+            if (loginBtn) loginBtn.style.display = 'block';
+            if (userInfo) userInfo.style.display = 'none';
+
+            // デフォルト値に戻す
+            resetToDefaultValues();
+        }
+
+        // デフォルト値にリセット
+        function resetToDefaultValues() {
+            document.getElementById('profileName').textContent = 'ゲスト';
+            document.getElementById('playerName').textContent = 'ゲスト';
+            document.getElementById('characterText').textContent = '冒険大好き！挑戦者タイプ';
+            document.getElementById('catchphraseText').textContent = '「新しいことにチャレンジだ！」';
+            document.getElementById('favoriteTime').textContent = 'カフェでコーヒーを飲みながらコーディング';
+            document.getElementById('energyCharge').textContent = '音楽を聴きながら散歩する';
+            document.getElementById('adventurePartner').textContent = '新しいアイデアをシェアできるクリエイティブな仲間';
+            document.getElementById('commentText').textContent = '毎日が新しい冒険！プログラミングを通じて、世界をもっと便利で楽しい場所にしたいです。一緒に素晴らしいものを作りましょう！';
+            
+            // 統計情報をリセット
+            document.getElementById('loginCount').textContent = '0';
+            document.getElementById('questClearCount').textContent = '0';
+            
+            // 経験値バーをリセット
+            const expBar = document.getElementById('expBar');
+            if (expBar) {
+                expBar.style.width = '0%';
+            }
+
+            // 強み・弱みタグをデフォルトに
+            const strengthTags = document.getElementById('strengthTags');
+            if (strengthTags) {
+                strengthTags.innerHTML = '<span class="ability-tag">プログラミング</span><span class="ability-tag">デザイン</span><span class="ability-tag">問題解決</span>';
+            }
+            
+            const weaknessTags = document.getElementById('weaknessTags');
+            if (weaknessTags) {
+                weaknessTags.innerHTML = '<span class="ability-tag">時間管理</span><span class="ability-tag">朝起き</span>';
+            }
+
+            // レベル表示を削除
+            const levelDisplay = document.getElementById('userLevel');
+            if (levelDisplay) {
+                levelDisplay.remove();
+            }
+        }
+
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dashboard initialization started');
+            
             // スキルタブのアクティブ切り替え (オプション)
             const skillTabs = document.querySelectorAll('.skill-tab:not(.locked)');
             skillTabs.forEach(tab => {
@@ -1943,12 +2284,18 @@
                     this.classList.add('active');
                 });
             });
+
+            // 初期状態でデフォルト値を表示
+            resetToDefaultValues();
         });
 
         function goToProfileEdit() {
-            console.log("プロフィール編集ページへ遷移します（仮実装）");
-            // 例: window.location.href = '/profile-edit.html';
-            showNotification('info', 'ページ遷移', 'プロフィール編集ページへ移動します。');
+            if (authManager.isLoggedIn()) {
+                window.location.href = 'profile.html';
+            } else {
+                showNotification('info', 'ログインが必要です', 'プロフィール編集にはログインが必要です。');
+                authManager.showAuthModal();
+            }
         }
 
         // --- レベルアップモーダル関連 ---
@@ -2047,6 +2394,9 @@
 
     </script>
     <script src="js/include.js"></script>
+    
+    <!-- 認証モジュール -->
+    <script src="js/auth.js"></script>
     
     <!-- PWA Service Worker 登録 -->
     <script>

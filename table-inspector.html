@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabaseテーブル構造確認</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .table-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .table-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        .column-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .column-item {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+        .column-name {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗄️ Supabaseテーブル構造確認</h1>
+        <p><strong>プロジェクトURL:</strong> https://laqvpxecqvlufboquffe.supabase.co</p>
+        
+        <div id="status" class="status info">
+            Supabaseクライアント初期化中...
+        </div>
+        
+        <div>
+            <button onclick="inspectTables()" id="inspectBtn">📊 テーブル構造を確認</button>
+            <button onclick="checkAuth()" id="authBtn">🔐 認証状態確認</button>
+            <button onclick="testConnection()" id="connectBtn">🔗 接続テスト</button>
+        </div>
+        
+        <div id="stats" class="stats" style="display: none;"></div>
+        <div id="results"></div>
+    </div>
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // Supabaseクライアント変数
+        let supabase;
+        
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                // Supabaseクライアントを初期化
+                const supabaseUrl = 'https://laqvpxecqvlufboquffe.supabase.co';
+                const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcXZweGVjcXZsdWZib3F1ZmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MzYwNjgsImV4cCI6MjA2NDAxMjA2OH0.IRkg1miEpOGIFQMnno_P0hsMe1IgwCi2kl_kNcrmZTw';
+                
+                if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+                    supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+                    
+                    document.getElementById('status').innerHTML = '✅ Supabaseクライアント初期化完了！';
+                    document.getElementById('status').className = 'status success';
+                    
+                    console.log('Supabaseクライアント初期化成功:', supabase);
+                } else {
+                    throw new Error('Supabaseライブラリが読み込まれていません');
+                }
+                
+            } catch (error) {
+                console.error('初期化エラー:', error);
+                document.getElementById('status').innerHTML = '❌ 初期化エラー: ' + error.message;
+                document.getElementById('status').className = 'status error';
+            }
+        });
+        
+        // テーブル構造確認関数
+        async function inspectTables() {
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            const statsDiv = document.getElementById('stats');
+            const inspectBtn = document.getElementById('inspectBtn');
+            
+            if (!supabase) {
+                statusDiv.innerHTML = '❌ Supabaseクライアントが初期化されていません';
+                statusDiv.className = 'status error';
+                return;
+            }
+            
+            try {
+                inspectBtn.disabled = true;
+                inspectBtn.innerHTML = '🔄 確認中...';
+                statusDiv.innerHTML = '🔍 テーブル構造を確認中...';
+                statusDiv.className = 'status info';
+                
+                // 既知のテーブルを確認
+                const knownTables = ['claft-quest', 'profiles', 'users', 'auth.users'];
+                const tableResults = [];
+                
+                for (const tableName of knownTables) {
+                    try {
+                        console.log(`テーブル ${tableName} を確認中...`);
+                        
+                        // テーブルの存在確認とサンプルデータ取得
+                        const { data, error, count } = await supabase
+                            .from(tableName)
+                            .select('*', { count: 'exact' })
+                            .limit(1);
+                        
+                        if (!error) {
+                            const columns = data && data.length > 0 ? Object.keys(data[0]) : [];
+                            tableResults.push({
+                                name: tableName,
+                                exists: true,
+                                columns: columns,
+                                rowCount: count || 0,
+                                sampleData: data
+                            });
+                            console.log(`✅ テーブル ${tableName} 確認完了:`, { columns, rowCount: count });
+                        } else {
+                            console.log(`❌ テーブル ${tableName} エラー:`, error);
+                            tableResults.push({
+                                name: tableName,
+                                exists: false,
+                                error: error.message
+                            });
+                        }
+                    } catch (tableError) {
+                        console.log(`❌ テーブル ${tableName} 例外:`, tableError);
+                        tableResults.push({
+                            name: tableName,
+                            exists: false,
+                            error: tableError.message
+                        });
+                    }
+                }
+                
+                // 結果表示
+                const existingTables = tableResults.filter(t => t.exists);
+                const totalRows = existingTables.reduce((sum, t) => sum + t.rowCount, 0);
+                const totalColumns = existingTables.reduce((sum, t) => sum + t.columns.length, 0);
+                
+                statusDiv.innerHTML = `✅ テーブル構造確認完了！ ${existingTables.length}個のテーブルが見つかりました`;
+                statusDiv.className = 'status success';
+                
+                // 統計情報表示
+                if (existingTables.length > 0) {
+                    statsDiv.innerHTML = `
+                        <div class="stat-card">
+                            <div class="stat-number">${existingTables.length}</div>
+                            <div class="stat-label">アクセス可能なテーブル</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${totalRows}</div>
+                            <div class="stat-label">総レコード数</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${totalColumns}</div>
+                            <div class="stat-label">総カラム数</div>
+                        </div>
+                    `;
+                    statsDiv.style.display = 'grid';
+                }
+                
+                // テーブル詳細表示
+                let resultsHTML = '<h2>📋 テーブル一覧</h2>';
+                
+                if (existingTables.length > 0) {
+                    existingTables.forEach(table => {
+                        resultsHTML += `
+                            <div class="table-info">
+                                <div class="table-name">📊 ${table.name}</div>
+                                <p><strong>レコード数:</strong> ${table.rowCount}件</p>
+                                <p><strong>カラム数:</strong> ${table.columns.length}個</p>
+                                <div class="column-list">
+                                    ${table.columns.map(col => `
+                                        <div class="column-item">
+                                            <div class="column-name">${col}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    resultsHTML += '<div class="status warning">アクセス可能なテーブルが見つかりませんでした。</div>';
+                }
+                
+                // アクセスできないテーブル
+                const inaccessibleTables = tableResults.filter(t => !t.exists);
+                if (inaccessibleTables.length > 0) {
+                    resultsHTML += `
+                        <div class="status warning">
+                            <h3>⚠️ アクセスできないテーブル</h3>
+                            <p>以下のテーブルは存在しないか、アクセス権限がありません：</p>
+                            <ul>
+                                ${inaccessibleTables.map(t => `<li><strong>${t.name}</strong> - ${t.error}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                resultsDiv.innerHTML = resultsHTML;
+                
+            } catch (error) {
+                statusDiv.innerHTML = '❌ テーブル構造確認エラー: ' + error.message;
+                statusDiv.className = 'status error';
+                console.error('テーブル構造確認エラー:', error);
+            } finally {
+                inspectBtn.disabled = false;
+                inspectBtn.innerHTML = '📊 テーブル構造を確認';
+            }
+        }
+        
+        // 認証状態確認
+        async function checkAuth() {
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                
+                if (error) throw error;
+                
+                statusDiv.innerHTML = '✅ 認証状態確認完了';
+                statusDiv.className = 'status success';
+                
+                resultsDiv.innerHTML = `
+                    <h2>🔐 認証情報</h2>
+                    <div class="table-info">
+                        <p><strong>セッション状態:</strong> ${session ? 'ログイン中' : '未ログイン'}</p>
+                        <p><strong>ユーザーID:</strong> ${session?.user?.id || 'なし'}</p>
+                        <p><strong>メールアドレス:</strong> ${session?.user?.email || 'なし'}</p>
+                        <p><strong>最終ログイン:</strong> ${session?.user?.last_sign_in_at ? new Date(session.user.last_sign_in_at).toLocaleString('ja-JP') : 'なし'}</p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                statusDiv.innerHTML = '❌ 認証確認エラー: ' + error.message;
+                statusDiv.className = 'status error';
+                console.error('認証確認エラー:', error);
+            }
+        }
+        
+        // 接続テスト
+        async function testConnection() {
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                statusDiv.innerHTML = '🔗 接続テスト中...';
+                statusDiv.className = 'status info';
+                
+                const { data, error } = await supabase.auth.getUser();
+                
+                if (error && error.message !== 'Auth session missing!') {
+                    throw error;
+                }
+                
+                statusDiv.innerHTML = '✅ Supabase接続成功！';
+                statusDiv.className = 'status success';
+                
+                resultsDiv.innerHTML = `
+                    <h2>🔗 接続情報</h2>
+                    <div class="table-info">
+                        <p><strong>プロジェクトURL:</strong> ${supabase.supabaseUrl}</p>
+                        <p><strong>接続状態:</strong> 正常</p>
+                        <p><strong>API バージョン:</strong> v2</p>
+                        <p><strong>認証状態:</strong> ${data.user ? 'ログイン済み' : '未ログイン'}</p>
+                        <p><strong>テスト実行時刻:</strong> ${new Date().toLocaleString('ja-JP')}</p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                statusDiv.innerHTML = '❌ 接続エラー: ' + error.message;
+                statusDiv.className = 'status error';
+                console.error('接続エラー:', error);
+            }
+        }
+    </script>
+</body>
+</html>

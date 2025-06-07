@@ -13,6 +13,12 @@
     <title>CLAFT クエストマップ - 冒険の書</title>
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/navigation.css">
+    
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- 認証モジュール CSS -->
+    <link rel="stylesheet" href="css/auth.css">
     <style>
         /* CSSは前回と変更なしのため、ここでは省略します */
         /* (実際のファイルでは、前回のCSSがここにそのまま入ります) */
@@ -106,165 +112,27 @@
         .loading-content p { color: #654321; font-weight: bold; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* 認証関連スタイル */
-        .auth-status { 
-            position: fixed; 
-            top: 80px; 
-            right: 20px; 
-            background: rgba(255, 255, 255, 0.95); 
-            border: 3px solid #333; 
-            padding: 12px 16px; 
-            border-radius: 8px; 
-            box-shadow: 0 0 0 1px #666, 4px 4px 0 0 rgba(0,0,0,0.3); 
-            z-index: 999; 
-            min-width: 200px; 
-        }
-        .auth-loading { color: #666; font-size: 0.9rem; }
-        .auth-user-info { display: none; }
-        .auth-user-info.show { display: block; }
-        .auth-user-name { font-weight: bold; color: #333; margin-bottom: 4px; }
-        .auth-user-email { font-size: 0.8rem; color: #666; margin-bottom: 8px; }
-        .auth-logout-btn { 
-            background: #DC143C; 
-            color: white; 
-            border: 2px solid #B91C1C; 
-            padding: 6px 12px; 
-            font-size: 0.8rem; 
-            cursor: pointer; 
-            border-radius: 4px; 
-            transition: all 0.1s ease; 
-        }
-        .auth-logout-btn:hover { 
-            background: #B91C1C; 
-            transform: translate(-1px, -1px); 
-            box-shadow: 2px 2px 0 0 rgba(0,0,0,0.3); 
-        }
-        .auth-login-prompt { display: none; }
-        .auth-login-prompt.show { display: block; }
-        .auth-login-btn { 
-            background: #4CAF50; 
-            color: white; 
-            border: 2px solid #388E3C; 
-            padding: 8px 16px; 
-            font-size: 0.9rem; 
-            cursor: pointer; 
-            border-radius: 4px; 
-            transition: all 0.1s ease; 
-            margin-top: 8px; 
-        }
-        .auth-login-btn:hover { 
-            background: #388E3C; 
-            transform: translate(-1px, -1px); 
-            box-shadow: 2px 2px 0 0 rgba(0,0,0,0.3); 
+        /* pending_approval状態のスタイル */
+        .pending-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #FF9800;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            animation: pulse 2s ease-in-out infinite;
+            z-index: 10;
         }
         
-        .auth-modal-content { max-width: 450px; }
-        .auth-tabs { 
-            display: flex; 
-            margin-bottom: 20px; 
-            border-bottom: 3px solid #333; 
-        }
-        .auth-tab { 
-            flex: 1; 
-            padding: 12px; 
-            background: #E0E0E0; 
-            border: none; 
-            border-bottom: 3px solid transparent; 
-            cursor: pointer; 
-            font-weight: bold; 
-            transition: all 0.2s ease; 
-        }
-        .auth-tab.active { 
-            background: #FFF; 
-            border-bottom-color: #4CAF50; 
-            color: #4CAF50; 
-        }
-        .auth-tab:hover:not(.active) { background: #F0F0F0; }
-        
-        .auth-form h3 { 
-            color: #333; 
-            margin-bottom: 20px; 
-            text-align: center; 
-        }
-        .form-group { margin-bottom: 16px; }
-        .form-group label { 
-            display: block; 
-            margin-bottom: 6px; 
-            font-weight: bold; 
-            color: #333; 
-        }
-        .form-group input { 
-            width: 100%; 
-            padding: 12px; 
-            border: 3px solid #DDD; 
-            border-radius: 4px; 
-            font-size: 1rem; 
-            transition: border-color 0.2s ease; 
-        }
-        .form-group input:focus { 
-            outline: none; 
-            border-color: #4CAF50; 
-        }
-        .auth-submit-btn { 
-            width: 100%; 
-            padding: 14px; 
-            background: #4CAF50; 
-            color: white; 
-            border: 3px solid #388E3C; 
-            font-size: 1.1rem; 
-            font-weight: bold; 
-            cursor: pointer; 
-            border-radius: 4px; 
-            transition: all 0.1s ease; 
-            margin-bottom: 12px; 
-        }
-        .auth-submit-btn:hover { 
-            background: #388E3C; 
-            transform: translate(-2px, -2px); 
-            box-shadow: 4px 4px 0 0 rgba(0,0,0,0.3); 
-        }
-        .auth-submit-btn:active { 
-            transform: translate(1px, 1px); 
-            box-shadow: 1px 1px 0 0 rgba(0,0,0,0.3); 
-        }
-        .auth-submit-btn:disabled { 
-            background: #CCC; 
-            border-color: #999; 
-            cursor: not-allowed; 
-            transform: none; 
-            box-shadow: none; 
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
         
-        .auth-message { 
-            padding: 12px; 
-            border-radius: 4px; 
-            text-align: center; 
-            font-weight: bold; 
-            margin-top: 12px; 
-            display: none; 
-        }
-        .auth-message.success { 
-            background: #E8F5E9; 
-            border: 2px solid #4CAF50; 
-            color: #2E7D32; 
-            display: block; 
-        }
-        .auth-message.error { 
-            background: #FFEBEE; 
-            border: 2px solid #F44336; 
-            color: #C62828; 
-            display: block; 
-        }
-        
-        @media (max-width: 767px) { 
-            .auth-status { 
-                position: relative; 
-                top: 0; 
-                right: 0; 
-                margin-bottom: 20px; 
-                width: 100%; 
-            } 
-        }
+
     </style>
 </head>
 <body>
@@ -275,11 +143,6 @@
     <div class="loading-overlay" id="loadingOverlay"> <div class="loading-content"> <div class="loading-spinner"></div> <p>冒険の準備中...</p> </div> </div>
     
     <div class="container">
-        <!-- 認証状態表示 -->
-        <div class="auth-status" id="authStatus">
-            <div class="auth-loading">認証状態を確認中...</div>
-        </div>
-        
         <header class="map-header"> <h1>🗺️ CLAFT クエストマップ</h1> <p>きみだけの冒険物語をつくろう！</p> <button class="adventure-log-button" id="adventureLogBtn"> これまでの冒険を振り返る </button> </header>
         <div class="stage-grid" id="stageGrid">
             <!-- ステージ1 -->
@@ -360,273 +223,36 @@
     <button class="quest-button" id="mainQuestButton">🔥 次の冒険へ進む！</button>
     <div class="modal" id="stageModal"> <div class="modal-content"> <button class="modal-close" id="modalCloseBtn">×</button> <h2 class="modal-title" id="modalStageTitle"></h2> <p class="modal-description" id="modalStageDescription"></p> <div class="modal-message" id="modalStageMessage"></div> <div class="modal-buttons"> <button class="modal-button video" id="modalVideoBtn">🎬 動画を見る</button> <button class="modal-button quest" id="modalQuestBtn">⚔️ クエストに挑む</button> </div> </div> </div>
     
-    <!-- 認証モーダル -->
-    <div class="modal" id="authModal">
-        <div class="modal-content auth-modal-content">
-            <button class="modal-close" id="authModalCloseBtn">×</button>
-            <h2 class="modal-title" id="authModalTitle">🔐 冒険者登録・ログイン</h2>
-            
-            <!-- タブ切り替え -->
-            <div class="auth-tabs">
-                <button class="auth-tab active" data-tab="login">ログイン</button>
-                <button class="auth-tab" data-tab="signup">新規登録</button>
-            </div>
-            
-            <!-- ログインフォーム -->
-            <div class="auth-form" id="loginForm">
-                <h3>冒険者としてログイン</h3>
-                <div class="form-group">
-                    <label for="loginEmail">メールアドレス</label>
-                    <input type="email" id="loginEmail" placeholder="your-email@example.com" required>
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">パスワード</label>
-                    <input type="password" id="loginPassword" placeholder="パスワードを入力" required>
-                </div>
-                <button class="auth-submit-btn" id="loginSubmitBtn">🚪 ログイン</button>
-                <div class="auth-message" id="loginMessage"></div>
-            </div>
-            
-            <!-- サインアップフォーム -->
-            <div class="auth-form" id="signupForm" style="display: none;">
-                <h3>新しい冒険者として登録</h3>
-                <div class="form-group">
-                    <label for="signupEmail">メールアドレス</label>
-                    <input type="email" id="signupEmail" placeholder="your-email@example.com" required>
-                </div>
-                <div class="form-group">
-                    <label for="signupPassword">パスワード</label>
-                    <input type="password" id="signupPassword" placeholder="6文字以上のパスワード" required>
-                </div>
-                <div class="form-group">
-                    <label for="signupDisplayName">冒険者名（任意）</label>
-                    <input type="text" id="signupDisplayName" placeholder="あなたの冒険者名">
-                </div>
-                <button class="auth-submit-btn" id="signupSubmitBtn">⚔️ 冒険者登録</button>
-                <div class="auth-message" id="signupMessage"></div>
-            </div>
-        </div>
-    </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> 
     <script>
-        // Supabaseクライアント設定
-        const supabaseUrl = 'https://laqvpxecqvlufboquffe.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcXZweGVjcXZsdWZib3F1ZmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MzYwNjgsImV4cCI6MjA2NDAxMjA2OH0.IRkg1miEpOGIFQMnno_P0hsMe1IgwCi2kl_kNcrmZTw';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+        // グローバル変数の更新
+        let currentUserId = null;
+        let userProgress = {};
+        let currentStageIdForModal = null;
 
-        // 認証機能
-        class AuthManager {
-            constructor() {
-                this.currentUser = null;
-                this.init();
+        // Googleフォームのリンク設定
+        const GOOGLE_FORM_LINKS = {
+            1: 'https://forms.google.com/your-form-1',
+            2: 'https://forms.google.com/your-form-2',
+            3: 'https://forms.google.com/your-form-3',
+            4: 'https://forms.google.com/your-form-4',
+            5: 'https://forms.google.com/your-form-5',
+            6: 'https://forms.google.com/your-form-6'
+        };
+
+        // 認証状態が変更されたときの処理
+        window.onAuthStateChanged = async function(user) {
+            if (user) {
+                currentUserId = user.id;
+                await initializeQuestMap();
+            } else {
+                currentUserId = null;
+                resetQuestMap();
+                authManager.showAuthModal();
             }
+        };
 
-            async init() {
-                // 認証状態の監視
-                supabase.auth.onAuthStateChange((event, session) => {
-                    console.log('認証状態変更:', event, session);
-                    this.handleAuthStateChange(session);
-                });
-
-                // 初期認証状態の確認
-                const { data: { session } } = await supabase.auth.getSession();
-                this.handleAuthStateChange(session);
-            }
-
-            handleAuthStateChange(session) {
-                this.currentUser = session?.user || null;
-                this.updateAuthUI();
-                // 認証状態が変わったらクエストマップも更新
-                initializeAppLogic();
-            }
-
-            updateAuthUI() {
-                const authStatus = document.getElementById('authStatus');
-                
-                if (this.currentUser) {
-                    // ログイン済み
-                    const displayName = this.currentUser.user_metadata?.display_name || ' 冒険者';
-                    authStatus.innerHTML = `
-                        <div class="auth-user-info show">
-                            <div class="auth-user-name">🎮 ${displayName}</div>
-                            <div class="auth-user-email">${this.currentUser.email}</div>
-                            <button class="auth-logout-btn" onclick="authManager.logout()">ログアウト</button>
-                        </div>
-                    `;
-                } else {
-                    // 未ログイン
-                    authStatus.innerHTML = `
-                        <div class="auth-login-prompt show">
-                            <div>冒険者登録で進行状況を保存！</div>
-                            <button class="auth-login-btn" onclick="authManager.showAuthModal()">ログイン / 登録</button>
-                        </div>
-                    `;
-                }
-            }
-
-            showAuthModal() {
-                const modal = document.getElementById('authModal');
-                modal.style.display = 'flex';
-                this.setupAuthModal();
-            }
-
-            hideAuthModal() {
-                const modal = document.getElementById('authModal');
-                modal.style.display = 'none';
-                this.clearAuthForms();
-            }
-
-            setupAuthModal() {
-                // タブ切り替え
-                const tabs = document.querySelectorAll('.auth-tab');
-                tabs.forEach(tab => {
-                    tab.addEventListener('click', () => {
-                        const targetTab = tab.dataset.tab;
-                        this.switchAuthTab(targetTab);
-                    });
-                });
-
-                // フォーム送信
-                document.getElementById('loginSubmitBtn').onclick = () => this.handleLogin();
-                document.getElementById('signupSubmitBtn').onclick = () => this.handleSignup();
-
-                // モーダル閉じる
-                document.getElementById('authModalCloseBtn').onclick = () => this.hideAuthModal();
-            }
-
-            switchAuthTab(tabName) {
-                // タブの切り替え
-                document.querySelectorAll('.auth-tab').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-
-                // フォームの切り替え
-                document.getElementById('loginForm').style.display = tabName === 'login' ? 'block' : 'none';
-                document.getElementById('signupForm').style.display = tabName === 'signup' ? 'block' : 'none';
-            }
-
-            async handleLogin() {
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
-                const messageDiv = document.getElementById('loginMessage');
-                const submitBtn = document.getElementById('loginSubmitBtn');
-
-                if (!email || !password) {
-                    this.showAuthMessage(messageDiv, 'メールアドレスとパスワードを入力してください', 'error');
-                    return;
-                }
-
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'ログイン中...';
-
-                try {
-                    const { data, error } = await supabase.auth.signInWithPassword({
-                        email: email,
-                        password: password
-                    });
-
-                    if (error) throw error;
-
-                    this.showAuthMessage(messageDiv, '✅ ログイン成功！冒険を続けましょう！', 'success');
-                    setTimeout(() => {
-                        this.hideAuthModal();
-                    }, 1500);
-
-                } catch (error) {
-                    console.error('ログインエラー:', error);
-                    this.showAuthMessage(messageDiv, '❌ ログインに失敗しました: ' + error.message, 'error');
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = '🚪 ログイン';
-                }
-            }
-
-            async handleSignup() {
-                const email = document.getElementById('signupEmail').value;
-                const password = document.getElementById('signupPassword').value;
-                const displayName = document.getElementById('signupDisplayName').value;
-                const messageDiv = document.getElementById('signupMessage');
-                const submitBtn = document.getElementById('signupSubmitBtn');
-
-                if (!email || !password) {
-                    this.showAuthMessage(messageDiv, 'メールアドレスとパスワードを入力してください', 'error');
-                    return;
-                }
-
-                if (password.length < 6) {
-                    this.showAuthMessage(messageDiv, 'パスワードは6文字以上で入力してください', 'error');
-                    return;
-                }
-
-                submitBtn.disabled = true;
-                submitBtn.textContent = '登録中...';
-
-                try {
-                    const { data, error } = await supabase.auth.signUp({
-                        email: email,
-                        password: password,
-                        options: {
-                            data: {
-                                display_name: displayName || '冒険者'
-                            }
-                        }
-                    });
-
-                    if (error) throw error;
-
-                    this.showAuthMessage(messageDiv, '✅ 登録完了！メールを確認してアカウントを有効化してください', 'success');
-                    setTimeout(() => {
-                        this.switchAuthTab('login');
-                    }, 2000);
-
-                } catch (error) {
-                    console.error('サインアップエラー:', error);
-                    this.showAuthMessage(messageDiv, '❌ 登録に失敗しました: ' + error.message, 'error');
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = '⚔️ 冒険者登録';
-                }
-            }
-
-            async logout() {
-                try {
-                    const { error } = await supabase.auth.signOut();
-                    if (error) throw error;
-                    
-                    // ページリロードして状態をクリア
-                    window.location.reload();
-                } catch (error) {
-                    console.error('ログアウトエラー:', error);
-                    alert('ログアウトに失敗しました: ' + error.message);
-                }
-            }
-
-            showAuthMessage(messageDiv, text, type) {
-                messageDiv.textContent = text;
-                messageDiv.className = `auth-message ${type}`;
-            }
-
-            clearAuthForms() {
-                document.getElementById('loginEmail').value = '';
-                document.getElementById('loginPassword').value = '';
-                document.getElementById('signupEmail').value = '';
-                document.getElementById('signupPassword').value = '';
-                document.getElementById('signupDisplayName').value = '';
-                
-                document.querySelectorAll('.auth-message').forEach(msg => {
-                    msg.className = 'auth-message';
-                });
-            }
-        }
-
-        // 認証マネージャーの初期化
-        const authManager = new AuthManager();
-    </script>
-    <script>
         const TOTAL_STAGES = 6;
-        const NUM_SKY_OBJECTS = 7; 
+        const NUM_SKY_OBJECTS = 7;
 
         const stageStaticData = {
             1: { title: '君はどんな冒険者？', description: 'この世界の地図をひらいて、CLAFTを冒険しよう！', message: '「この世界をどう歩くかは、自分で決めていい」', iconImage: 'https://via.placeholder.com/64x64/8B4513/FFFFFF?text=House', fallbackIcon: '🏠', clearEffectImage: 'https://via.placeholder.com/32x32/CCCCCC/000000?text=Smoke' },
@@ -673,87 +299,413 @@
         }
         
         // クエストマップの初期化
-        let currentUserId = null;
-        let userProgress = {}; 
-        let currentStageIdForModal = null;
         let currentUser = null; 
 
-        async function initializeAppLogic() { 
-            if (authManager.currentUser) {
-                currentUserId = authManager.currentUser.id;
-                userProgress = await fetchUserProgress(currentUserId);
+        // クエストマップの初期化
+        async function initializeQuestMap() {
+            if (!currentUserId) return;
+            
+            showLoading(true);
+            userProgress = await fetchUserProgress(currentUserId);
+            updateStageDisplay();
+            showLoading(false);
+        }
+
+        // クエストマップのリセット
+        function resetQuestMap() {
+            for (let i = 1; i <= TOTAL_STAGES; i++) {
+                userProgress[i] = 'locked';
+            }
+            updateStageDisplay();
+        }
+        
+        function showLoading(show) { 
+            loadingOverlay.style.display = show ? 'flex' : 'none'; 
+        }
+        
+        // ユーザー進行状況の取得（更新版）
+        async function fetchUserProgress(userId) {
+            showLoading(true);
+            console.log(`Fetching progress for userId: ${userId}`);
+            
+            try {
+                const { data, error } = await supabase
+                    .from('quest_progress')
+                    .select('*')
+                    .eq('user_id', userId);
+                    
+                if (error) throw error;
+                
+                const progress = {};
+                
+                // 初期状態：ステージ1はcurrent、他はlocked
+                for (let i = 1; i <= TOTAL_STAGES; i++) {
+                    progress[i] = i === 1 ? 'current' : 'locked';
+                }
+                
+                // データベースの状態で上書き
+                if (data && data.length > 0) {
+                    data.forEach(record => {
+                        progress[record.stage_id] = record.status;
+                    });
+                    
+                    // 次のステージを自動的にcurrentに
+                    let hasCurrentStage = false;
+                    for (let i = 1; i <= TOTAL_STAGES; i++) {
+                        if (progress[i] === 'current' || progress[i] === 'pending_approval') {
+                            hasCurrentStage = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!hasCurrentStage) {
+                        // 最後にcompletedになっているステージの次をcurrentに
+                        for (let i = TOTAL_STAGES - 1; i >= 1; i--) {
+                            if (progress[i] === 'completed' && i < TOTAL_STAGES) {
+                                progress[i + 1] = 'current';
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                console.log('Progress fetched:', progress);
+                return progress;
+                
+            } catch (error) {
+                console.error('Error fetching user progress:', error.message);
+                const defaultProgress = {};
+                for (let i = 1; i <= TOTAL_STAGES; i++) {
+                    defaultProgress[i] = i === 1 ? 'current' : 'locked';
+                }
+                return defaultProgress;
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // ユーザー進行状況の保存（更新版）
+        async function saveUserProgress(userId, stageId, newStatus, additionalData = {}) {
+            showLoading(true);
+            console.log(`Saving progress for userId: ${userId}, stageId: ${stageId}, status: ${newStatus}`);
+            
+            try {
+                const updateData = {
+                    user_id: userId,
+                    stage_id: stageId,
+                    status: newStatus,
+                    updated_at: new Date().toISOString(),
+                    ...additionalData
+                };
+                
+                const { data, error } = await supabase
+                    .from('quest_progress')
+                    .upsert(updateData, {
+                        onConflict: 'user_id,stage_id'
+                    })
+                    .select();
+                    
+                if (error) throw error;
+                
+                console.log('Progress saved:', data);
+                userProgress[stageId] = newStatus;
+                
+                // 統計情報の更新（completedの場合）
+                if (newStatus === 'completed') {
+                    await updateQuestStats(userId);
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Error saving user progress:', error.message);
+                return false;
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // クエスト統計の更新
+        async function updateQuestStats(userId) {
+            try {
+                // 現在の統計を取得
+                const { data: stats, error: statsError } = await supabase
+                    .from('user_stats')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .single();
+                    
+                if (statsError && statsError.code !== 'PGRST116') throw statsError;
+                
+                const currentStats = stats || { quest_clear_count: 0, total_exp: 0 };
+                
+                // クエストクリア回数と経験値を更新
+                const { error: updateError } = await supabase
+                    .from('user_stats')
+                    .upsert({
+                        user_id: userId,
+                        quest_clear_count: currentStats.quest_clear_count + 1,
+                        total_exp: currentStats.total_exp + 100, // 1クエストクリアで100EXP
+                        updated_at: new Date().toISOString()
+                    }, {
+                        onConflict: 'user_id'
+                    });
+                    
+                if (updateError) throw updateError;
+                
+            } catch (error) {
+                console.error('Error updating quest stats:', error);
+            }
+        }
+        
+        // ステージ表示の更新（pending_approval対応）
+        function updateStageDisplay() {
+            let currentStageExists = false;
+            let allStagesCompleted = true;
+            
+            for (let i = 1; i <= TOTAL_STAGES; i++) {
+                const stageNode = document.getElementById(`stage-${i}`);
+                if (!stageNode) continue;
+                
+                const status = userProgress[i] || 'locked';
+                
+                // クラスの更新
+                stageNode.classList.remove('completed', 'current', 'locked', 'pending');
+                if (status === 'pending_approval') {
+                    stageNode.classList.add('current', 'pending');
+                } else {
+                    stageNode.classList.add(status);
+                }
+                
+                if (status !== 'completed') {
+                    allStagesCompleted = false;
+                }
+                
+                // 既存の表示更新処理...
+                const staticInfo = stageStaticData[i];
+                stageNode.querySelector('.stage-title').textContent = staticInfo.title;
+                stageNode.querySelector('.stage-description').textContent = staticInfo.description;
+                
+                // ヒーローフェイスの表示
+                const heroFace = stageNode.querySelector('.hero-face');
+                if (heroFace) {
+                    if (status === 'current' || status === 'pending_approval') {
+                        heroFace.style.display = 'block';
+                        currentStageExists = true;
+                    } else {
+                        heroFace.style.display = 'none';
+                    }
+                }
+                
+                // 承認待ちバッジの追加
+                if (status === 'pending_approval') {
+                    let pendingBadge = stageNode.querySelector('.pending-badge');
+                    if (!pendingBadge) {
+                        pendingBadge = document.createElement('div');
+                        pendingBadge.className = 'pending-badge';
+                        pendingBadge.textContent = '承認待ち';
+                        pendingBadge.style.cssText = `
+                            position: absolute;
+                            top: -10px;
+                            right: -10px;
+                            background: var(--orange);
+                            color: white;
+                            padding: 5px 15px;
+                            border-radius: 20px;
+                            font-size: 12px;
+                            font-weight: 700;
+                            animation: pulse 2s ease-in-out infinite;
+                        `;
+                        stageNode.appendChild(pendingBadge);
+                    }
+                } else {
+                    const pendingBadge = stageNode.querySelector('.pending-badge');
+                    if (pendingBadge) {
+                        pendingBadge.remove();
+                    }
+                }
+            }
+            
+            // メインクエストボタンの更新
+            updateMainQuestButton(allStagesCompleted, currentStageExists);
+        }
+
+        // メインクエストボタンの更新
+        function updateMainQuestButton(allCompleted, hasCurrentStage) {
+            const mainQuestButton = document.getElementById('mainQuestButton');
+            
+            if (allCompleted && Object.keys(userProgress).length >= TOTAL_STAGES) {
+                mainQuestButton.textContent = '🎉 全ての冒険を達成！';
+                mainQuestButton.disabled = true;
+            } else if (!hasCurrentStage && !allCompleted && Object.keys(userProgress).length > 0) {
+                mainQuestButton.textContent = '❓ 次のステージへ';
+                mainQuestButton.disabled = false;
+            } else if (!currentUserId) {
+                mainQuestButton.textContent = '🚀 冒険を始めよう！';
+                mainQuestButton.disabled = false;
+                mainQuestButton.onclick = () => authManager.showAuthModal();
             } else {
-                currentUserId = null;
-                for (let i = 1; i <= TOTAL_STAGES; i++) userProgress[i] = 'locked';
+                mainQuestButton.textContent = '🔥 次の冒険へ進む！';
+                mainQuestButton.disabled = false;
             }
-            updateStageDisplay(); 
         }
-        
-        function showLoading(show) { loadingOverlay.style.display = show ? 'flex' : 'none'; }
-        function getUserIdFromUrl() { const params = new URLSearchParams(window.location.search); return params.get('userId'); }
-        
-        async function fetchUserProgress(userId) { 
-            showLoading(true); 
-            console.log(`Fetching progress for userId: ${userId}`); 
-            if (!supabase) { console.error('Supabase client is not initialized for fetching progress.'); showLoading(false); const defaultProgress = {}; for (let i = 1; i <= TOTAL_STAGES; i++) defaultProgress[i] = (i === 1 && userId ? 'current' : 'locked'); return defaultProgress; }
-            try { const { data, error } = await supabase.from('claft-quest').select('stage_id, status').eq('user_id', userId); if (error) throw error; const progress = {}; for (let i = 1; i <= TOTAL_STAGES; i++) { const record = data.find(r => r.stage_id === i); progress[i] = record ? record.status : (i === 1 ? 'current' : 'locked'); } if (data.length === 0) { progress[1] = 'current'; for (let i = 2; i <= TOTAL_STAGES; i++) progress[i] = 'locked'; } console.log('Progress fetched from Supabase:', progress); return progress; } catch (error) { console.error('Error fetching user progress from Supabase:', error.message); const defaultProgress = {}; for (let i = 1; i <= TOTAL_STAGES; i++) defaultProgress[i] = (i === 1 && userId ? 'current' : 'locked'); return defaultProgress; } finally { showLoading(false); }
-        }
-        async function saveUserProgress(userId, stageId, newStatus) { 
-            showLoading(true); 
-            console.log(`Saving progress for userId: ${userId}, stageId: ${stageId}, status: ${newStatus}`); 
-            if (!supabase) { console.error('Supabase client is not initialized for saving progress.'); showLoading(false); return false; }
-            try { const { data, error } = await supabase.from('claft-quest').upsert({ user_id: userId, stage_id: stageId, status: newStatus }, { onConflict: 'user_id, stage_id' }).select(); if (error) throw error; console.log('Progress saved to Supabase:', data); userProgress[stageId] = newStatus; return true; } catch (error) { console.error('Error saving user progress to Supabase:', error.message); return false; } finally { showLoading(false); }
-        }
-        
-        function updateStageDisplay() { 
-            let currentStageExists = false; let allStagesCompleted = true; 
-            for (let i = 1; i <= TOTAL_STAGES; i++) { 
-                const stageNode = document.getElementById(`stage-${i}`); if (!stageNode) continue; 
-                const status = userProgress[i] || 'locked'; 
-                stageNode.classList.remove('completed', 'current', 'locked'); stageNode.classList.add(status); 
-                if (status !== 'completed') { allStagesCompleted = false; } 
-                const staticInfo = stageStaticData[i]; 
-                stageNode.querySelector('.stage-title').textContent = staticInfo.title; 
-                stageNode.querySelector('.stage-description').textContent = staticInfo.description; 
-                const iconImg = stageNode.querySelector('.stage-icon img.icon-image'); 
-                const fallbackSpan = stageNode.querySelector('.stage-icon .icon-fallback'); 
-                if (iconImg) { iconImg.src = staticInfo.iconImage; iconImg.style.display = 'block'; fallbackSpan.style.display = 'none'; fallbackSpan.textContent = staticInfo.fallbackIcon; } 
-                const clearEffectImg = stageNode.querySelector('.clear-effect'); 
-                if (clearEffectImg) { if (status === 'completed' && staticInfo.clearEffectImage) { clearEffectImg.src = staticInfo.clearEffectImage; clearEffectImg.style.display = 'block'; } else { clearEffectImg.style.display = 'none'; } } 
-                const heroFace = stageNode.querySelector('.hero-face'); 
-                if (heroFace) { if (status === 'current') { heroFace.style.display = 'block'; currentStageExists = true; } else { heroFace.style.display = 'none'; } } 
-            } 
-            if (allStagesCompleted && Object.keys(userProgress).length >= TOTAL_STAGES ) { mainQuestButton.textContent = '🎉 全ての冒険を達成！'; mainQuestButton.disabled = true; }  // userProgressがロードされてから全クリア判定
-            else if (!currentStageExists && !allStagesCompleted && Object.keys(userProgress).length > 0) { 
-                mainQuestButton.textContent = '❓ 次のステージへ'; 
-                mainQuestButton.disabled = false; 
-                 const firstLocked = Object.entries(userProgress).find(([id, stat]) => stat === 'locked');
-                 if (firstLocked) { console.warn(`No current stage found, attempting to set stage ${firstLocked[0]} as current.`); } 
-                 else { mainQuestButton.textContent = '🚀 新たな冒険？'; }
-            } else if (!currentStageExists && allStagesCompleted && Object.keys(userProgress).length === 0 ) { // 初期状態など
-                 mainQuestButton.textContent = '🚀 冒険を始めよう！'; mainQuestButton.disabled = false;
+
+        // モーダルを開く（更新版）
+        function openStageModal(stageId) {
+            const status = userProgress[stageId];
+            if (status === 'locked') {
+                alert('このステージはまだ開放されていません！');
+                return;
             }
-            else { mainQuestButton.textContent = '🔥 次の冒険へ進む！'; mainQuestButton.disabled = false; }
+            
+            currentStageIdForModal = stageId;
+            const staticInfo = stageStaticData[stageId];
+            
+            modalStageTitle.textContent = `ステージ ${stageId}: ${staticInfo.title}`;
+            modalStageDescription.textContent = staticInfo.description;
+            modalStageMessage.textContent = staticInfo.message;
+            
+            // ボタンの表示制御
+            const videoBtn = document.getElementById('modalVideoBtn');
+            const questBtn = document.getElementById('modalQuestBtn');
+            
+            if (status === 'current') {
+                questBtn.style.display = 'block';
+                questBtn.textContent = '⚔️ クエストに挑む';
+                questBtn.onclick = () => startQuest(stageId);
+            } else if (status === 'pending_approval') {
+                questBtn.style.display = 'block';
+                questBtn.textContent = '⏳ 承認待ち';
+                questBtn.disabled = true;
+            } else if (status === 'completed') {
+                questBtn.style.display = 'none';
+            }
+            
+            stageModal.style.display = 'flex';
         }
 
-        function openStageModal(stageId) { const status = userProgress[stageId]; if (status === 'locked') { alert('このステージはまだ開放されていません！'); return; } currentStageIdForModal = stageId; const staticInfo = stageStaticData[stageId]; modalStageTitle.textContent = `ステージ ${stageId}: ${staticInfo.title}`; modalStageDescription.textContent = staticInfo.description; modalStageMessage.textContent = staticInfo.message; modalQuestBtn.style.display = (status === 'current') ? 'block' : 'none'; stageModal.style.display = 'flex'; }
-        function closeStageModal() { stageModal.style.display = 'none'; currentStageIdForModal = null; }
-        
+        function closeStageModal() {
+            stageModal.style.display = 'none';
+            currentStageIdForModal = null;
+        }
 
-        document.querySelectorAll('.stage-node').forEach(node => { node.addEventListener('click', () => { const stageId = node.dataset.stageId; openStageModal(parseInt(stageId)); }); });
-        modalCloseBtn.addEventListener('click', closeStageModal);
-        stageModal.addEventListener('click', (e) => { if (e.target === stageModal) closeStageModal(); });
-        modalVideoBtn.addEventListener('click', () => { alert(`ステージ ${currentStageIdForModal} の動画コンテンツを表示します。（実装は別途）`); });
-        modalQuestBtn.addEventListener('click', async () => { if (!currentStageIdForModal || userProgress[currentStageIdForModal] !== 'current') return; const success = await saveUserProgress(currentUserId, currentStageIdForModal, 'completed'); if (success) { userProgress[currentStageIdForModal] = 'completed'; const nextStageId = currentStageIdForModal + 1; if (nextStageId <= TOTAL_STAGES) { const nextSuccess = await saveUserProgress(currentUserId, nextStageId, 'current'); if (nextSuccess) { userProgress[nextStageId] = 'current'; } else { alert('次のステージの解放に失敗しました。'); } } updateStageDisplay(); closeStageModal(); setTimeout(() => { alert(`ステージ ${currentStageIdForModal} クリア！🎉 ${nextStageId <= TOTAL_STAGES && userProgress[nextStageId] === 'current' ? '次の冒険へ進もう！' : '全ての冒険を達成しました！'}`); }, 100); } else { alert('進捗の保存に失敗しました。'); } });
-        mainQuestButton.addEventListener('click', () => { const currentStageEntry = Object.entries(userProgress).find(([_, status]) => status === 'current'); if (currentStageEntry) { openStageModal(parseInt(currentStageEntry[0])); } else if (Object.values(userProgress).every(s => s === 'completed') && Object.keys(userProgress).length >= TOTAL_STAGES) {} else { const firstNonCompletedOrLocked = Object.entries(userProgress).find(([id, stat]) => stat === 'locked' || stat === 'current'); if (firstNonCompletedOrLocked) { openStageModal(parseInt(firstNonCompletedOrLocked[0])); } else if (Object.keys(userProgress).length === 0) { openStageModal(1); /* 初期状態でデータがない場合はステージ1を開く試み */ } else { alert('冒険を始める準備ができていません。');} } });
-        document.getElementById('adventureLogBtn').addEventListener('click', () => { let logText = "📖 これまでの冒険の記録\n\n"; let completedCount = 0; for (let i = 1; i <= TOTAL_STAGES; i++) { if (userProgress[i] === 'completed') { logText += `ステージ${i}: ${stageStaticData[i].title} - クリア済み\n`; completedCount++; } else if (userProgress[i] === 'current') { logText += `ステージ${i}: ${stageStaticData[i].title} - 挑戦中\n`; } } if (completedCount === 0 && !Object.values(userProgress).some(s => s === 'current')) { logText += 'まだ冒険は始まったばかりです！'; } alert(logText); });
-
-        async function initializeApp() { 
-            createSkyObjects(); 
-            // 認証マネージャーが初期化処理を行うので、ここでは追加の初期化のみ
-            await initializeAppLogic(); 
+        // クエスト開始（Googleフォームへ）
+        async function startQuest(stageId) {
+            if (!currentUserId || userProgress[stageId] !== 'current') return;
+            
+            // Googleフォームのリンクを開く
+            const formLink = GOOGLE_FORM_LINKS[stageId];
+            if (formLink) {
+                window.open(formLink, '_blank');
+            } else {
+                alert('このステージのフォームはまだ準備中です。');
+                return;
+            }
+            
+            // ステータスをpending_approvalに更新
+            const success = await saveUserProgress(currentUserId, stageId, 'pending_approval', {
+                google_form_submitted: true,
+                submitted_at: new Date().toISOString()
+            });
+            
+            if (success) {
+                updateStageDisplay();
+                closeStageModal();
+                
+                setTimeout(() => {
+                    alert('クエストフォームを送信したら、管理者の承認をお待ちください！');
+                }, 100);
+            } else {
+                alert('進捗の保存に失敗しました。');
+            }
         }
         
+
+        // 既存のイベントリスナーを更新
+        document.addEventListener('DOMContentLoaded', function() {
+            // 既存の初期化処理...
+            createSkyObjects();
+            
+            // 認証状態に基づく初期化
+            const user = authManager.getCurrentUser();
+            if (user) {
+                initializeQuestMap();
+            } else {
+                resetQuestMap();
+            }
+            
+            // モーダル関連のイベントリスナー
+            modalCloseBtn.addEventListener('click', closeStageModal);
+            stageModal.addEventListener('click', (e) => {
+                if (e.target === stageModal) closeStageModal();
+            });
+            
+            // ステージノードのクリックイベント
+            document.querySelectorAll('.stage-node').forEach(node => {
+                node.addEventListener('click', () => {
+                    const stageId = parseInt(node.dataset.stageId);
+                    openStageModal(stageId);
+                });
+            });
+            
+            // メインクエストボタン
+            mainQuestButton.addEventListener('click', () => {
+                if (!currentUserId) {
+                    authManager.showAuthModal();
+                    return;
+                }
+                
+                const currentStageEntry = Object.entries(userProgress).find(([_, status]) => 
+                    status === 'current' || status === 'pending_approval'
+                );
+                
+                if (currentStageEntry) {
+                    openStageModal(parseInt(currentStageEntry[0]));
+                } else if (Object.values(userProgress).every(s => s === 'completed') && Object.keys(userProgress).length >= TOTAL_STAGES) {
+                    // 全クリア済み
+                } else {
+                    const firstNonCompleted = Object.entries(userProgress).find(([id, stat]) => 
+                        stat === 'locked' || stat === 'current'
+                    );
+                    if (firstNonCompleted) {
+                        openStageModal(parseInt(firstNonCompleted[0]));
+                    }
+                }
+            });
+            
+            // 冒険ログボタン
+            document.getElementById('adventureLogBtn').addEventListener('click', showAdventureLog);
+        });
+
+        // 冒険ログの表示（更新版）
+        function showAdventureLog() {
+            let logText = "📖 これまでの冒険の記録\n\n";
+            let completedCount = 0;
+            let pendingCount = 0;
+            
+            for (let i = 1; i <= TOTAL_STAGES; i++) {
+                const status = userProgress[i];
+                if (status === 'completed') {
+                    logText += `ステージ${i}: ${stageStaticData[i].title} - ✅ クリア済み\n`;
+                    completedCount++;
+                } else if (status === 'current') {
+                    logText += `ステージ${i}: ${stageStaticData[i].title} - 🎯 挑戦中\n`;
+                } else if (status === 'pending_approval') {
+                    logText += `ステージ${i}: ${stageStaticData[i].title} - ⏳ 承認待ち\n`;
+                    pendingCount++;
+                }
+            }
+            
+            if (completedCount === 0 && !Object.values(userProgress).some(s => s === 'current' || s === 'pending_approval')) {
+                logText += 'まだ冒険は始まったばかりです！';
+            }
+            
+            if (pendingCount > 0) {
+                logText += `\n⏳ ${pendingCount}個のクエストが承認待ちです`;
+            }
+            
+            alert(logText);
+        }
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
@@ -761,11 +713,12 @@
                     .catch(registrationError => { console.log('SW registration failed: ', registrationError); });
             });
         }
-
-        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
     
     <!-- パーシャルインクルード機能 -->
     <script src="js/include.js"></script>
+    
+    <!-- 認証モジュール -->
+    <script src="js/auth.js"></script>
 </body>
 </html>

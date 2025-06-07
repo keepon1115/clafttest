@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最初の管理者設定 - CLAFT</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root {
+            --primary: #673AB7;
+            --secondary: #512DA8;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --danger: #F44336;
+            --bg: #F5F5F5;
+            --card: #FFFFFF;
+            --text: #212121;
+            --text-secondary: #757575;
+        }
+        
+        body {
+            font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .title {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+        
+        .section {
+            background: var(--bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .step {
+            background: var(--card);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .step-number {
+            background: var(--primary);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 15px;
+        }
+        
+        .step-content {
+            display: inline-block;
+            vertical-align: top;
+            width: calc(100% - 50px);
+        }
+        
+        .step-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .step-description {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            background: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-success {
+            background: var(--success);
+        }
+        
+        .btn-success:hover {
+            background: #388E3C;
+        }
+        
+        .result {
+            background: var(--card);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 2px solid var(--bg);
+        }
+        
+        .result.success {
+            border-color: var(--success);
+            background: rgba(76, 175, 80, 0.1);
+        }
+        
+        .result.error {
+            border-color: var(--danger);
+            background: rgba(244, 67, 54, 0.1);
+        }
+        
+        .code {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            overflow-x: auto;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .warning {
+            background: rgba(255, 152, 0, 0.1);
+            border: 2px solid var(--warning);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .warning-title {
+            font-weight: 700;
+            color: var(--warning);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">
+                <i class="fas fa-shield-alt"></i>
+                最初の管理者設定
+            </h1>
+            <p class="subtitle">Supabaseで最初の管理者アカウントを設定します</p>
+        </div>
+        
+        <div class="warning">
+            <div class="warning-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                重要な注意事項
+            </div>
+            <p>この操作は最初の管理者を設定するためのものです。既に管理者が設定されている場合は、通常の管理者追加機能を使用してください。</p>
+        </div>
+        
+        <!-- ステップ1: 認証確認 -->
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-user-check"></i>
+                ステップ1: 認証確認
+            </h2>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <div class="step-content">
+                    <div class="step-title">現在のログイン状態を確認</div>
+                    <div class="step-description">Supabaseにログインしているかを確認します</div>
+                    <button class="btn" onclick="checkAuthStatus()">
+                        <i class="fas fa-search"></i>
+                        認証状態を確認
+                    </button>
+                    <div id="authResult" class="result hidden"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ステップ2: ユーザー情報取得 -->
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-database"></i>
+                ステップ2: ユーザー情報取得
+            </h2>
+            
+            <div class="step">
+                <span class="step-number">2</span>
+                <div class="step-content">
+                    <div class="step-title">auth.usersテーブルから情報を取得</div>
+                    <div class="step-description">現在ログインしているユーザーのIDとメールアドレスを取得します</div>
+                    <button class="btn" onclick="getUserInfo()" id="getUserBtn" disabled>
+                        <i class="fas fa-user"></i>
+                        ユーザー情報を取得
+                    </button>
+                    <div id="userResult" class="result hidden"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ステップ3: 管理者登録 -->
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-crown"></i>
+                ステップ3: 管理者登録
+            </h2>
+            
+            <div class="step">
+                <span class="step-number">3</span>
+                <div class="step-content">
+                    <div class="step-title">admin_usersテーブルに登録</div>
+                    <div class="step-description">取得したユーザー情報を管理者テーブルに挿入します</div>
+                    <button class="btn btn-success" onclick="registerAdmin()" id="registerBtn" disabled>
+                        <i class="fas fa-plus"></i>
+                        管理者として登録
+                    </button>
+                    <div id="adminResult" class="result hidden"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 完了後の案内 -->
+        <div class="section hidden" id="completionSection">
+            <h2 class="section-title">
+                <i class="fas fa-check-circle"></i>
+                設定完了
+            </h2>
+            
+            <div class="step">
+                <div class="step-content">
+                    <div class="step-title">管理者設定が完了しました！</div>
+                    <div class="step-description">これで管理画面にアクセスできるようになりました。</div>
+                    <button class="btn" onclick="window.location.href='admin.html'">
+                        <i class="fas fa-shield-alt"></i>
+                        管理画面を開く
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Supabaseの設定
+        const supabaseUrl = 'https://laqvpxecqvlufboquffe.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcXZweGVjcXZsdWZib3F1ZmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzMzNzI4NzEsImV4cCI6MjA0ODk0ODg3MX0.Ej6oyAuFVQjKJhz8zOKGnmJJAhWJJhz8zOKGnmJJAhW';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        
+        let currentUser = null;
+        
+        // ステップ1: 認証状態確認
+        async function checkAuthStatus() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<div class="loading"></div> 確認中...';
+            btn.disabled = true;
+            
+            try {
+                const { data: { user }, error } = await supabase.auth.getUser();
+                
+                const resultDiv = document.getElementById('authResult');
+                resultDiv.classList.remove('hidden');
+                
+                if (error) throw error;
+                
+                if (user) {
+                    currentUser = user;
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <div style="font-weight: 700; color: var(--success); margin-bottom: 8px;">
+                            <i class="fas fa-check-circle"></i> 認証成功
+                        </div>
+                        <div><strong>ユーザーID:</strong> ${user.id}</div>
+                        <div><strong>メールアドレス:</strong> ${user.email}</div>
+                        <div><strong>認証プロバイダー:</strong> ${user.app_metadata.provider || 'email'}</div>
+                    `;
+                    
+                    // 次のステップを有効化
+                    document.getElementById('getUserBtn').disabled = false;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <div style="font-weight: 700; color: var(--danger); margin-bottom: 8px;">
+                            <i class="fas fa-times-circle"></i> 認証エラー
+                        </div>
+                        <div>ログインしていません。まずSupabaseにログインしてください。</div>
+                    `;
+                }
+                
+            } catch (error) {
+                const resultDiv = document.getElementById('authResult');
+                resultDiv.classList.remove('hidden');
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <div style="font-weight: 700; color: var(--danger); margin-bottom: 8px;">
+                        <i class="fas fa-times-circle"></i> エラー
+                    </div>
+                    <div>${error.message}</div>
+                `;
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+        
+        // ステップ2: ユーザー情報取得
+        async function getUserInfo() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<div class="loading"></div> 取得中...';
+            btn.disabled = true;
+            
+            try {
+                if (!currentUser) {
+                    throw new Error('ユーザー情報が取得できていません');
+                }
+                
+                const resultDiv = document.getElementById('userResult');
+                resultDiv.classList.remove('hidden');
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `
+                    <div style="font-weight: 700; color: var(--success); margin-bottom: 8px;">
+                        <i class="fas fa-check-circle"></i> ユーザー情報取得成功
+                    </div>
+                    <div class="code">
+                        <div><strong>ユーザーID:</strong> ${currentUser.id}</div>
+                        <div><strong>メールアドレス:</strong> ${currentUser.email}</div>
+                        <div><strong>作成日時:</strong> ${new Date(currentUser.created_at).toLocaleString('ja-JP')}</div>
+                        <div><strong>最終ログイン:</strong> ${new Date(currentUser.last_sign_in_at).toLocaleString('ja-JP')}</div>
+                    </div>
+                    <div style="margin-top: 10px; color: var(--text-secondary);">
+                        この情報をadmin_usersテーブルに登録します。
+                    </div>
+                `;
+                
+                // 次のステップを有効化
+                document.getElementById('registerBtn').disabled = false;
+                
+            } catch (error) {
+                const resultDiv = document.getElementById('userResult');
+                resultDiv.classList.remove('hidden');
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <div style="font-weight: 700; color: var(--danger); margin-bottom: 8px;">
+                        <i class="fas fa-times-circle"></i> エラー
+                    </div>
+                    <div>${error.message}</div>
+                `;
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+        
+        // ステップ3: 管理者登録
+        async function registerAdmin() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<div class="loading"></div> 登録中...';
+            btn.disabled = true;
+            
+            try {
+                if (!currentUser) {
+                    throw new Error('ユーザー情報が取得できていません');
+                }
+                
+                // admin_usersテーブルに挿入
+                const { data, error } = await supabase
+                    .from('admin_users')
+                    .insert({
+                        id: currentUser.id,
+                        email: currentUser.email,
+                        is_active: true,
+                        created_at: new Date().toISOString()
+                    })
+                    .select();
+                
+                if (error) throw error;
+                
+                const resultDiv = document.getElementById('adminResult');
+                resultDiv.classList.remove('hidden');
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `
+                    <div style="font-weight: 700; color: var(--success); margin-bottom: 8px;">
+                        <i class="fas fa-check-circle"></i> 管理者登録成功
+                    </div>
+                    <div class="code">
+                        <div><strong>管理者ID:</strong> ${data[0].id}</div>
+                        <div><strong>メールアドレス:</strong> ${data[0].email}</div>
+                        <div><strong>ステータス:</strong> ${data[0].is_active ? 'アクティブ' : '無効'}</div>
+                        <div><strong>登録日時:</strong> ${new Date(data[0].created_at).toLocaleString('ja-JP')}</div>
+                    </div>
+                    <div style="margin-top: 15px; padding: 10px; background: rgba(76, 175, 80, 0.1); border-radius: 8px;">
+                        <strong>🎉 おめでとうございます！</strong><br>
+                        あなたは正式にCLAFTの管理者になりました。<br>
+                        管理画面でクエストの承認やユーザー管理ができます。
+                    </div>
+                `;
+                
+                // 完了セクションを表示
+                document.getElementById('completionSection').classList.remove('hidden');
+                
+            } catch (error) {
+                const resultDiv = document.getElementById('adminResult');
+                resultDiv.classList.remove('hidden');
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <div style="font-weight: 700; color: var(--danger); margin-bottom: 8px;">
+                        <i class="fas fa-times-circle"></i> 登録エラー
+                    </div>
+                    <div><strong>エラー詳細:</strong> ${error.message}</div>
+                    <div style="margin-top: 10px; font-size: 14px; color: var(--text-secondary);">
+                        ${error.code === '23505' ? 
+                            '既にこのユーザーは管理者として登録されています。' : 
+                            'データベースへの接続またはテーブルの設定に問題がある可能性があります。'}
+                    </div>
+                `;
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+        
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('最初の管理者設定ツールが読み込まれました');
+        });
+    </script>
+</body>
+</html> 

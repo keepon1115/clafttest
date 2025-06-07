@@ -16,6 +16,12 @@
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/navigation.css">
+    
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- 認証モジュール CSS -->
+    <link rel="stylesheet" href="css/auth.css">
     <style>
         * {
             margin: 0;
@@ -1183,7 +1189,22 @@
             message: ''
         };
 
-        // 初期化
+        let currentUser = null;
+        let isLoading = false;
+
+        // 認証状態が変更されたときの処理
+        window.onAuthStateChanged = async function(user) {
+            currentUser = user;
+            if (user) {
+                // ログイン時：プロフィールデータを読み込む
+                await loadProfileFromSupabase();
+            } else {
+                // 未ログイン時：認証モーダルを表示
+                authManager.showAuthModal();
+            }
+        };
+
+        // ページ初期化時の処理を更新
         document.addEventListener('DOMContentLoaded', function() {
             // タブ切り替え
             const tabButtons = document.querySelectorAll('.tab-button');
@@ -1200,11 +1221,17 @@
             // 選択ボタンのイベントリスナー
             setupChoiceButtons();
             
-            // 自動保存
+            // 自動保存（Supabaseに）
             setInterval(autoSave, 30000); // 30秒ごとに自動保存
             
-            // ローカルストレージから読み込み
-            loadFromLocalStorage();
+            // 認証チェック
+            const user = authManager.getCurrentUser();
+            if (!user) {
+                // 未ログインの場合は認証モーダルを表示
+                setTimeout(() => {
+                    authManager.showAuthModal();
+                }, 500);
+            }
         });
 
         // タブ切り替え
@@ -1434,46 +1461,151 @@
             }, 3000);
         }
 
+        // Supabaseからプロフィールを読み込む
+        async function loadProfileFromSupabase() {
+            const user = authManager.getCurrentUser();
+            if (!user) return;
+
+            showLoading(true);
+
+            try {
+                const { data: profile, error } = await supabase
+                    .from('users_profile')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') throw error;
+
+                if (profile) {
+                    // プロフィールデータをprofileDataオブジェクトに設定
+                    profileData = {
+                        nickname: profile.nickname || '',
+                        character: profile.character_type || '',
+                        skills: profile.strengths || [],
+                        weakness: profile.weaknesses ? profile.weaknesses.join('、') : '',
+                        favoritePlace: profile.favorite_time_place || '',
+                        energyCharge: profile.energy_charge_method || '',
+                        companion: profile.adventure_partner || '',
+                        catchphrase: profile.catchphrase || '',
+                        message: profile.comment || ''
+                    };
+
+                    // フォームに値を設定
+                    document.getElementById('nickname').value = profileData.nickname;
+                    document.getElementById('character').value = profileData.character;
+                    document.getElementById('skills').value = profileData.skills.join(', ');
+                    document.getElementById('weakness').value = profileData.weakness;
+                    document.getElementById('favoritePlace').value = profileData.favoritePlace;
+                    document.getElementById('energyCharge').value = profileData.energyCharge;
+                    document.getElementById('companion').value = profileData.companion;
+                    document.getElementById('catchphrase').value = profileData.catchphrase;
+                    document.getElementById('message').value = profileData.message;
+
+                    // 選択ボタンの状態を復元
+                    restoreSelectedButtons();
+
+                    // 表示を更新
+                    updateCharacterDisplay();
+                }
+            } catch (error) {
+                console.error('プロフィール読み込みエラー:', error);
+                showNotification('プロフィールの読み込みに失敗しました');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // フォームにデータを設定
+        function populateForm() {
+            document.getElementById('nickname').value = profileData.nickname || '';
+            document.getElementById('character').value = profileData.character || '';
+            document.getElementById('skills').value = Array.isArray(profileData.skills) ? profileData.skills.join(', ') : profileData.skills || '';
+            document.getElementById('weakness').value = profileData.weakness || '';
+            document.getElementById('favoritePlace').value = profileData.favoritePlace || '';
+            document.getElementById('energyCharge').value = profileData.energyCharge || '';
+            document.getElementById('companion').value = profileData.companion || '';
+            document.getElementById('catchphrase').value = profileData.catchphrase || '';
+            document.getElementById('message').value = profileData.message || '';
+        }
+
         // 自動保存
-        function autoSave() {
-            saveToLocalStorage();
-            const indicator = document.getElementById('saveIndicator');
-            indicator.classList.add('saving');
-            indicator.querySelector('span').textContent = '保存中...';
+        async function autoSave() {
+            if (!currentUser || isLoading) return;
             
-            setTimeout(() => {
-                indicator.classList.remove('saving');
-                indicator.querySelector('span').textContent = '保存済み';
-            }, 1000);
+            const indicator = document.getElementById('saveIndicator');
+            if (indicator) {
+                indicator.classList.add('saving');
+                indicator.querySelector('span').textContent = '自動保存中...';
+            }
+            
+            try {
+                await saveToSupabase(false); // サイレント保存
+                if (indicator) {
+                    indicator.classList.remove('saving');
+                    indicator.querySelector('span').textContent = '自動保存済み';
+                }
+            } catch (error) {
+                console.error('自動保存エラー:', error);
+                if (indicator) {
+                    indicator.classList.remove('saving');
+                    indicator.querySelector('span').textContent = '保存エラー';
+                }
+            }
         }
 
-        // ローカルストレージへの保存
-        function saveToLocalStorage() {
-            localStorage.setItem('jibunCraftProfile', JSON.stringify(profileData));
-        }
+        // Supabaseにプロフィールを保存
+        async function saveToSupabase(showNotifications = true) {
+            if (!currentUser) {
+                if (showNotifications) showNotification('ログインが必要です');
+                return false;
+            }
 
-        // ローカルストレージからの読み込み
-        function loadFromLocalStorage() {
-            const saved = localStorage.getItem('jibunCraftProfile');
-            if (saved) {
-                profileData = JSON.parse(saved);
+            try {
+                // スキルと弱みを配列に変換
+                const strengthsArray = typeof profileData.skills === 'string' 
+                    ? profileData.skills.split(',').map(s => s.trim()).filter(s => s)
+                    : profileData.skills || [];
                 
-                // フォームに値を設定
-                document.getElementById('nickname').value = profileData.nickname || '';
-                document.getElementById('character').value = profileData.character || '';
-                document.getElementById('skills').value = profileData.skills.join(', ');
-                document.getElementById('weakness').value = profileData.weakness || '';
-                document.getElementById('favoritePlace').value = profileData.favoritePlace || '';
-                document.getElementById('energyCharge').value = profileData.energyCharge || '';
-                document.getElementById('companion').value = profileData.companion || '';
-                document.getElementById('catchphrase').value = profileData.catchphrase || '';
-                document.getElementById('message').value = profileData.message || '';
+                const weaknessesArray = profileData.weakness 
+                    ? profileData.weakness.split(',').map(s => s.trim()).filter(s => s)
+                    : [];
+
+                const profileUpdate = {
+                    id: currentUser.id,
+                    email: currentUser.email,
+                    nickname: profileData.nickname || 'ユーザー',
+                    character_type: profileData.character || null,
+                    catchphrase: profileData.catchphrase || null,
+                    strengths: strengthsArray,
+                    weaknesses: weaknessesArray,
+                    favorite_time_place: profileData.favoritePlace || null,
+                    energy_charge_method: profileData.energyCharge || null,
+                    adventure_partner: profileData.companion || null,
+                    comment: profileData.message || null,
+                    updated_at: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase
+                    .from('users_profile')
+                    .upsert(profileUpdate, { 
+                        onConflict: 'id',
+                        ignoreDuplicates: false 
+                    });
+
+                if (error) throw error;
+
+                if (showNotifications) {
+                    showNotification('プロフィールを保存しました！');
+                }
                 
-                // 選択ボタンの状態を復元
-                restoreSelectedButtons();
-                
-                // 表示を更新
-                updateCharacterDisplay();
+                return true;
+            } catch (error) {
+                console.error('プロフィール保存エラー:', error);
+                if (showNotifications) {
+                    showNotification('保存に失敗しました: ' + error.message);
+                }
+                return false;
             }
         }
 
@@ -1504,22 +1636,83 @@
             }
         }
 
-        // プロフィール保存
-        function saveProfile() {
-            saveToLocalStorage();
-            showNotification('プロフィールを保存しました！');
+        // プロフィールをSupabaseに保存
+        async function saveProfile() {
+            const user = authManager.getCurrentUser();
+            if (!user) {
+                showNotification('ログインが必要です');
+                authManager.showAuthModal();
+                return;
+            }
+
+            showLoading(true);
             
-            // 保存アニメーション
-            const saveButton = document.querySelector('.btn-primary');
-            saveButton.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                saveButton.style.transform = 'scale(1)';
-            }, 200);
-            
-            // 完成度が100%の場合は実績を表示
-            const percentage = parseInt(document.getElementById('completionText').textContent);
-            if (percentage === 100) {
-                setTimeout(() => showAchievement(), 500);
+            try {
+                // フォームから最新のデータを取得
+                profileData.nickname = document.getElementById('nickname').value || 'たろう';
+                profileData.character = document.getElementById('character').value;
+                profileData.weakness = document.getElementById('weakness').value;
+                profileData.favoritePlace = document.getElementById('favoritePlace').value;
+                profileData.energyCharge = document.getElementById('energyCharge').value;
+                profileData.companion = document.getElementById('companion').value;
+                profileData.catchphrase = document.getElementById('catchphrase').value;
+                profileData.message = document.getElementById('message').value;
+                
+                // スキルの処理
+                const skillsInput = document.getElementById('skills').value;
+                if (skillsInput) {
+                    profileData.skills = skillsInput.split(/[,、]/).map(s => s.trim()).filter(s => s);
+                }
+
+                // Supabaseに保存するデータ形式に変換
+                const saveData = {
+                    id: user.id,
+                    email: user.email,
+                    nickname: profileData.nickname,
+                    character_type: profileData.character,
+                    catchphrase: profileData.catchphrase,
+                    strengths: profileData.skills,
+                    weaknesses: profileData.weakness ? profileData.weakness.split(/[,、]/).map(s => s.trim()).filter(s => s) : [],
+                    favorite_time_place: profileData.favoritePlace,
+                    energy_charge_method: profileData.energyCharge,
+                    adventure_partner: profileData.companion,
+                    comment: profileData.message,
+                    updated_at: new Date().toISOString()
+                };
+
+                // upsert（存在しなければ作成、存在すれば更新）
+                const { data, error } = await supabase
+                    .from('users_profile')
+                    .upsert(saveData)
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                showNotification('プロフィールを保存しました！');
+                
+                // 保存アニメーション
+                const saveButton = document.querySelector('.btn-primary');
+                saveButton.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    saveButton.style.transform = 'scale(1)';
+                }, 200);
+
+                // 完成度が100%の場合は実績を表示
+                const percentage = parseInt(document.getElementById('completionText').textContent);
+                if (percentage === 100) {
+                    setTimeout(() => showAchievement(), 500);
+                }
+
+                // 自動保存インジケーターを更新
+                updateSaveIndicator('saved');
+
+            } catch (error) {
+                console.error('保存エラー:', error);
+                showNotification('保存に失敗しました: ' + error.message);
+                updateSaveIndicator('error');
+            } finally {
+                showLoading(false);
             }
         }
 
@@ -1529,6 +1722,73 @@
                 window.location.href = 'index.html';
             }
         }
+
+        // ローディング表示
+        function showLoading(show) {
+            let loadingEl = document.getElementById('loadingOverlay');
+            
+            if (!loadingEl) {
+                loadingEl = document.createElement('div');
+                loadingEl.id = 'loadingOverlay';
+                loadingEl.className = 'loading-overlay';
+                loadingEl.innerHTML = `
+                    <div class="loading-content">
+                        <div class="loading-spinner"></div>
+                        <p>処理中...</p>
+                    </div>
+                `;
+                loadingEl.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 9999;
+                `;
+                document.body.appendChild(loadingEl);
+            }
+            
+            loadingEl.style.display = show ? 'flex' : 'none';
+        }
+
+        // 保存インジケーターの更新
+        function updateSaveIndicator(status) {
+            const indicator = document.getElementById('saveIndicator');
+            if (!indicator) return;
+            
+            switch(status) {
+                case 'saving':
+                    indicator.classList.add('saving');
+                    indicator.querySelector('span').textContent = '保存中...';
+                    indicator.querySelector('i').className = 'fas fa-spinner fa-spin';
+                    break;
+                case 'saved':
+                    indicator.classList.remove('saving');
+                    indicator.querySelector('span').textContent = '保存済み';
+                    indicator.querySelector('i').className = 'fas fa-check-circle';
+                    break;
+                case 'error':
+                    indicator.classList.remove('saving');
+                    indicator.querySelector('span').textContent = '保存エラー';
+                    indicator.querySelector('i').className = 'fas fa-exclamation-circle';
+                    break;
+            }
+        }
+
+        // 既存の関数を上書き
+        window.saveToLocalStorage = function() {
+            // 自動保存時もSupabaseに保存
+            saveProfile();
+        };
+
+        window.loadFromLocalStorage = function() {
+            // Supabaseから読み込み
+            loadProfileFromSupabase();
+        };
 
         // アニメーション用のCSS追加
         const style = document.createElement('style');
@@ -1541,9 +1801,31 @@
                 from { transform: translateX(0); opacity: 1; }
                 to { transform: translateX(100%); opacity: 0; }
             }
+            .loading-spinner {
+                width: 40px;
+                height: 40px;
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid var(--blue);
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 20px;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            .loading-content {
+                text-align: center;
+                color: white;
+                font-size: 18px;
+                font-weight: 500;
+            }
         `;
         document.head.appendChild(style);
     </script>
     <script src="js/include.js"></script>
+    
+    <!-- 認証モジュール -->
+    <script src="js/auth.js"></script>
 </body>
 </html>

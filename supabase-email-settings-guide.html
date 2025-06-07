@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase メール設定ガイド - CLAFT</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #673AB7;
+            --secondary: #512DA8;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --danger: #F44336;
+            --info: #2196F3;
+            --bg: #F5F5F5;
+            --card: #FFFFFF;
+            --text: #212121;
+            --text-secondary: #757575;
+        }
+        
+        body {
+            font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .title {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+        
+        .section {
+            background: var(--bg);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+        
+        .step {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--primary);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .step-number {
+            background: var(--primary);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 15px;
+            font-size: 16px;
+        }
+        
+        .step-content {
+            display: inline-block;
+            vertical-align: top;
+            width: calc(100% - 55px);
+        }
+        
+        .step-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+        
+        .step-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 15px 0;
+            overflow-x: auto;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .highlight {
+            background: rgba(103, 58, 183, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            margin: 15px 0;
+        }
+        
+        .warning {
+            background: rgba(255, 152, 0, 0.1);
+            border: 2px solid var(--warning);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .warning-title {
+            font-weight: 700;
+            color: var(--warning);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+        
+        .info {
+            background: rgba(33, 150, 243, 0.1);
+            border: 2px solid var(--info);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .info-title {
+            font-weight: 700;
+            color: var(--info);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+        
+        .success {
+            background: rgba(76, 175, 80, 0.1);
+            border: 2px solid var(--success);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .success-title {
+            font-weight: 700;
+            color: var(--success);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+        
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        .screenshot-placeholder {
+            background: var(--bg);
+            border: 2px dashed var(--text-secondary);
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            color: var(--text-secondary);
+            margin: 20px 0;
+        }
+        
+        .config-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: var(--card);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .config-table th,
+        .config-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--bg);
+        }
+        
+        .config-table th {
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+        }
+        
+        .config-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .config-table .field-name {
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .config-table .field-value {
+            font-family: 'Courier New', monospace;
+            background: var(--bg);
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">
+                <i class="fas fa-envelope"></i>
+                Supabase メール設定ガイド
+            </h1>
+            <p class="subtitle">送信者名を「CLAFT」に変更する手順</p>
+        </div>
+        
+        <!-- 概要 -->
+        <div class="section">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                概要
+            </h2>
+            
+            <p>Supabaseの認証メール（サインアップ確認、パスワードリセットなど）の送信者名を「CLAFT」に変更します。これにより、ユーザーが受信するメールがより信頼性の高い、ブランド化されたものになります。</p>
+            
+            <div class="info">
+                <div class="info-title">
+                    <i class="fas fa-lightbulb"></i>
+                    変更される項目
+                </div>
+                <ul>
+                    <li><strong>送信者名</strong>: 「noreply」→「CLAFT」</li>
+                    <li><strong>メール件名</strong>: カスタマイズ可能</li>
+                    <li><strong>メール本文</strong>: HTMLテンプレートでカスタマイズ可能</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- ステップ1: Supabaseダッシュボードにアクセス -->
+        <div class="section">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-external-link-alt"></i>
+                </div>
+                ステップ1: Supabaseダッシュボードにアクセス
+            </h2>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <div class="step-content">
+                    <div class="step-title">Supabaseダッシュボードを開く</div>
+                    <div class="step-description">
+                        ブラウザで以下のURLにアクセスし、プロジェクトを選択します。
+                    </div>
+                    <div class="code-block">
+https://supabase.com/dashboard/projects
+                    </div>
+                    <a href="https://supabase.com/dashboard/projects" target="_blank" class="btn">
+                        <i class="fas fa-external-link-alt"></i>
+                        Supabaseダッシュボードを開く
+                    </a>
+                </div>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">2</span>
+                <div class="step-content">
+                    <div class="step-title">CLAFTプロジェクトを選択</div>
+                    <div class="step-description">
+                        プロジェクト一覧から「laqvpxecqvlufboquffe」プロジェクトをクリックします。
+                    </div>
+                    <div class="highlight">
+                        <strong>プロジェクト名:</strong> laqvpxecqvlufboquffe<br>
+                        <strong>URL:</strong> https://laqvpxecqvlufboquffe.supabase.co
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ステップ2: 認証設定にアクセス -->
+        <div class="section">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                ステップ2: 認証設定にアクセス
+            </h2>
+            
+            <div class="step">
+                <span class="step-number">3</span>
+                <div class="step-content">
+                    <div class="step-title">Authentication メニューを開く</div>
+                    <div class="step-description">
+                        左サイドバーから「Authentication」をクリックします。
+                    </div>
+                    <div class="screenshot-placeholder">
+                        <i class="fas fa-image" style="font-size: 48px; margin-bottom: 10px;"></i><br>
+                        左サイドバー → Authentication
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">4</span>
+                <div class="step-content">
+                    <div class="step-title">Settings タブを選択</div>
+                    <div class="step-description">
+                        Authenticationページで「Settings」タブをクリックします。
+                    </div>
+                    <div class="screenshot-placeholder">
+                        <i class="fas fa-image" style="font-size: 48px; margin-bottom: 10px;"></i><br>
+                        Authentication → Settings タブ
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ステップ3: メール設定の変更 -->
+        <div class="section">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+                ステップ3: メール設定の変更
+            </h2>
+            
+            <div class="step">
+                <span class="step-number">5</span>
+                <div class="step-content">
+                    <div class="step-title">SMTP Settings セクションを探す</div>
+                    <div class="step-description">
+                        Settingsページを下にスクロールして「SMTP Settings」セクションを見つけます。
+                    </div>
+                    <div class="warning">
+                        <div class="warning-title">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            注意
+                        </div>
+                        <p>デフォルトでは「Enable custom SMTP」がオフになっている場合があります。カスタム送信者名を設定するには、この機能を有効にする必要があります。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">6</span>
+                <div class="step-content">
+                    <div class="step-title">送信者名を設定</div>
+                    <div class="step-description">
+                        以下の設定を行います：
+                    </div>
+                    
+                    <table class="config-table">
+                        <thead>
+                            <tr>
+                                <th>設定項目</th>
+                                <th>設定値</th>
+                                <th>説明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="field-name">Sender name</td>
+                                <td class="field-value">CLAFT</td>
+                                <td>メールの送信者として表示される名前</td>
+                            </tr>
+                            <tr>
+                                <td class="field-name">Sender email</td>
+                                <td class="field-value">noreply@yourdomain.com</td>
+                                <td>送信者のメールアドレス（独自ドメインを推奨）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="info">
+                        <div class="info-title">
+                            <i class="fas fa-info-circle"></i>
+                            推奨設定
+                        </div>
+                        <p><strong>Sender name:</strong> 「CLAFT」と入力<br>
+                        <strong>Sender email:</strong> 独自ドメインがある場合は「noreply@yourdomain.com」、ない場合はデフォルトのまま</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ステップ4: メールテンプレートのカスタマイズ -->
+        <div class="section">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-edit"></i>
+                </div>
+                ステップ4: メールテンプレートのカスタマイズ（オプション）
+            </h2>
+            
+            <div class="step">
+                <span class="step-number">7</span>
+                <div class="step-content">
+                    <div class="step-title">Email Templates セクションを開く</div>
+                    <div class="step-description">
+                        同じSettingsページで「Email Templates」セクションを見つけます。
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">8</span>
+                <div class="step-content">
+                    <div class="step-title">各メールテンプレートを編集</div>
+                    <div class="step-description">
+                        以下のテンプレートをCLAFTブランドに合わせてカスタマイズできます：
+                    </div>
+                    
+                    <ul style="margin: 15px 0; padding-left: 20px;">
+                        <li><strong>Confirm signup:</strong> サインアップ確認メール</li>
+                        <li><strong>Invite user:</strong> ユーザー招待メール</li>
+                        <li><strong>Magic Link:</strong> マジックリンクメール</li>
+                        <li><strong>Change Email Address:</strong> メールアドレス変更確認</li>
+                        <li><strong>Reset Password:</strong> パスワードリセットメール</li>
+                    </ul>
+                    
+                    <div class="code-block">
+&lt;h2&gt;CLAFT へようこそ！&lt;/h2&gt;
+&lt;p&gt;アカウントの確認を完了するには、下のリンクをクリックしてください。&lt;/p&gt;
+&lt;p&gt;&lt;a href="{{ .ConfirmationURL }}"&gt;メールアドレスを確認&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;CLAFTチーム&lt;/p&gt;
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ステップ5: 設定の保存と確認 -->
+        <div class="section">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-save"></i>
+                </div>
+                ステップ5: 設定の保存と確認
+            </h2>
+            
+            <div class="step">
+                <span class="step-number">9</span>
+                <div class="step-content">
+                    <div class="step-title">設定を保存</div>
+                    <div class="step-description">
+                        すべての変更を行った後、「Save」または「Update」ボタンをクリックして設定を保存します。
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">10</span>
+                <div class="step-content">
+                    <div class="step-title">テスト送信で確認</div>
+                    <div class="step-description">
+                        新しいユーザーでサインアップを試して、メールの送信者名が「CLAFT」になっているか確認します。
+                    </div>
+                    
+                    <div class="success">
+                        <div class="success-title">
+                            <i class="fas fa-check-circle"></i>
+                            確認ポイント
+                        </div>
+                        <ul>
+                            <li>メールの送信者名が「CLAFT」と表示される</li>
+                            <li>メールの件名がカスタマイズされている（設定した場合）</li>
+                            <li>メール本文がブランドに合ったデザインになっている</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 追加の設定オプション -->
+        <div class="section">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                追加の設定オプション
+            </h2>
+            
+            <div class="info">
+                <div class="info-title">
+                    <i class="fas fa-lightbulb"></i>
+                    さらなるカスタマイズ
+                </div>
+                <ul>
+                    <li><strong>独自ドメイン:</strong> 独自ドメインからメールを送信する場合は、DNS設定が必要です</li>
+                    <li><strong>SMTP設定:</strong> 外部のメールサービス（SendGrid、Mailgunなど）を使用可能</li>
+                    <li><strong>メール配信率:</strong> 独自ドメインとSPF/DKIMレコードで配信率を向上</li>
+                    <li><strong>多言語対応:</strong> 複数の言語でメールテンプレートを作成可能</li>
+                </ul>
+            </div>
+            
+            <div class="warning">
+                <div class="warning-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    重要な注意事項
+                </div>
+                <ul>
+                    <li>設定変更後は必ずテスト送信で確認してください</li>
+                    <li>独自ドメインを使用する場合は、DNS設定が正しく行われているか確認してください</li>
+                    <li>メールテンプレートの変更は既存ユーザーにも影響します</li>
+                    <li>スパムフィルターに引っかからないよう、適切な文言を使用してください</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- 完了 -->
+        <div class="section">
+            <h2 class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                設定完了
+            </h2>
+            
+            <div class="success">
+                <div class="success-title">
+                    <i class="fas fa-trophy"></i>
+                    おめでとうございます！
+                </div>
+                <p>CLAFTのメール設定が完了しました。これで、ユーザーが受信する認証メールの送信者名が「CLAFT」として表示されるようになります。</p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="index.html" class="btn">
+                    <i class="fas fa-home"></i>
+                    CLAFTホームに戻る
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
