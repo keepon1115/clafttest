@@ -883,6 +883,46 @@
                 width: 100%;
             }
         }
+
+        /* ハンバーガーメニューのスタイル修正 */
+        .hamburger-menu {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 45px;
+            height: 45px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hamburger-menu .bar {
+            width: 25px;
+            height: 3px;
+            background: #333;
+            margin: 3px 0;
+            transition: all 0.3s ease;
+            border-radius: 3px;
+        }
+
+        .hamburger-menu.active .bar:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .hamburger-menu.active .bar:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-menu.active .bar:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
     </style>
 </head>
 <body>
@@ -1207,25 +1247,8 @@
     </div>
 
     <script>
-        // 状態管理
-        let profileData = {
-            nickname: 'たろう',
-            character: '',
-            skills: [],
-            weakness: '',
-            favoritePlace: '',
-            energyCharge: '',
-            companion: '',
-            catchphrase: '',
-            message: ''
-        };
-
-        let currentUser = null;
-        let isLoading = false;
-
         // 認証状態が変更されたときの処理
         window.onAuthStateChanged = async function(user) {
-            currentUser = user;
             if (user) {
                 // ログイン時：プロフィールデータを読み込む
                 await loadProfileFromSupabase();
@@ -1234,6 +1257,96 @@
                 authManager.showAuthModal();
             }
         };
+
+        // ローディング表示の制御
+        function showLoading(show) {
+            let loadingEl = document.querySelector('.loading-overlay');
+            
+            if (!loadingEl && show) {
+                loadingEl = document.createElement('div');
+                loadingEl.className = 'loading-overlay';
+                loadingEl.innerHTML = `
+                    <div class="loading-content">
+                        <div class="loading-spinner"></div>
+                        <p>処理中...</p>
+                    </div>
+                `;
+                loadingEl.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 9999;
+                `;
+                document.body.appendChild(loadingEl);
+            }
+            
+            if (loadingEl) {
+                loadingEl.style.display = show ? 'flex' : 'none';
+            }
+        }
+
+        // プロフィール保存処理
+        async function saveProfile() {
+            const user = authManager.getCurrentUser();
+            if (!user) {
+                showNotification('ログインが必要です');
+                authManager.showAuthModal();
+                return;
+            }
+
+            // showNotificationが定義されていない場合の対処
+            if (typeof showNotification !== 'function') {
+                window.showNotification = function(message) {
+                    alert(message); // 一時的な対処
+                };
+            }
+
+            showLoading(true);
+            
+            try {
+                // フォームデータの取得
+                const nickname = document.getElementById('nickname').value;
+                const bio = document.getElementById('bio').value;
+                const avatarUrl = document.getElementById('avatarPreview').src;
+                const grade = document.getElementById('grade').value;
+                const interests = Array.from(document.querySelectorAll('input[name="interests"]:checked')).map(cb => cb.value);
+                const skills = Array.from(document.querySelectorAll('input[name="skills"]:checked')).map(cb => cb.value);
+
+                // Supabaseにデータを保存
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .upsert({
+                        id: user.id,
+                        nickname: nickname,
+                        bio: bio,
+                        avatar_url: avatarUrl,
+                        grade: grade,
+                        interests: interests,
+                        skills: skills,
+                        updated_at: new Date()
+                    });
+
+                if (error) throw error;
+                
+                // 成功時は明示的にリダイレクト
+                showNotification('プロフィールを保存しました！');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+                
+            } catch (error) {
+                console.error('保存エラー:', error);
+                showNotification('保存に失敗しました: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
 
         // ページ初期化時の処理を更新
         document.addEventListener('DOMContentLoaded', function() {
@@ -1666,193 +1779,6 @@
                 if (companionButton) companionButton.classList.add('selected');
             }
         }
-
-        // プロフィールをSupabaseに保存
-        async function saveProfile() {
-            const user = authManager.getCurrentUser();
-            if (!user) {
-                showNotification('ログインが必要です');
-                authManager.showAuthModal();
-                return;
-            }
-
-            showLoading(true);
-            
-            try {
-                // フォームから最新のデータを取得
-                profileData.nickname = document.getElementById('nickname').value || 'たろう';
-                profileData.character = document.getElementById('character').value;
-                profileData.weakness = document.getElementById('weakness').value;
-                profileData.favoritePlace = document.getElementById('favoritePlace').value;
-                profileData.energyCharge = document.getElementById('energyCharge').value;
-                profileData.companion = document.getElementById('companion').value;
-                profileData.catchphrase = document.getElementById('catchphrase').value;
-                profileData.message = document.getElementById('message').value;
-                
-                // スキルの処理
-                const skillsInput = document.getElementById('skills').value;
-                if (skillsInput) {
-                    profileData.skills = skillsInput.split(/[,、]/).map(s => s.trim()).filter(s => s);
-                }
-
-                // Supabaseに保存するデータ形式に変換
-                const saveData = {
-                    id: user.id,
-                    email: user.email,
-                    nickname: profileData.nickname,
-                    character_type: profileData.character,
-                    catchphrase: profileData.catchphrase,
-                    strengths: profileData.skills,
-                    weaknesses: profileData.weakness ? profileData.weakness.split(/[,、]/).map(s => s.trim()).filter(s => s) : [],
-                    favorite_time_place: profileData.favoritePlace,
-                    energy_charge_method: profileData.energyCharge,
-                    adventure_partner: profileData.companion,
-                    comment: profileData.message,
-                    updated_at: new Date().toISOString()
-                };
-
-                // upsert（存在しなければ作成、存在すれば更新）
-                const { data, error } = await supabase
-                    .from('users_profile')
-                    .upsert(saveData)
-                    .select()
-                    .single();
-
-                if (error) throw error;
-
-                showNotification('プロフィールを保存しました！');
-                
-                // 保存アニメーション
-                const saveButton = document.querySelector('.btn-primary');
-                saveButton.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    saveButton.style.transform = 'scale(1)';
-                }, 200);
-
-                // 完成度が100%の場合は実績を表示
-                const percentage = parseInt(document.getElementById('completionText').textContent);
-                if (percentage === 100) {
-                    setTimeout(() => showAchievement(), 500);
-                }
-
-                // 自動保存インジケーターを更新
-                updateSaveIndicator('saved');
-
-            } catch (error) {
-                console.error('保存エラー:', error);
-                showNotification('保存に失敗しました: ' + error.message);
-                updateSaveIndicator('error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // 編集キャンセル
-        function cancelEdit() {
-            if (confirm('編集内容を破棄してホームに戻りますか？')) {
-                window.location.href = 'index.html';
-            }
-        }
-
-        // ローディング表示
-        function showLoading(show) {
-            let loadingEl = document.getElementById('loadingOverlay');
-            
-            if (!loadingEl) {
-                loadingEl = document.createElement('div');
-                loadingEl.id = 'loadingOverlay';
-                loadingEl.className = 'loading-overlay';
-                loadingEl.innerHTML = `
-                    <div class="loading-content">
-                        <div class="loading-spinner"></div>
-                        <p>処理中...</p>
-                    </div>
-                `;
-                loadingEl.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0, 0, 0, 0.5);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 9999;
-                `;
-                document.body.appendChild(loadingEl);
-            }
-            
-            loadingEl.style.display = show ? 'flex' : 'none';
-        }
-
-        // 保存インジケーターの更新
-        function updateSaveIndicator(status) {
-            const indicator = document.getElementById('saveIndicator');
-            if (!indicator) return;
-            
-            switch(status) {
-                case 'saving':
-                    indicator.classList.add('saving');
-                    indicator.querySelector('span').textContent = '保存中...';
-                    indicator.querySelector('i').className = 'fas fa-spinner fa-spin';
-                    break;
-                case 'saved':
-                    indicator.classList.remove('saving');
-                    indicator.querySelector('span').textContent = '保存済み';
-                    indicator.querySelector('i').className = 'fas fa-check-circle';
-                    break;
-                case 'error':
-                    indicator.classList.remove('saving');
-                    indicator.querySelector('span').textContent = '保存エラー';
-                    indicator.querySelector('i').className = 'fas fa-exclamation-circle';
-                    break;
-            }
-        }
-
-        // 既存の関数を上書き
-        window.saveToLocalStorage = function() {
-            // 自動保存時もSupabaseに保存
-            saveProfile();
-        };
-
-        window.loadFromLocalStorage = function() {
-            // Supabaseから読み込み
-            loadProfileFromSupabase();
-        };
-
-        // アニメーション用のCSS追加
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-            .loading-spinner {
-                width: 40px;
-                height: 40px;
-                border: 4px solid #f3f3f3;
-                border-top: 4px solid var(--blue);
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-                margin-bottom: 20px;
-            }
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-            .loading-content {
-                text-align: center;
-                color: white;
-                font-size: 18px;
-                font-weight: 500;
-            }
-        `;
-        document.head.appendChild(style);
 
         // ハンバーガーメニューの動作
         document.addEventListener('DOMContentLoaded', function() {
