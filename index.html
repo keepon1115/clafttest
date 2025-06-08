@@ -179,11 +179,18 @@
         .header {
             background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
             color: white;
-            padding: 15px 30px; /* 左パディングを通常に戻す */
+            padding: 15px 30px 15px 70px; /* 左側にハンバーガーメニュー用のスペースを確保 */
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             position: relative;
-            z-index: 90;
+            z-index: 90; /* ハンバーガーメニューより低く維持 */
             overflow: hidden;
+        }
+
+        /* ハンバーガーメニューの表示を確実にする */
+        .hamburger-menu {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
 
         .header::before {
@@ -325,7 +332,8 @@
 
         /* メインコンテンツ - 改良版 */
         .main-content {
-            padding: 40px;
+            padding: 20px;
+            padding-top: 20px;
             display: flex;
             gap: 40px;
             align-items: stretch; /* 左右のカードの高さを揃える */
@@ -333,6 +341,14 @@
             z-index: 10;
             margin-left: 0; /* サイドバー非表示時のマージン */
             transition: margin-left 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 15px;
+                padding-top: 15px;
+                flex-direction: column;
+            }
         }
 
 
@@ -1532,8 +1548,9 @@
             }
             
             .main-content {
-                padding: 20px;
-                gap: 20px;
+                padding: 15px;
+                padding-top: 15px;
+                flex-direction: column;
             }
             
             .goals-section,
@@ -2416,6 +2433,28 @@
                     });
             });
         }
+    </script>
+
+    <script>
+    // デバッグ：ハンバーガーメニューの状態を確認
+    document.addEventListener('DOMContentLoaded', function() {
+        const hamburger = document.getElementById('hamburgerMenu');
+        if (hamburger) {
+            console.log('Hamburger menu found:', hamburger);
+            console.log('Hamburger styles:', window.getComputedStyle(hamburger));
+            
+            // 強制的に表示
+            hamburger.style.display = 'block';
+            hamburger.style.visibility = 'visible';
+            hamburger.style.opacity = '1';
+            hamburger.style.position = 'fixed';
+            hamburger.style.top = '20px';
+            hamburger.style.left = '20px';
+            hamburger.style.zIndex = '1000';
+        } else {
+            console.error('Hamburger menu not found!');
+        }
+    });
     </script>
 </body>
 </html>
