@@ -139,6 +139,45 @@
             50% { opacity: 0.7; }
         }
         
+        /* ハンバーガーメニューのスタイル修正 */
+        .hamburger-menu {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 45px;
+            height: 45px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hamburger-menu .bar {
+            width: 25px;
+            height: 3px;
+            background: #333;
+            margin: 3px 0;
+            transition: all 0.3s ease;
+            border-radius: 3px;
+        }
+
+        .hamburger-menu.active .bar:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .hamburger-menu.active .bar:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-menu.active .bar:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
 
     </style>
 </head>
@@ -370,32 +409,81 @@
                 
                 const progress = {};
                 
-                // 初期状態：ステージ1はcurrent、他はlocked
-                for (let i = 1; i <= TOTAL_STAGES; i++) {
-                    progress[i] = i === 1 ? 'current' : 'locked';
-                }
-                
-                // データベースの状態で上書き
-                if (data && data.length > 0) {
+                // データが全くない場合（新規ユーザー）
+                if (!data || data.length === 0) {
+                    // ステージ1を自動的にcurrentに設定
+                    progress[1] = 'current';
+                    
+                    // データベースにも保存
+                    const { error: insertError } = await supabase
+                        .from('quest_progress')
+                        .insert({
+                            user_id: userId,
+                            stage_id: 1,
+                            status: 'current',
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        });
+
+                    if (insertError) {
+                        console.error('Error inserting initial progress:', insertError);
+                        throw insertError;
+                    }
+                    
+                    // 残りはlocked
+                    for (let i = 2; i <= TOTAL_STAGES; i++) {
+                        progress[i] = 'locked';
+                    }
+                } else {
+                    // 既存データがある場合
+                    // まず全てlockedで初期化
+                    for (let i = 1; i <= TOTAL_STAGES; i++) {
+                        progress[i] = 'locked';
+                    }
+                    
+                    // データベースの状態で上書き
                     data.forEach(record => {
-                        progress[record.stage_id] = record.status;
+                        if (record && record.stage_id && record.status) {
+                            progress[record.stage_id] = record.status;
+                        }
                     });
                     
-                    // 次のステージを自動的にcurrentに
-                    let hasCurrentStage = false;
+                    // currentまたはpending_approvalがない場合
+                    let hasActiveStage = false;
+                    let lastCompletedStage = 0;
+                    
                     for (let i = 1; i <= TOTAL_STAGES; i++) {
                         if (progress[i] === 'current' || progress[i] === 'pending_approval') {
-                            hasCurrentStage = true;
+                            hasActiveStage = true;
                             break;
+                        }
+                        if (progress[i] === 'completed') {
+                            lastCompletedStage = i;
                         }
                     }
                     
-                    if (!hasCurrentStage) {
-                        // 最後にcompletedになっているステージの次をcurrentに
-                        for (let i = TOTAL_STAGES - 1; i >= 1; i--) {
-                            if (progress[i] === 'completed' && i < TOTAL_STAGES) {
-                                progress[i + 1] = 'current';
-                                break;
+                    // アクティブなステージがない場合、最後に完了したステージの次のステージをcurrentに
+                    if (!hasActiveStage) {
+                        const nextStage = lastCompletedStage + 1;
+                        if (nextStage <= TOTAL_STAGES) {
+                            progress[nextStage] = 'current';
+                            
+                            // データベースにも保存
+                            const { error: upsertError } = await supabase
+                                .from('quest_progress')
+                                .upsert({
+                                    user_id: userId,
+                                    stage_id: nextStage,
+                                    status: 'current',
+                                    created_at: new Date().toISOString(),
+                                    updated_at: new Date().toISOString()
+                                }, {
+                                    onConflict: 'user_id,stage_id'
+                                });
+
+                            if (upsertError) {
+                                console.error('Error upserting next stage:', upsertError);
+                                throw upsertError;
                             }
                         }
                     }
@@ -405,10 +493,14 @@
                 return progress;
                 
             } catch (error) {
-                console.error('Error fetching user progress:', error.message);
+                console.error('Error fetching user progress:', error);
+                showNotification('進捗データの取得に失敗しました');
+                
+                // エラー時でもステージ1はcurrentに
                 const defaultProgress = {};
-                for (let i = 1; i <= TOTAL_STAGES; i++) {
-                    defaultProgress[i] = i === 1 ? 'current' : 'locked';
+                defaultProgress[1] = 'current';
+                for (let i = 2; i <= TOTAL_STAGES; i++) {
+                    defaultProgress[i] = 'locked';
                 }
                 return defaultProgress;
             } finally {
