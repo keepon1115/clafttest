@@ -31,3 +31,29 @@
         <span>ミライクラフト</span>
     </a>
 </nav>
+
+<script>
+    // ハンバーガーメニューの動作
+    const hamburgerMenu = document.getElementById('hamburgerMenu');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function toggleSidebar() {
+        hamburgerMenu.classList.toggle('active');
+        sidebar.classList.toggle('active');
+        sidebarOverlay.classList.toggle('active');
+    }
+
+    hamburgerMenu.addEventListener('click', toggleSidebar);
+    sidebarOverlay.addEventListener('click', toggleSidebar);
+
+    // リンクにタイムスタンプを追加してキャッシュを回避
+    document.querySelectorAll('.sidebar a').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const href = link.getAttribute('href');
+            const timestamp = new Date().getTime();
+            window.location.href = `${href}?t=${timestamp}`;
+        });
+    });
+</script>
