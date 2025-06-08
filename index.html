@@ -13,6 +13,7 @@
     <!-- PWA関連メタタグ -->
     <meta name="theme-color" content="#29B6F6">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CLAFT">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -1687,8 +1688,33 @@
     </style>
 </head>
 <body>
-    <!-- ナビゲーション（共通） -->
-    <div data-include="partials/navigation.html"></div>
+    <!-- ハンバーガーメニュー -->
+    <div class="hamburger-menu" id="hamburgerMenu">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+    </div>
+
+    <!-- サイドバー -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">🎮 CLAFT</div>
+        </div>
+        <div class="sidebar-nav">
+            <ul>
+                <li><a href="index.html" class="active"><i class="fas fa-home"></i><span class="nav-label">ホーム</span></a></li>
+                <li><a href="quest.html"><i class="fas fa-map"></i><span class="nav-label">クエストマップ</span></a></li>
+                <li><a href="yononaka.html"><i class="fas fa-globe"></i><span class="nav-label">Yononaka</span></a></li>
+                <li><a href="mirai.html"><i class="fas fa-rocket"></i><span class="nav-label">ミライクラフト</span></a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- オーバーレイ -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- 認証ボタン用スペース -->
+    <div class="nav-buttons"></div>
 
     <!-- 背景 -->
     <div class="background-wrapper">
@@ -2435,24 +2461,34 @@
         }
     </script>
 
+
     <script>
-    // デバッグ：ハンバーガーメニューの状態を確認
+    // ハンバーガーメニューの動作
     document.addEventListener('DOMContentLoaded', function() {
-        const hamburger = document.getElementById('hamburgerMenu');
-        if (hamburger) {
-            console.log('Hamburger menu found:', hamburger);
-            console.log('Hamburger styles:', window.getComputedStyle(hamburger));
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        if (hamburgerMenu && sidebar && sidebarOverlay) {
+            console.log('Navigation elements found and initialized');
             
-            // 強制的に表示
-            hamburger.style.display = 'block';
-            hamburger.style.visibility = 'visible';
-            hamburger.style.opacity = '1';
-            hamburger.style.position = 'fixed';
-            hamburger.style.top = '20px';
-            hamburger.style.left = '20px';
-            hamburger.style.zIndex = '1000';
+            hamburgerMenu.addEventListener('click', () => {
+                hamburgerMenu.classList.toggle('active');
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+
+            sidebarOverlay.addEventListener('click', () => {
+                hamburgerMenu.classList.remove('active');
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
         } else {
-            console.error('Hamburger menu not found!');
+            console.error('Navigation elements not found:', {
+                hamburgerMenu: !!hamburgerMenu,
+                sidebar: !!sidebar,
+                sidebarOverlay: !!sidebarOverlay
+            });
         }
     });
     </script>
