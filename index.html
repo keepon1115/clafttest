@@ -14,6 +14,7 @@
     <meta name="theme-color" content="#29B6F6">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CLAFT">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -1665,31 +1666,26 @@
             text-align: right;
         }
 
-        .user-name {
-            display: block;
-            font-size: 16px;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 4px;
-        }
+    <!-- サイドバー -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">🎮 CLAFT</div>
+        </div>
+        <div class="sidebar-nav">
+            <ul>
+                <li><a href="index.html" class="active"><i class="fas fa-home"></i><span class="nav-label">ホーム</span></a></li>
+                <li><a href="quest.html"><i class="fas fa-map"></i><span class="nav-label">クエストマップ</span></a></li>
+                <li><a href="yononaka.html"><i class="fas fa-globe"></i><span class="nav-label">Yononaka</span></a></li>
+                <li><a href="mirai.html"><i class="fas fa-rocket"></i><span class="nav-label">ミライクラフト</span></a></li>
+            </ul>
+        </div>
+    </nav>
 
-        .user-stats {
-            display: flex;
-            gap: 12px;
-            font-size: 12px;
-            opacity: 0.9;
-        }
+    <!-- オーバーレイ -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-    </style>
-</head>
-<body>
-    <!-- ナビゲーション（共通） -->
-    <div data-include="partials/navigation.html"></div>
+    <!-- 認証ボタン用スペース -->
+    <div class="nav-buttons"></div>
 
     <!-- 背景 -->
     <div class="background-wrapper">
@@ -1863,7 +1859,7 @@
                                 <i class="fas fa-flag-checkered"></i> <!-- 短期目標アイコン -->
                             </div>
                             <div class="goal-label">短期目標</div>
-                            <div class="goal-text">プログラミング基礎習得</div>
+                            <div class="goal-text">夏休み中に「学校の不便を解決するミニサービス」を3つ考えてメモする</div>
                             <div class="goal-progress">
                                 <div class="goal-progress-bar" style="width: 75%;"></div> <!-- 進捗例 -->
                             </div>
@@ -1875,7 +1871,7 @@
                                 <i class="fas fa-mountain"></i> <!-- 長期目標アイコン -->
                             </div>
                             <div class="goal-label">長期目標</div>
-                            <div class="goal-text">アプリ開発者になる</div>
+                            <div class="goal-text">アイデアコンテストで優勝する</div>
                             <div class="goal-progress">
                                 <div class="goal-progress-bar" style="width: 30%;"></div>
                             </div>
@@ -2046,416 +2042,33 @@
         <!-- 通知はJavaScriptで動的に追加されます -->
     </div>
 
-    <script>
-        // index.html用の動的データ読み込み関数
+<!-- include.js はすぐ読み込む -->
+<script src="js/include.js"></script>
 
-        // 認証状態が変更されたときの処理
-        window.onAuthStateChanged = async function(user) {
-            if (user) {
-                // ログイン時の処理
-                await loadUserData();
-                await loadUserStats();
-                updateUIForLoggedIn(user);
-            } else {
-                // ログアウト時の処理
-                updateUIForLoggedOut();
-            }
-        };
+<!-- Supabaseが読み込まれてからauth.jsを読み込む -->
+<script>
+function loadAuthWhenReady() {
+    if (window.supabase && window.supabase.createClient) {
+        const script = document.createElement('script');
+        script.src = 'js/auth.js';
+        document.body.appendChild(script);
+    } else {
+        setTimeout(loadAuthWhenReady, 100);
+    }
+}
+loadAuthWhenReady();
+</script>
 
-        // ユーザーデータの読み込み
-        async function loadUserData() {
-            const user = authManager.getCurrentUser();
-            if (!user) return;
+<!-- ページ読み込み時の初期化 -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.authManager && authManager.getCurrentUser()) {
+        document.getElementById('welcomeMessage').textContent = `ようこそ、${authManager.getCurrentUser().email}さん！`;
+    } else {
+        document.getElementById('welcomeMessage').textContent = 'ようこそ、冒険者さん！';
+    }
+});
+</script>
 
-            try {
-                // プロフィールデータの取得
-                const { data: profile, error } = await supabase
-                    .from('users_profile')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single();
-
-                if (error) throw error;
-
-                if (profile) {
-                    // プロフィール情報の反映
-                    updateProfileDisplay(profile);
-                }
-            } catch (error) {
-                console.error('プロフィール読み込みエラー:', error);
-            }
-        }
-
-        // プロフィール表示の更新
-        function updateProfileDisplay(profile) {
-            // 基本情報
-            document.getElementById('profileName').textContent = profile.nickname || 'たろう';
-            document.getElementById('playerName').textContent = profile.nickname || 'たろう';
-            document.getElementById('characterText').textContent = profile.character_type || '冒険大好き！挑戦者タイプ';
-            document.getElementById('catchphraseText').textContent = profile.catchphrase || '「新しいことにチャレンジだ！」';
-
-            // 強み
-            const strengthTags = document.getElementById('strengthTags');
-            strengthTags.innerHTML = '';
-            if (profile.strengths && profile.strengths.length > 0) {
-                profile.strengths.forEach(strength => {
-                    const tag = document.createElement('span');
-                    tag.className = 'ability-tag';
-                    tag.textContent = strength;
-                    strengthTags.appendChild(tag);
-                });
-            } else {
-                strengthTags.innerHTML = '<span class="ability-tag">プログラミング</span><span class="ability-tag">デザイン</span><span class="ability-tag">問題解決</span>';
-            }
-
-            // 弱み
-            const weaknessTags = document.getElementById('weaknessTags');
-            weaknessTags.innerHTML = '';
-            if (profile.weaknesses && profile.weaknesses.length > 0) {
-                profile.weaknesses.forEach(weakness => {
-                    const tag = document.createElement('span');
-                    tag.className = 'ability-tag';
-                    tag.textContent = weakness;
-                    weaknessTags.appendChild(tag);
-                });
-            } else {
-                weaknessTags.innerHTML = '<span class="ability-tag">時間管理</span><span class="ability-tag">朝起き</span>';
-            }
-
-            // その他の情報
-            document.getElementById('favoriteTime').textContent = profile.favorite_time_place || 'カフェでコーヒーを飲みながらコーディング';
-            document.getElementById('energyCharge').textContent = profile.energy_charge_method || '音楽を聴きながら散歩する';
-            document.getElementById('adventurePartner').textContent = profile.adventure_partner || '新しいアイデアをシェアできるクリエイティブな仲間';
-            document.getElementById('commentText').textContent = profile.comment || '毎日が新しい冒険！プログラミングを通じて、世界をもっと便利で楽しい場所にしたいです。一緒に素晴らしいものを作りましょう！';
-
-            // アバターアイコンの更新
-            if (profile.avatar_icon) {
-                const avatarIcon = document.querySelector('.avatar-container i');
-                avatarIcon.className = `fas ${profile.avatar_icon}`;
-            }
-        }
-
-        // ユーザー統計の読み込み
-        async function loadUserStats() {
-            const user = authManager.getCurrentUser();
-            if (!user) return;
-
-            try {
-                // 統計データの取得
-                const { data: stats, error } = await supabase
-                    .from('user_stats')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .single();
-
-                if (error && error.code !== 'PGRST116') throw error;
-
-                if (stats) {
-                    updateStatsDisplay(stats);
-                }
-
-                // クエスト進行状況の取得
-                const { data: questProgress, error: questError } = await supabase
-                    .from('quest_progress')
-                    .select('*')
-                    .eq('user_id', user.id);
-
-                if (!questError && questProgress) {
-                    updateQuestStats(questProgress);
-                }
-            } catch (error) {
-                console.error('統計読み込みエラー:', error);
-            }
-        }
-
-        // 統計表示の更新
-        function updateStatsDisplay(stats) {
-            // ヘッダーの統計情報更新
-            document.getElementById('loginCount').textContent = stats.login_count || 0;
-            document.getElementById('questClearCount').textContent = stats.quest_clear_count || 0;
-
-            // レベルと経験値の計算
-            const level = stats.current_level || 1;
-            const exp = stats.total_exp || 0;
-            const expForNextLevel = level * 100; // レベル × 100 = 次のレベルに必要な経験値
-            const currentLevelExp = (level - 1) * 100;
-            const progressPercent = ((exp - currentLevelExp) / (expForNextLevel - currentLevelExp)) * 100;
-
-            // 経験値バーの更新
-            const expBar = document.getElementById('expBar');
-            if (expBar) {
-                expBar.style.width = `${Math.min(progressPercent, 100)}%`;
-            }
-
-            // レベル表示の更新（ヘッダーに追加する場合）
-            updateLevelDisplay(level);
-        }
-
-        // クエスト統計の更新
-        function updateQuestStats(questProgress) {
-            const completedCount = questProgress.filter(q => q.status === 'completed').length;
-            
-            // クエストクリア数をヘッダーに反映
-            document.getElementById('questClearCount').textContent = completedCount;
-        }
-
-        // レベル表示の更新
-        function updateLevelDisplay(level) {
-            // レベル表示要素が存在しない場合は作成
-            let levelDisplay = document.getElementById('userLevel');
-            if (!levelDisplay) {
-                const playerInfo = document.querySelector('.player-info');
-                if (playerInfo) {
-                    levelDisplay = document.createElement('div');
-                    levelDisplay.id = 'userLevel';
-                    levelDisplay.className = 'user-level';
-                    levelDisplay.style.cssText = 'background: linear-gradient(135deg, var(--gold), var(--yellow)); color: var(--text-dark); padding: 5px 15px; border-radius: 20px; font-weight: 700; font-size: 14px; margin-left: 20px;';
-                    playerInfo.appendChild(levelDisplay);
-                }
-            }
-            
-            if (levelDisplay) {
-                levelDisplay.textContent = `Lv.${level}`;
-            }
-        }
-
-        // ログイン時のUI更新
-        function updateUIForLoggedIn(user) {
-            // 認証状態表示の更新
-            const loginBtn = document.querySelector('[data-auth-action="login"]');
-            const userInfo = document.getElementById('userInfo');
-            
-            if (loginBtn) loginBtn.style.display = 'none';
-            if (userInfo) {
-                userInfo.style.display = 'flex';
-                const headerUserName = document.getElementById('headerUserName');
-                if (headerUserName) {
-                    headerUserName.textContent = user.user_metadata?.display_name || user.email.split('@')[0];
-                }
-            }
-
-            // プロフィール編集ボタンを有効化
-            const editBtn = document.querySelector('.edit-profile-btn');
-            if (editBtn) {
-                editBtn.onclick = () => {
-                    window.location.href = 'profile.html';
-                };
-            }
-        }
-
-        // ログアウト時のUI更新
-        function updateUIForLoggedOut() {
-            // 認証状態表示の更新
-            const loginBtn = document.querySelector('[data-auth-action="login"]');
-            const userInfo = document.getElementById('userInfo');
-            
-            if (loginBtn) loginBtn.style.display = 'block';
-            if (userInfo) userInfo.style.display = 'none';
-
-            // デフォルト値に戻す
-            resetToDefaultValues();
-        }
-
-        // デフォルト値にリセット
-        function resetToDefaultValues() {
-            document.getElementById('profileName').textContent = 'ゲスト';
-            document.getElementById('playerName').textContent = 'ゲスト';
-            document.getElementById('characterText').textContent = '冒険大好き！挑戦者タイプ';
-            document.getElementById('catchphraseText').textContent = '「新しいことにチャレンジだ！」';
-            document.getElementById('favoriteTime').textContent = 'カフェでコーヒーを飲みながらコーディング';
-            document.getElementById('energyCharge').textContent = '音楽を聴きながら散歩する';
-            document.getElementById('adventurePartner').textContent = '新しいアイデアをシェアできるクリエイティブな仲間';
-            document.getElementById('commentText').textContent = '毎日が新しい冒険！プログラミングを通じて、世界をもっと便利で楽しい場所にしたいです。一緒に素晴らしいものを作りましょう！';
-            
-            // 統計情報をリセット
-            document.getElementById('loginCount').textContent = '0';
-            document.getElementById('questClearCount').textContent = '0';
-            
-            // 経験値バーをリセット
-            const expBar = document.getElementById('expBar');
-            if (expBar) {
-                expBar.style.width = '0%';
-            }
-
-            // 強み・弱みタグをデフォルトに
-            const strengthTags = document.getElementById('strengthTags');
-            if (strengthTags) {
-                strengthTags.innerHTML = '<span class="ability-tag">プログラミング</span><span class="ability-tag">デザイン</span><span class="ability-tag">問題解決</span>';
-            }
-            
-            const weaknessTags = document.getElementById('weaknessTags');
-            if (weaknessTags) {
-                weaknessTags.innerHTML = '<span class="ability-tag">時間管理</span><span class="ability-tag">朝起き</span>';
-            }
-
-            // レベル表示を削除
-            const levelDisplay = document.getElementById('userLevel');
-            if (levelDisplay) {
-                levelDisplay.remove();
-            }
-        }
-
-        // ページ読み込み時の初期化
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Dashboard initialization started');
-            
-            // スキルタブのアクティブ切り替え (オプション)
-            const skillTabs = document.querySelectorAll('.skill-tab:not(.locked)');
-            skillTabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    skillTabs.forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
-
-            // 初期状態でデフォルト値を表示
-            resetToDefaultValues();
-        });
-
-        function goToProfileEdit() {
-            if (authManager.isLoggedIn()) {
-                window.location.href = 'profile.html';
-            } else {
-                showNotification('info', 'ログインが必要です', 'プロフィール編集にはログインが必要です。');
-                authManager.showAuthModal();
-            }
-        }
-
-        // --- レベルアップモーダル関連 ---
-        function showLevelUpModal(title = 'レベルアップ！', message = '新しいスキルと報酬を獲得しました！', icon = '🎉') {
-            const modal = document.getElementById('levelUpModal');
-            if (modal) {
-                modal.querySelector('.levelup-icon').textContent = icon;
-                modal.querySelector('.levelup-title').textContent = title;
-                modal.querySelector('.levelup-message').textContent = message;
-                modal.classList.add('active');
-                createConfetti(100); // 紙吹雪
-            }
-        }
-
-        function closeLevelUpModal() {
-            const modal = document.getElementById('levelUpModal');
-            if (modal) {
-                modal.classList.remove('active');
-            }
-        }
-
-        // --- 通知システム関連 ---
-        function showNotification(type, title, message, duration = 3000) {
-            const container = document.getElementById('notificationContainer');
-            if (!container) return;
-
-            const notification = document.createElement('div');
-            notification.classList.add('notification');
-            
-            const iconDiv = document.createElement('div');
-            iconDiv.classList.add('notification-icon', type); 
-            let iconClass = 'fa-check'; // default for success
-            if (type === 'info') iconClass = 'fa-info-circle';
-            else if (type === 'achievement') iconClass = 'fa-trophy';
-            else if (type === 'error') iconClass = 'fa-times-circle';
-            iconDiv.innerHTML = `<i class="fas ${iconClass}"></i>`;
-
-            const contentDiv = document.createElement('div');
-            contentDiv.classList.add('notification-content');
-            contentDiv.innerHTML = `<h4>${title}</h4><p>${message}</p>`;
-
-            notification.appendChild(iconDiv);
-            notification.appendChild(contentDiv);
-            container.appendChild(notification);
-
-            // 表示アニメーションのため少し遅延させる
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 10);
-
-
-            setTimeout(() => {
-                notification.classList.remove('show');
-                notification.classList.add('hide');
-                // アニメーション完了後に要素を削除
-                notification.addEventListener('transitionend', () => {
-                    notification.remove();
-                }, { once: true });
-            }, duration);
-        }
-        
-        // --- 紙吹雪アニメーション ---
-        function createConfetti(count = 50) {
-            const confettiContainer = document.body;
-            const colors = ['#29B6F6', '#F6CF3F', '#FF5FA0', '#7E57C2', '#4CAF50', '#FF9800'];
-            for (let i = 0; i < count; i++) {
-                const confetti = document.createElement('div');
-                confetti.classList.add('confetti');
-                confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's'; // 2-4秒
-                confetti.style.animationDelay = Math.random() * 0.5 + 's';
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                const size = Math.random() * 8 + 6; // 6-14px
-                confetti.style.width = size + 'px';
-                confetti.style.height = size + 'px';
-                confetti.style.opacity = Math.random() * 0.5 + 0.5; // 0.5-1.0
-                
-                confettiContainer.appendChild(confetti);
-                // アニメーション完了後に要素を削除 (CSSのanimation-fill-mode: forwardsと併用)
-                confetti.addEventListener('animationend', () => {
-                    confetti.remove();
-                }, { once: true });
-            }
-        }
-
-        // --- テスト用呼び出し (開発後削除) ---
-        // setTimeout(() => {
-        //     showNotification('success', 'ようこそ！', 'ダッシュボードへようこそ！');
-        // }, 1000);
-        // setTimeout(() => {
-        //     showNotification('achievement', '実績解除！', '初ログインボーナスを獲得しました！');
-        // }, 2500);
-        // setTimeout(() => {
-        //    showLevelUpModal('ランクアップ！', 'ブロンズランクに到達しました！', '🏆');
-        // }, 4000);
-
-    </script>
-    <script src="js/include.js"></script>
-    
-    <!-- 認証モジュール -->
-    <script src="js/auth.js"></script>
-    
-    <!-- PWA Service Worker 登録 -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then((registration) => {
-                        console.log('Service Worker registered successfully:', registration.scope);
-                    })
-                    .catch((error) => {
-                        console.log('Service Worker registration failed:', error);
-                    });
-            });
-        }
-    </script>
-
-    <script>
-    // デバッグ：ハンバーガーメニューの状態を確認
-    document.addEventListener('DOMContentLoaded', function() {
-        const hamburger = document.getElementById('hamburgerMenu');
-        if (hamburger) {
-            console.log('Hamburger menu found:', hamburger);
-            console.log('Hamburger styles:', window.getComputedStyle(hamburger));
-            
-            // 強制的に表示
-            hamburger.style.display = 'block';
-            hamburger.style.visibility = 'visible';
-            hamburger.style.opacity = '1';
-            hamburger.style.position = 'fixed';
-            hamburger.style.top = '20px';
-            hamburger.style.left = '20px';
-            hamburger.style.zIndex = '1000';
-        } else {
-            console.error('Hamburger menu not found!');
-        }
-    });
-    </script>
 </body>
 </html>
