@@ -412,9 +412,33 @@
         <!-- 通知はJavaScriptで動的に追加されます -->
     </div>
 
-    <!-- スクリプト -->
-    <script src="js/include.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/index.js"></script>
+<!-- include.js はすぐ読み込む -->
+<script src="js/include.js"></script>
+
+<!-- Supabaseが読み込まれてからauth.jsを読み込む -->
+<script>
+function loadAuthWhenReady() {
+    if (window.supabase && window.supabase.createClient) {
+        const script = document.createElement('script');
+        script.src = 'js/auth.js';
+        document.body.appendChild(script);
+    } else {
+        setTimeout(loadAuthWhenReady, 100);
+    }
+}
+loadAuthWhenReady();
+</script>
+
+<!-- ページ読み込み時の初期化 -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.authManager && authManager.getCurrentUser()) {
+        document.getElementById('welcomeMessage').textContent = `ようこそ、${authManager.getCurrentUser().email}さん！`;
+    } else {
+        document.getElementById('welcomeMessage').textContent = 'ようこそ、冒険者さん！';
+    }
+});
+</script>
+
 </body>
 </html>
