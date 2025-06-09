@@ -4,8 +4,12 @@
 const SUPABASE_URL = 'https://laqvpxecqvlufboquffe.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcXZweGVjcXZsdWZib3F1ZmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MzYwNjgsImV4cCI6MjA2NDAxMjA2OH0.IRkg1miEpOGIFQMnno_P0hsMe1IgwCi2kl_kNcrmZTw';
 
-// Supabaseクライアントの初期化
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Supabaseクライアントの初期化（グローバルスコープで確実に）
+if (typeof window !== 'undefined' && window.supabase) {
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} else {
+    console.error('Supabase library not loaded');
+}
 
 class AuthManager {
     constructor() {
@@ -16,7 +20,7 @@ class AuthManager {
 
     async initializeAuth() {
         // 認証状態の監視
-        supabase.auth.onAuthStateChange(async (event, session) => {
+        window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
             console.log('認証状態変更:', event, session);
             this.currentUser = session?.user || null;
             
@@ -34,7 +38,7 @@ class AuthManager {
         });
 
         // 初期認証状態の確認
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await window.supabaseClient.auth.getSession();
         if (session) {
             this.currentUser = session.user;
             await this.handleLogin();
@@ -46,60 +50,54 @@ class AuthManager {
     }
 
     async handleLogin() {
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        const messageDiv = document.getElementById('loginMessage');
-        const submitBtn = document.getElementById('loginSubmitBtn');
-
-        if (!email || !password) {
-            this.showMessage(messageDiv, 'メールアドレスとパスワードを入力してください', 'error');
-            return;
-        }
-
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'ログイン中...';
+        if (!this.currentUser) return;
 
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
+            // ログイン統計の更新
+            const today = new Date().toISOString().split('T')[0];
+            
+            const { data: stats, error: statsError } = await window.supabaseClient
+                .from('user_stats')
+                .select('*')
+                .eq('user_id', this.currentUser.id)
+                .single();
 
-            if (error) {
-                // エラーメッセージを日本語でわかりやすく
-                let errorMessage = 'ログインに失敗しました';
-                
-                if (error.message.includes('Invalid login credentials')) {
-                    errorMessage = 'メールアドレスまたはパスワードが正しくありません';
-                } else if (error.message.includes('Email not confirmed')) {
-                    errorMessage = 'メールアドレスが確認されていません。確認メールをご確認ください';
-                } else if (error.message.includes('Network')) {
-                    errorMessage = 'ネットワークエラーが発生しました。接続を確認してください';
-                } else {
-                    errorMessage = `ログインエラー: ${error.message}`;
-                }
-                
-                throw new Error(errorMessage);
+            if (statsError && statsError.code === 'PGRST116') {
+                // 統計レコードが存在しない場合は作成
+                await window.supabaseClient.from('user_stats').insert({
+                    user_id: this.currentUser.id,
+                    login_count: 1,
+                    last_login_date: today
+                });
+            } else if (stats && stats.last_login_date !== today) {
+                // 今日初めてのログイン
+                await window.supabaseClient
+                    .from('user_stats')
+                    .update({
+                        login_count: stats.login_count + 1,
+                        last_login_date: today,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('user_id', this.currentUser.id);
             }
 
-            this.showMessage(messageDiv, '✅ ログイン成功！', 'success');
-            setTimeout(() => {
-                this.hideAuthModal();
-                location.reload();
-            }, 1000);
+            // プロフィールの確認/作成
+            const { data: profile, error: profileError } = await window.supabaseClient
+                .from('users_profile')
+                .select('*')
+                .eq('id', this.currentUser.id)
+                .single();
 
+            if (profileError && profileError.code === 'PGRST116') {
+                // プロフィールが存在しない場合は作成
+                await window.supabaseClient.from('users_profile').insert({
+                    id: this.currentUser.id,
+                    email: this.currentUser.email,
+                    nickname: this.currentUser.user_metadata?.display_name || '冒険者'
+                });
+            }
         } catch (error) {
-            this.showMessage(messageDiv, `❌ ${error.message}`, 'error');
-            
-            // エラー時に入力欄を揺らすアニメーション
-            const form = document.getElementById('loginForm');
-            form.style.animation = 'shake 0.5s';
-            setTimeout(() => {
-                form.style.animation = '';
-            }, 500);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = '🚪 ログイン';
+            console.error('ログイン処理エラー:', error);
         }
     }
 
@@ -110,7 +108,7 @@ class AuthManager {
         }
 
         try {
-            const { data, error } = await supabase
+            const { data, error } = await window.supabaseClient
                 .from('admin_users')
                 .select('is_active')
                 .eq('id', this.currentUser.id)
@@ -261,7 +259,7 @@ class AuthManager {
         submitBtn.textContent = '登録中...';
 
         try {
-            const { data, error } = await supabase.auth.signUp({
+            const { data, error } = await window.supabaseClient.auth.signUp({
                 email: email,
                 password: password,
                 options: {
@@ -312,7 +310,7 @@ class AuthManager {
 
     async logout() {
         try {
-            const { error } = await supabase.auth.signOut();
+            const { error } = await window.supabaseClient.auth.signOut();
             if (error) throw error;
             
             location.reload();
