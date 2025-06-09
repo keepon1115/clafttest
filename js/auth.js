@@ -5,7 +5,22 @@ const SUPABASE_URL = 'https://laqvpxecqvlufboquffe.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcXZweGVjcXZsdWZib3F1ZmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MzYwNjgsImV4cCI6MjA2NDAxMjA2OH0.IRkg1miEpOGIFQMnno_P0hsMe1IgwCi2kl_kNcrmZTw';
 
 // Supabaseクライアントの初期化
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let supabase = null;
+
+// Supabaseの初期化を確実に行う
+if (typeof window !== 'undefined' && window.supabase && window.supabase.createClient) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('Supabase initialized successfully');
+} else {
+    console.error('Supabase library not loaded yet');
+    // ライブラリが読み込まれるのを待つ
+    window.addEventListener('load', () => {
+        if (window.supabase && window.supabase.createClient) {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase initialized after window load');
+        }
+    });
+}
 
 class AuthManager {
     constructor() {
@@ -15,6 +30,11 @@ class AuthManager {
     }
 
     async initializeAuth() {
+        if (!supabase) {
+            console.error('Supabase not initialized yet');
+            return;
+        }
+
         // 認証状態の監視
         supabase.auth.onAuthStateChange(async (event, session) => {
             console.log('認証状態変更:', event, session);
