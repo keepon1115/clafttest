@@ -2474,28 +2474,28 @@
         // }, 4000);
 
     </script>
+
+    <!-- 1. 共通モジュール -->
     <script src="js/include.js"></script>
-    
-    <!-- 認証モジュール -->
+
+    <!-- 2. 認証モジュール -->
     <script src="js/auth.js"></script>
-    
-    <!-- PWA Service Worker 登録 -->
+
+    <!-- 3. ページ固有のスクリプト -->
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then((registration) => {
-                        console.log('Service Worker registered successfully:', registration.scope);
-                    })
-                    .catch((error) => {
-                        console.log('Service Worker registration failed:', error);
-                    });
-            });
+    // デバッグ用：auth.jsが読み込まれたか確認
+    console.log('Checking auth system...');
+    setTimeout(() => {
+        if (typeof authManager !== 'undefined') {
+            console.log('✓ Auth system loaded successfully');
+            console.log('Current user:', authManager.getCurrentUser());
+            // authManagerのメソッドも確認
+            console.log('Auth methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(authManager)));
+        } else {
+            console.error('✗ Auth system failed to load');
         }
-    </script>
+    }, 1000);
 
-
-    <script>
     // ハンバーガーメニューの動作
     document.addEventListener('DOMContentLoaded', function() {
         const hamburgerMenu = document.getElementById('hamburgerMenu');
@@ -2524,6 +2524,21 @@
             });
         }
     });
+    </script>
+
+    <!-- PWA Service Worker 登録 -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
