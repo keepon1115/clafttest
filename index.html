@@ -229,7 +229,7 @@
                                 <i class="fas fa-flag-checkered"></i> <!-- 短期目標アイコン -->
                             </div>
                             <div class="goal-label">短期目標</div>
-                            <div class="goal-text">プログラミング基礎習得</div>
+                            <div class="goal-text">夏休み中に「学校の不便を解決するミニサービス」を3つ考えてメモする</div>
                             <div class="goal-progress">
                                 <div class="goal-progress-bar" style="width: 75%;"></div> <!-- 進捗例 -->
                             </div>
@@ -241,7 +241,7 @@
                                 <i class="fas fa-mountain"></i> <!-- 長期目標アイコン -->
                             </div>
                             <div class="goal-label">長期目標</div>
-                            <div class="goal-text">アプリ開発者になる</div>
+                            <div class="goal-text">アイデアコンテストで優勝する</div>
                             <div class="goal-progress">
                                 <div class="goal-progress-bar" style="width: 30%;"></div>
                             </div>
@@ -412,48 +412,33 @@
         <!-- 通知はJavaScriptで動的に追加されます -->
     </div>
 
-    <!-- Service Worker登録をコメントアウト（一時的） -->
-    <!--
-    <script>
-    if ('serviceWorker' in navigator) {
-        // 一時的に無効化
+<!-- include.js はすぐ読み込む -->
+<script src="js/include.js"></script>
+
+<!-- Supabaseが読み込まれてからauth.jsを読み込む -->
+<script>
+function loadAuthWhenReady() {
+    if (window.supabase && window.supabase.createClient) {
+        const script = document.createElement('script');
+        script.src = 'js/auth.js';
+        document.body.appendChild(script);
+    } else {
+        setTimeout(loadAuthWhenReady, 100);
     }
-    </script>
-    -->
+}
+loadAuthWhenReady();
+</script>
 
-    <!-- 必須スクリプトの読み込み -->
-    <script src="js/include.js"></script>
-
-    <!-- Supabaseが読み込まれるのを待ってからauth.jsを読み込む -->
-    <script>
-    // Supabaseが読み込まれているか確認
-    function loadAuthWhenReady() {
-        if (window.supabase && window.supabase.createClient) {
-            const script = document.createElement('script');
-            script.src = 'js/auth.js';
-            document.body.appendChild(script);
-            console.log('Auth.js loaded');
-        } else {
-            console.log('Waiting for Supabase...');
-            setTimeout(loadAuthWhenReady, 100);
-        }
+<!-- ページ読み込み時の初期化 -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.authManager && authManager.getCurrentUser()) {
+        document.getElementById('welcomeMessage').textContent = `ようこそ、${authManager.getCurrentUser().email}さん！`;
+    } else {
+        document.getElementById('welcomeMessage').textContent = 'ようこそ、冒険者さん！';
     }
-    loadAuthWhenReady();
-    </script>
+});
+</script>
 
-    <!-- ページ固有のスクリプト -->
-    <script>
-    // ページ読み込み時の初期化
-    document.addEventListener('DOMContentLoaded', function() {
-        // 認証状態に基づく初期化
-        if (window.authManager && authManager.getCurrentUser()) {
-            // ログイン済みの場合の処理
-            document.getElementById('welcomeMessage').textContent = `ようこそ、${authManager.getCurrentUser().email}さん！`;
-        } else {
-            // 未ログインの場合の処理
-            document.getElementById('welcomeMessage').textContent = 'ようこそ、冒険者さん！';
-        }
-    });
-    </script>
 </body>
 </html>
