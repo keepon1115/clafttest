@@ -46,54 +46,60 @@ class AuthManager {
     }
 
     async handleLogin() {
-        if (!this.currentUser) return;
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        const messageDiv = document.getElementById('loginMessage');
+        const submitBtn = document.getElementById('loginSubmitBtn');
+
+        if (!email || !password) {
+            this.showMessage(messageDiv, 'メールアドレスとパスワードを入力してください', 'error');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'ログイン中...';
 
         try {
-            // ログイン統計の更新
-            const today = new Date().toISOString().split('T')[0];
-            
-            const { data: stats, error: statsError } = await supabase
-                .from('user_stats')
-                .select('*')
-                .eq('user_id', this.currentUser.id)
-                .single();
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
 
-            if (statsError && statsError.code === 'PGRST116') {
-                // 統計レコードが存在しない場合は作成
-                await supabase.from('user_stats').insert({
-                    user_id: this.currentUser.id,
-                    login_count: 1,
-                    last_login_date: today
-                });
-            } else if (stats && stats.last_login_date !== today) {
-                // 今日初めてのログイン
-                await supabase
-                    .from('user_stats')
-                    .update({
-                        login_count: stats.login_count + 1,
-                        last_login_date: today,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('user_id', this.currentUser.id);
+            if (error) {
+                // エラーメッセージを日本語でわかりやすく
+                let errorMessage = 'ログインに失敗しました';
+                
+                if (error.message.includes('Invalid login credentials')) {
+                    errorMessage = 'メールアドレスまたはパスワードが正しくありません';
+                } else if (error.message.includes('Email not confirmed')) {
+                    errorMessage = 'メールアドレスが確認されていません。確認メールをご確認ください';
+                } else if (error.message.includes('Network')) {
+                    errorMessage = 'ネットワークエラーが発生しました。接続を確認してください';
+                } else {
+                    errorMessage = `ログインエラー: ${error.message}`;
+                }
+                
+                throw new Error(errorMessage);
             }
 
-            // プロフィールの確認/作成
-            const { data: profile, error: profileError } = await supabase
-                .from('users_profile')
-                .select('*')
-                .eq('id', this.currentUser.id)
-                .single();
+            this.showMessage(messageDiv, '✅ ログイン成功！', 'success');
+            setTimeout(() => {
+                this.hideAuthModal();
+                location.reload();
+            }, 1000);
 
-            if (profileError && profileError.code === 'PGRST116') {
-                // プロフィールが存在しない場合は作成
-                await supabase.from('users_profile').insert({
-                    id: this.currentUser.id,
-                    email: this.currentUser.email,
-                    nickname: this.currentUser.user_metadata?.display_name || '冒険者'
-                });
-            }
         } catch (error) {
-            console.error('ログイン処理エラー:', error);
+            this.showMessage(messageDiv, `❌ ${error.message}`, 'error');
+            
+            // エラー時に入力欄を揺らすアニメーション
+            const form = document.getElementById('loginForm');
+            form.style.animation = 'shake 0.5s';
+            setTimeout(() => {
+                form.style.animation = '';
+            }, 500);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '🚪 ログイン';
         }
     }
 
@@ -147,9 +153,14 @@ class AuthManager {
                         </div>
                         <div class="form-group">
                             <label for="loginPassword">パスワード</label>
-                            <input type="password" id="loginPassword" placeholder="パスワードを入力" required>
+                            <div class="password-input-wrapper">
+                                <input type="password" id="loginPassword" placeholder="パスワードを入力" required>
+                                <button type="button" class="password-toggle" onclick="authManager.togglePassword('loginPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
-                        <button class="auth-submit-btn" onclick="authManager.handleLoginSubmit()">🚪 ログイン</button>
+                        <button class="auth-submit-btn" id="loginSubmitBtn" onclick="authManager.handleLogin()">🚪 ログイン</button>
                         <div class="auth-message" id="loginMessage"></div>
                     </div>
                     
@@ -161,13 +172,18 @@ class AuthManager {
                         </div>
                         <div class="form-group">
                             <label for="signupPassword">パスワード</label>
-                            <input type="password" id="signupPassword" placeholder="6文字以上のパスワード" required>
+                            <div class="password-input-wrapper">
+                                <input type="password" id="signupPassword" placeholder="6文字以上のパスワード" required>
+                                <button type="button" class="password-toggle" onclick="authManager.togglePassword('signupPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="signupNickname">冒険者名</label>
                             <input type="text" id="signupNickname" placeholder="あなたの冒険者名">
                         </div>
-                        <button class="auth-submit-btn" onclick="authManager.handleSignup()">⚔️ 冒険者登録</button>
+                        <button class="auth-submit-btn" id="signupSubmitBtn" onclick="authManager.handleSignup()">⚔️ 冒険者登録</button>
                         <div class="auth-message" id="signupMessage"></div>
                     </div>
                 </div>
@@ -224,40 +240,12 @@ class AuthManager {
         document.getElementById('signupForm').style.display = tabName === 'signup' ? 'block' : 'none';
     }
 
-    async handleLoginSubmit() {
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        const messageDiv = document.getElementById('loginMessage');
-
-        if (!email || !password) {
-            this.showMessage(messageDiv, 'メールアドレスとパスワードを入力してください', 'error');
-            return;
-        }
-
-        try {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
-
-            if (error) throw error;
-
-            this.showMessage(messageDiv, '✅ ログイン成功！', 'success');
-            setTimeout(() => {
-                this.hideAuthModal();
-                location.reload(); // ページをリロードして状態を更新
-            }, 1000);
-
-        } catch (error) {
-            this.showMessage(messageDiv, `❌ ログインエラー: ${error.message}`, 'error');
-        }
-    }
-
     async handleSignup() {
         const email = document.getElementById('signupEmail').value;
         const password = document.getElementById('signupPassword').value;
         const nickname = document.getElementById('signupNickname').value;
         const messageDiv = document.getElementById('signupMessage');
+        const submitBtn = document.getElementById('signupSubmitBtn');
 
         if (!email || !password) {
             this.showMessage(messageDiv, 'メールアドレスとパスワードを入力してください', 'error');
@@ -268,6 +256,9 @@ class AuthManager {
             this.showMessage(messageDiv, 'パスワードは6文字以上で入力してください', 'error');
             return;
         }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = '登録中...';
 
         try {
             const { data, error } = await supabase.auth.signUp({
@@ -280,12 +271,42 @@ class AuthManager {
                 }
             });
 
-            if (error) throw error;
+            if (error) {
+                // エラーメッセージを日本語でわかりやすく
+                let errorMessage = '登録に失敗しました';
+                
+                if (error.message.includes('already registered')) {
+                    errorMessage = 'このメールアドレスは既に登録されています';
+                } else if (error.message.includes('weak password')) {
+                    errorMessage = 'パスワードが脆弱です。より強いパスワードを設定してください';
+                } else if (error.message.includes('invalid email')) {
+                    errorMessage = '有効なメールアドレスを入力してください';
+                } else if (error.message.includes('Network')) {
+                    errorMessage = 'ネットワークエラーが発生しました。接続を確認してください';
+                } else {
+                    errorMessage = `登録エラー: ${error.message}`;
+                }
+                
+                throw new Error(errorMessage);
+            }
 
-            this.showMessage(messageDiv, '✅ 登録完了！メールを確認してアカウントを有効化してください', 'success');
+            this.showMessage(messageDiv, '✅ 登録完了！確認メールをご確認ください', 'success');
+            setTimeout(() => {
+                this.hideAuthModal();
+            }, 3000);
 
         } catch (error) {
-            this.showMessage(messageDiv, `❌ 登録エラー: ${error.message}`, 'error');
+            this.showMessage(messageDiv, `❌ ${error.message}`, 'error');
+            
+            // エラー時に入力欄を揺らすアニメーション
+            const form = document.getElementById('signupForm');
+            form.style.animation = 'shake 0.5s';
+            setTimeout(() => {
+                form.style.animation = '';
+            }, 500);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '⚔️ 冒険者登録';
         }
     }
 
@@ -348,6 +369,21 @@ class AuthManager {
             return false;
         }
         return true;
+    }
+
+    // パスワードの表示/非表示を切り替える
+    togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        const button = input.nextElementSibling;
+        const icon = button.querySelector('i');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'fas fa-eye-slash';
+        } else {
+            input.type = 'password';
+            icon.className = 'fas fa-eye';
+        }
     }
 }
 
