@@ -10,7 +10,7 @@ const urlsToCache = [
   '/icons/icon-512.png',
   'https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
-  'https://unpkg.com/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js'
+  'https://unpkg.com/@supabase/supabase-js@2.39.0/dist/supabase.min.js'
 ];
 
 // Install event
