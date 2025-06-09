@@ -56,6 +56,26 @@
             --teal: #009688;
         }
 
+        /* ナビゲーションボタン */
+        .nav-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 998;
+            display: flex !important;
+            align-items: center;
+            gap: 15px;
+            /* デバッグ用：背景色を追加 */
+            background: rgba(255, 0, 0, 0.1);
+            padding: 10px;
+        }
+
+        .auth-nav-btn {
+            display: flex !important;
+            align-items: center;
+            gap: 10px;
+        }
+
         body {
             font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif;
             background-color: var(--cream-bg);
@@ -2522,6 +2542,41 @@
                 sidebar: !!sidebar,
                 sidebarOverlay: !!sidebarOverlay
             });
+        }
+    });
+
+    // 認証UIの強制初期化
+    window.addEventListener('load', () => {
+        console.log('Force initializing auth UI...');
+        
+        // authManagerが存在することを確認
+        if (typeof authManager !== 'undefined') {
+            // 少し遅延させて実行
+            setTimeout(() => {
+                authManager.initializeAuthUI();
+                authManager.updateAuthButtons();
+                console.log('Auth UI initialized');
+                
+                // ボタンが追加されたか確認
+                const authBtn = document.querySelector('.auth-nav-btn');
+                if (authBtn) {
+                    console.log('✓ Auth button found');
+                } else {
+                    console.log('✗ Auth button not found, adding manually...');
+                    
+                    // 手動でボタンを追加
+                    const navButtons = document.querySelector('.nav-buttons');
+                    if (navButtons) {
+                        const loginBtn = document.createElement('button');
+                        loginBtn.className = 'auth-nav-btn';
+                        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> ログイン/登録';
+                        loginBtn.style.cssText = 'background: linear-gradient(135deg, #29B6F6, #7E57C2); color: white; border: none; padding: 10px 25px; border-radius: 25px; cursor: pointer; font-weight: 700; box-shadow: 0 5px 15px rgba(41, 182, 246, 0.3);';
+                        loginBtn.onclick = () => authManager.showAuthModal();
+                        navButtons.appendChild(loginBtn);
+                        console.log('Button added manually');
+                    }
+                }
+            }, 500);
         }
     });
     </script>
