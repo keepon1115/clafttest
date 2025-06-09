@@ -62,4 +62,46 @@ function initializeNavigation() {
             });
         });
     }
+}
+
+// パーシャルインクルード機能
+document.addEventListener('DOMContentLoaded', async function() {
+    // ナビゲーションの読み込み
+    const navContainer = document.getElementById('navigation');
+    if (navContainer) {
+        try {
+            const response = await fetch('/partials/navigation.html');
+            const html = await response.text();
+            navContainer.innerHTML = html;
+
+            // ハンバーガーメニューの初期化
+            initializeHamburgerMenu();
+        } catch (error) {
+            console.error('ナビゲーションの読み込みに失敗:', error);
+        }
+    }
+});
+
+// ハンバーガーメニューの初期化
+function initializeHamburgerMenu() {
+    const hamburgerMenu = document.getElementById('hamburgerMenu');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    if (!hamburgerMenu || !sidebar || !sidebarOverlay) {
+        console.warn('ハンバーガーメニューの要素が見つかりません。ナビゲーションが正しく読み込まれているか確認してください。');
+        return;
+    }
+
+    hamburgerMenu.addEventListener('click', () => {
+        hamburgerMenu.classList.toggle('active');
+        sidebar.classList.toggle('active');
+        sidebarOverlay.classList.toggle('active');
+    });
+
+    sidebarOverlay.addEventListener('click', () => {
+        hamburgerMenu.classList.remove('active');
+        sidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+    });
 } 
