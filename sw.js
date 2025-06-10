@@ -40,7 +40,13 @@ self.addEventListener('activate', (event) => {
 // フェッチイベントは何もしない（キャッシュを使わない）
 self.addEventListener('fetch', (event) => {
   // POSTリクエストはキャッシュしない
-  if (event.request.method === 'POST') {
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // Supabase APIリクエストはキャッシュしない
+  const url = event.request.url;
+  if (url.includes('supabase.co') || url.includes('supabase-js')) {
     return;
   }
 
@@ -64,7 +70,11 @@ self.addEventListener('fetch', (event) => {
             const responseToCache = response.clone();
             caches.open(CACHE_NAME)
               .then(cache => {
-                cache.put(event.request, responseToCache);
+                try {
+                  cache.put(event.request, responseToCache);
+                } catch (e) {
+                  // cache.put失敗時は何もしない
+                }
               });
 
             return response;

@@ -4,12 +4,20 @@
 const SUPABASE_URL = 'https://laqvpxecqvlufboquffe.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhcXZweGVjcXZsdWZib3F1ZmZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MzYwNjgsImV4cCI6MjA2NDAxMjA2OH0.IRkg1miEpOGIFQMnno_P0hsMe1IgwCi2kl_kNcrmZTw';
 
-let supabase;
-if (window.supabase && window.supabase.createClient) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-} else {
-    console.error('Supabaseライブラリが読み込まれていません');
+async function waitForSupabase(timeout = 5000) {
+    const interval = 50;
+    let waited = 0;
+    while (waited < timeout) {
+        if (window.supabase && window.supabase.createClient) {
+            return true;
+        }
+        await new Promise(res => setTimeout(res, interval));
+        waited += interval;
+    }
+    return false;
 }
+
+let supabase;
 
 class AuthManager {
     constructor() {
@@ -19,64 +27,59 @@ class AuthManager {
     }
 
     async initializeAuth() {
-        if (!supabase) {
-            console.error('Supabase not initialized yet');
+        const loaded = await waitForSupabase();
+        if (!loaded) {
+            console.error('Supabaseライブラリが読み込まれていません。ページを再読み込みします。');
+            setTimeout(() => location.reload(), 1000);
             return;
         }
-
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         // 認証状態の監視
-        window.supabaseClient.auth.onAuthStateChange(async (event, session) => {
-            console.log('認証状態変更:', event, session);
+        if (!supabase || !supabase.auth) {
+            console.error('Supabaseクライアントの初期化に失敗しました');
+            return;
+        }
+        supabase.auth.onAuthStateChange(async (event, session) => {
             this.currentUser = session?.user || null;
-            
             if (this.currentUser) {
-                // ログイン処理
                 await this.handleLogin();
-                // 管理者チェック
                 await this.checkAdminStatus();
             }
-            
-            // ページ固有の認証処理を呼び出し
             if (window.onAuthStateChanged) {
                 window.onAuthStateChanged(this.currentUser);
             }
         });
-
         // 初期認証状態の確認
-        const { data: { session } } = await window.supabaseClient.auth.getSession();
-        if (session) {
-            this.currentUser = session.user;
-            await this.handleLogin();
-            await this.checkAdminStatus();
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                this.currentUser = session.user;
+                await this.handleLogin();
+                await this.checkAdminStatus();
+            }
+        } catch (e) {
+            console.error('Supabase認証セッション取得エラー:', e);
         }
-
-        // UIの初期化
         this.initializeAuthUI();
     }
 
     async handleLogin() {
-        if (!this.currentUser) return;
-
+        if (!this.currentUser || !supabase) return;
         try {
-            // ログイン統計の更新
             const today = new Date().toISOString().split('T')[0];
-            
-            const { data: stats, error: statsError } = await window.supabaseClient
+            const { data: stats, error: statsError } = await supabase
                 .from('user_stats')
                 .select('*')
                 .eq('user_id', this.currentUser.id)
                 .single();
-
             if (statsError && statsError.code === 'PGRST116') {
-                // 統計レコードが存在しない場合は作成
-                await window.supabaseClient.from('user_stats').insert({
+                await supabase.from('user_stats').insert({
                     user_id: this.currentUser.id,
                     login_count: 1,
                     last_login_date: today
                 });
             } else if (stats && stats.last_login_date !== today) {
-                // 今日初めてのログイン
-                await window.supabaseClient
+                await supabase
                     .from('user_stats')
                     .update({
                         login_count: stats.login_count + 1,
@@ -85,17 +88,13 @@ class AuthManager {
                     })
                     .eq('user_id', this.currentUser.id);
             }
-
-            // プロフィールの確認/作成
-            const { data: profile, error: profileError } = await window.supabaseClient
+            const { data: profile, error: profileError } = await supabase
                 .from('users_profile')
                 .select('*')
                 .eq('id', this.currentUser.id)
                 .single();
-
             if (profileError && profileError.code === 'PGRST116') {
-                // プロフィールが存在しない場合は作成
-                await window.supabaseClient.from('users_profile').insert({
+                await supabase.from('users_profile').insert({
                     id: this.currentUser.id,
                     email: this.currentUser.email,
                     nickname: this.currentUser.user_metadata?.display_name || '冒険者'
@@ -107,11 +106,10 @@ class AuthManager {
     }
 
     async checkAdminStatus() {
-        if (!this.currentUser) {
+        if (!this.currentUser || !supabase) {
             this.isAdmin = false;
             return;
         }
-
         try {
             const { data, error } = await window.supabaseClient
                 .from('admin_users')
@@ -119,7 +117,6 @@ class AuthManager {
                 .eq('id', this.currentUser.id)
                 .eq('is_active', true)
                 .single();
-
             this.isAdmin = !error && data?.is_active === true;
         } catch (error) {
             console.error('管理者チェックエラー:', error);
@@ -243,7 +240,44 @@ class AuthManager {
         document.getElementById('signupForm').style.display = tabName === 'signup' ? 'block' : 'none';
     }
 
+    async handleLoginSubmit() {
+        if (!supabase) {
+            this.showMessage(document.getElementById('loginMessage'), 'Supabaseが初期化されていません', 'error');
+            return;
+        }
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        const messageDiv = document.getElementById('loginMessage');
+
+        if (!email || !password) {
+            this.showMessage(messageDiv, 'メールアドレスとパスワードを入力してください', 'error');
+            return;
+        }
+
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            if (error) throw error;
+
+            this.showMessage(messageDiv, '✅ ログイン成功！', 'success');
+            setTimeout(() => {
+                this.hideAuthModal();
+                location.reload(); // ページをリロードして状態を更新
+            }, 1000);
+
+        } catch (error) {
+            this.showMessage(messageDiv, `❌ ログインエラー: ${error.message}`, 'error');
+        }
+    }
+
     async handleSignup() {
+        if (!supabase) {
+            this.showMessage(document.getElementById('signupMessage'), 'Supabaseが初期化されていません', 'error');
+            return;
+        }
         const email = document.getElementById('signupEmail').value;
         const password = document.getElementById('signupPassword').value;
         const nickname = document.getElementById('signupNickname').value;
@@ -314,6 +348,10 @@ class AuthManager {
     }
 
     async logout() {
+        if (!supabase) {
+            alert('Supabaseが初期化されていません');
+            return;
+        }
         try {
             const { error } = await window.supabaseClient.auth.signOut();
             if (error) throw error;
