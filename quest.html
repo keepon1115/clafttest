@@ -229,6 +229,8 @@
     <button class="quest-button" id="mainQuestButton">🔥 次の冒険へ進む！</button>
     <div class="modal" id="stageModal"> <div class="modal-content"> <button class="modal-close" id="modalCloseBtn">×</button> <h2 class="modal-title" id="modalStageTitle"></h2> <p class="modal-description" id="modalStageDescription"></p> <div class="modal-message" id="modalStageMessage"></div> <div class="modal-buttons"> <button class="modal-button video" id="modalVideoBtn">🎬 動画を見る</button> <button class="modal-button quest" id="modalQuestBtn">⚔️ クエストに挑む</button> </div> </div> </div>
     
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/auth.js"></script>
     <script>
         // グローバル変数の更新
         let currentUserId = null;
