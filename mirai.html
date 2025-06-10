@@ -13,6 +13,7 @@
     <!-- PWA関連メタタグ -->
     <meta name="theme-color" content="#29B6F6">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CLAFT">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -1279,11 +1280,76 @@
                 opacity: 0;
             }
         }
+
+        /* ハンバーガーメニューのスタイル修正 */
+        .hamburger-menu {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 45px;
+            height: 45px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hamburger-menu .bar {
+            width: 25px;
+            height: 3px;
+            background: #333;
+            margin: 3px 0;
+            transition: all 0.3s ease;
+            border-radius: 3px;
+        }
+
+        .hamburger-menu.active .bar:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .hamburger-menu.active .bar:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-menu.active .bar:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
     </style>
 </head>
 <body>
-    <!-- ナビゲーション（共通） -->
-    <div data-include="partials/navigation.html"></div>
+    <!-- ハンバーガーメニュー -->
+    <div class="hamburger-menu" id="hamburgerMenu">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+    </div>
+
+    <!-- サイドバー -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">🎮 CLAFT</div>
+        </div>
+        <div class="sidebar-nav">
+            <ul>
+                <li><a href="index.html"><i class="fas fa-home"></i><span class="nav-label">ホーム</span></a></li>
+                <li><a href="quest.html"><i class="fas fa-map"></i><span class="nav-label">クエストマップ</span></a></li>
+                <li><a href="yononaka.html"><i class="fas fa-globe"></i><span class="nav-label">Yononaka</span></a></li>
+                <li><a href="mirai.html" class="active"><i class="fas fa-rocket"></i><span class="nav-label">ミライクラフト</span></a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- オーバーレイ -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- 認証ボタン用スペース -->
+    <div class="nav-buttons"></div>
 
     <!-- ローディング画面 -->
     <div class="loading-overlay" id="loadingOverlay">
@@ -2040,9 +2106,37 @@
 
         // 完了メッセージ
         console.log('🌱 ミライクラフトへようこそ！未来を一緒に創りましょう！');
+
+        // ハンバーガーメニューの動作
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburgerMenu = document.getElementById('hamburgerMenu');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+            if (hamburgerMenu && sidebar && sidebarOverlay) {
+                console.log('Navigation elements found and initialized');
+                
+                hamburgerMenu.addEventListener('click', () => {
+                    hamburgerMenu.classList.toggle('active');
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+                });
+
+                sidebarOverlay.addEventListener('click', () => {
+                    hamburgerMenu.classList.remove('active');
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                });
+            } else {
+                console.error('Navigation elements not found:', {
+                    hamburgerMenu: !!hamburgerMenu,
+                    sidebar: !!sidebar,
+                    sidebarOverlay: !!sidebarOverlay
+                });
+            }
+        });
     </script>
     <script src="js/include.js"></script>
     <script src="js/auth.js"></script>
 </body>
-</html>remove('muted');
-                indicator.classList.
+</html>
