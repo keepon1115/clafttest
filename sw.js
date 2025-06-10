@@ -1,13 +1,13 @@
-const CACHE_NAME = 'claft-cache-v1';
+const CACHE_NAME = 'claft-cache-v2';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/css/navigation.css',
-  '/css/auth.css',
-  '/js/auth.js',
-  '/js/include.js',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  './',
+  './index.html',
+  './css/navigation.css',
+  './css/auth.css',
+  './js/auth.js',
+  './js/include.js',
+  './icons/icon-192.png',
+  './icons/icon-512.png'
 ];
 
 // Install event
