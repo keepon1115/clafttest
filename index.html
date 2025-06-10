@@ -2053,23 +2053,23 @@ function loadAuthWhenReady() {
         const script = document.createElement('script');
         script.src = 'js/auth.js';
         document.body.appendChild(script);
-    } else {
+            } else {
         setTimeout(loadAuthWhenReady, 100);
     }
 }
 loadAuthWhenReady();
-</script>
-
+    </script>
+    
 <!-- ページ読み込み時の初期化 -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
     if (window.authManager && authManager.getCurrentUser()) {
         document.getElementById('welcomeMessage').textContent = `ようこそ、${authManager.getCurrentUser().email}さん！`;
-    } else {
+        } else {
         document.getElementById('welcomeMessage').textContent = 'ようこそ、冒険者さん！';
-    }
-});
-</script>
+        }
+    });
+    </script>
 
 </body>
 </html>
