@@ -1,4 +1,4 @@
-const CACHE_NAME = 'claft-cache-v2';
+const CACHE_NAME = 'claft-cache-v3';
 const urlsToCache = [
   './',
   './index.html',

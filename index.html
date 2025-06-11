@@ -64,10 +64,10 @@
             color: var(--text-dark);
             overflow-x: hidden;
             position: relative;
-            min-height: 100vh; /* 追加: 最低高さを画面全体に */
-            display: flex;      /* 追加: フレックスレイアウト */
-            flex-direction: column; /* 追加: 縦並び */
-            /* height: 100%; ← 削除 */
+            min-height: 100vh !important;
+            display: block !important;
+            visibility: visible !important;
+            /* flexレイアウト指定は削除 */
         }
 
         /* 背景アニメーション */
