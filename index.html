@@ -194,12 +194,7 @@
             overflow: hidden;
         }
 
-        /* ハンバーガーメニューの表示を確実にする */
-        .hamburger-menu {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
+        /* ハンバーガーメニューはnavigation.cssで統一管理 */
 
         .header::before {
             content: '';
@@ -2101,6 +2096,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         checkAuthManager();
+    }
+    
+    // ハンバーガーメニューの初期化
+    const hamburgerMenu = document.getElementById('hamburgerMenu');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    if (hamburgerMenu && sidebar && sidebarOverlay) {
+        hamburgerMenu.addEventListener('click', () => {
+            hamburgerMenu.classList.toggle('active');
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+        });
+        
+        sidebarOverlay.addEventListener('click', () => {
+            hamburgerMenu.classList.remove('active');
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        });
     }
 });
 </script>
