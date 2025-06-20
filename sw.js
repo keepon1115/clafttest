@@ -34,16 +34,34 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
-// フェッチイベントは何もしない（キャッシュを使わない）
+// フェッチイベント（キャッシュ制御）
 self.addEventListener('fetch', (event) => {
   // POSTリクエストはキャッシュしない
   if (event.request.method !== 'GET') {
     return;
   }
 
-  // Supabase APIリクエストはキャッシュしない
   const url = event.request.url;
+  
+  // サポートされていないスキームを除外
+  if (url.startsWith('chrome-extension://') || 
+      url.startsWith('chrome://') || 
+      url.startsWith('moz-extension://') || 
+      url.startsWith('safari-extension://') ||
+      url.startsWith('file://')) {
+    console.log('Skipping unsupported scheme:', url);
+    return;
+  }
+
+  // Supabase APIリクエストはキャッシュしない
   if (url.includes('supabase.co') || url.includes('supabase-js')) {
+    return;
+  }
+  
+  // 外部CDNリクエストもキャッシュしない（念のため）
+  if (url.includes('googleapis.com') || 
+      url.includes('cdnjs.cloudflare.com') ||
+      url.includes('unpkg.com')) {
     return;
   }
 
@@ -68,10 +86,19 @@ self.addEventListener('fetch', (event) => {
             caches.open(CACHE_NAME)
               .then(cache => {
                 try {
-                  cache.put(event.request, responseToCache);
+                  // リクエストのスキームを再度チェック
+                  const requestUrl = event.request.url;
+                  if (requestUrl.startsWith('http://') || requestUrl.startsWith('https://')) {
+                    return cache.put(event.request, responseToCache);
+                  } else {
+                    console.log('Skipping cache.put for non-HTTP scheme:', requestUrl);
+                  }
                 } catch (e) {
-                  // cache.put失敗時は何もしない
+                  console.warn('Failed to cache response:', e.message, 'URL:', event.request.url);
                 }
+              })
+              .catch(e => {
+                console.warn('Failed to open cache for storing:', e.message);
               });
 
             return response;

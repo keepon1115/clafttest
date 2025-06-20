@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="screen-orientation" content="landscape">
+    <meta name="orientation" content="landscape">
     <title>CLAFT Yononaka - 世界とのつながり</title>
     
     <!-- キャッシュ制御 -->
@@ -17,6 +19,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CLAFT">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+    <link rel="shortcut icon" href="icons/icon-192.png">
     <!-- manifest.jsonは動的に読み込む -->
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -544,6 +549,13 @@
     </style>
 </head>
 <body>
+    <!-- 回転促進メッセージ -->
+    <div class="rotation-notice">
+        <div class="rotation-notice-icon">📱</div>
+        <h2>横画面でお楽しみください</h2>
+        <p>このアプリは横画面でのご利用を推奨しています。<br>スマートフォンを横向きにしてお楽しみください。</p>
+    </div>
+
     <!-- ハンバーガーメニュー -->
     <div class="hamburger-menu" id="hamburgerMenu">
         <div class="bar"></div>
