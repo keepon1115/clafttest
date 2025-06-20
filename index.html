@@ -2098,22 +2098,52 @@ document.addEventListener('DOMContentLoaded', function() {
         checkAuthManager();
     }
     
-    // ハンバーガーメニューの初期化
+    // ハンバーガーメニューの初期化（デバッグ版）
     const hamburgerMenu = document.getElementById('hamburgerMenu');
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     
+    console.log('Hamburger menu elements:', {
+        hamburgerMenu,
+        sidebar,
+        sidebarOverlay
+    });
+    
     if (hamburgerMenu && sidebar && sidebarOverlay) {
-        hamburgerMenu.addEventListener('click', () => {
+        console.log('Setting up hamburger menu event listeners');
+        
+        hamburgerMenu.addEventListener('click', (e) => {
+            console.log('Hamburger menu clicked!');
+            e.preventDefault();
+            e.stopPropagation();
+            
             hamburgerMenu.classList.toggle('active');
             sidebar.classList.toggle('active');
             sidebarOverlay.classList.toggle('active');
+            
+            console.log('Classes toggled. Active states:', {
+                hamburger: hamburgerMenu.classList.contains('active'),
+                sidebar: sidebar.classList.contains('active'),
+                overlay: sidebarOverlay.classList.contains('active')
+            });
         });
         
-        sidebarOverlay.addEventListener('click', () => {
+        sidebarOverlay.addEventListener('click', (e) => {
+            console.log('Sidebar overlay clicked!');
+            e.preventDefault();
+            e.stopPropagation();
+            
             hamburgerMenu.classList.remove('active');
             sidebar.classList.remove('active');
             sidebarOverlay.classList.remove('active');
+        });
+        
+        console.log('Hamburger menu event listeners set up successfully');
+    } else {
+        console.error('Failed to find hamburger menu elements:', {
+            hamburgerMenu: !!hamburgerMenu,
+            sidebar: !!sidebar,
+            sidebarOverlay: !!sidebarOverlay
         });
     }
 });

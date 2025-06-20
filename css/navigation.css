@@ -3,8 +3,8 @@
     position: fixed;
     top: 20px;
     left: 20px;
-    z-index: 1000;
-    background: rgba(255, 255, 255, 0.9);
+    z-index: 9999;
+    background: rgba(255, 255, 255, 0.95);
     border-radius: 10px;
     padding: 10px;
     cursor: pointer;
@@ -17,12 +17,20 @@
     justify-content: center;
     align-items: center;
     gap: 3px;
+    /* デバッグ用のボーダーを追加 */
+    border: 2px solid red;
+    /* ポインターイベントを確実に有効にする */
+    pointer-events: auto;
+    /* デバッグ用: マウスホバー時の背景色変更 */
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .hamburger-menu:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 0, 0.8);
+    transform: scale(1.1);
 }
+
+/* 既存のhoverスタイルは上で統合済み */
 
 .hamburger-menu .bar {
     display: block;
