@@ -189,12 +189,14 @@
     visibility: visible;
 }
 
-/* レスポンシブ対応 */
-@media (max-width: 768px) {
+/* 基本レスポンシブ対応 - 幅770px以下 */
+@media (max-width: 770px) {
     .hamburger-menu {
         top: 15px;
         left: 15px;
         padding: 8px;
+        width: 40px;
+        height: 40px;
     }
     
     .nav-buttons {
@@ -203,22 +205,37 @@
     }
     
     .sidebar {
+        width: 280px;
+        left: -280px;
+    }
+}
+
+/* タブレット対応 */
+@media (max-width: 1024px) and (min-width: 771px) {
+    .sidebar {
         width: 250px;
         left: -250px;
     }
 }
 
-/* 横画面強制表示設定 */
-@media screen and (orientation: portrait) and (max-width: 768px) {
+/* 横画面時の確実な表示 */
+@media screen and (orientation: landscape) {
+    .rotation-notice {
+        display: none !important;
+    }
+    
+    body > *:not(.rotation-notice) {
+        display: block !important;
+    }
+    
     body {
-        transform: rotate(90deg);
-        transform-origin: left top;
-        width: 100vh;
-        height: 100vw;
-        overflow-x: hidden;
-        position: absolute;
-        top: 100%;
-        left: 0;
+        transform: none !important;
+        width: 100% !important;
+        height: 100% !important;
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+        overflow-x: auto !important;
     }
 }
 
@@ -230,7 +247,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.9);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     z-index: 10000;
     flex-direction: column;
@@ -248,30 +265,106 @@
 }
 
 .rotation-notice h2 {
-    font-size: 24px;
+    font-size: 28px;
     margin-bottom: 15px;
     font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .rotation-notice p {
-    font-size: 16px;
+    font-size: 18px;
     line-height: 1.6;
-    max-width: 300px;
+    max-width: 350px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes rotate-icon {
     0% { transform: rotate(0deg); }
-    50% { transform: rotate(90deg); }
-    100% { transform: rotate(0deg); }
+    25% { transform: rotate(15deg); }
+    75% { transform: rotate(75deg); }
+    100% { transform: rotate(90deg); }
 }
 
-@media screen and (orientation: portrait) and (max-device-width: 768px) {
+/* スマートフォン縦画面時のメッセージ表示 */
+@media screen and (orientation: portrait) and (max-width: 770px) {
     .rotation-notice {
-        display: flex;
+        display: flex !important;
     }
     
     /* 縦画面の時は通常のコンテンツを隠す */
     body > *:not(.rotation-notice) {
-        display: none;
+        display: none !important;
+    }
+}
+
+/* スマートフォン横画面時の強制表示確保 */
+@media screen and (orientation: landscape) and (max-width: 770px) {
+    .rotation-notice {
+        display: none !important;
+    }
+    
+    body > *:not(.rotation-notice) {
+        display: block !important;
+    }
+    
+    body {
+        transform: none !important;
+        width: 100% !important;
+        height: 100% !important;
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+        overflow-x: auto !important;
+    }
+    
+    /* スマートフォン横画面でのナビゲーション調整 */
+    .hamburger-menu {
+        top: 10px;
+        left: 10px;
+        width: 35px;
+        height: 35px;
+        padding: 6px;
+    }
+    
+    .nav-buttons {
+        top: 10px;
+        right: 10px;
+    }
+    
+    .sidebar {
+        width: 220px;
+        left: -220px;
+    }
+}
+
+/* 極小画面対応 */
+@media (max-width: 480px) {
+    .rotation-notice-icon {
+        font-size: 60px;
+    }
+    
+    .rotation-notice h2 {
+        font-size: 22px;
+    }
+    
+    .rotation-notice p {
+        font-size: 16px;
+        max-width: 280px;
+    }
+}
+
+/* デスクトップ・大画面対応 */
+@media (min-width: 1200px) {
+    .hamburger-menu {
+        top: 25px;
+        left: 25px;
+        width: 50px;
+        height: 50px;
+        padding: 12px;
+    }
+    
+    .nav-buttons {
+        top: 25px;
+        right: 25px;
     }
 }
