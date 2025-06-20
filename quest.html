@@ -16,13 +16,14 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CLAFT">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <link rel="manifest" href="manifest.json">
+    <!-- manifest.jsonは動的に読み込む -->
     <title>CLAFT クエストマップ - 冒険の書</title>
     
     <!-- フォントとスタイル -->
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/navigation.css">
-    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/navigation.css?v=20250619">
+    <link rel="stylesheet" href="css/auth.css?v=20250619">
+    <link rel="stylesheet" href="css/quest.css?v=20250619">
     
     <!-- Supabase JS -->
     <script src="https://unpkg.com/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
@@ -120,65 +121,7 @@
         .loading-content p { color: #654321; font-weight: bold; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* pending_approval状態のスタイル */
-        .pending-badge {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            background: #FF9800;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            animation: pulse 2s ease-in-out infinite;
-            z-index: 10;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        /* ハンバーガーメニューのスタイル修正 */
-        .hamburger-menu {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            padding: 10px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            width: 45px;
-            height: 45px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .hamburger-menu .bar {
-            width: 25px;
-            height: 3px;
-            background: #333;
-            margin: 3px 0;
-            transition: all 0.3s ease;
-            border-radius: 3px;
-        }
-
-        .hamburger-menu.active .bar:nth-child(1) {
-            transform: rotate(45deg) translate(5px, 5px);
-        }
-
-        .hamburger-menu.active .bar:nth-child(2) {
-            opacity: 0;
-        }
-
-        .hamburger-menu.active .bar:nth-child(3) {
-            transform: rotate(-45deg) translate(7px, -6px);
-        }
+        /* ハンバーガーメニューはnavigation.cssで統一管理 */
 
     </style>
 </head>
@@ -295,23 +238,13 @@
     <button class="quest-button" id="mainQuestButton">🔥 次の冒険へ進む！</button>
     <div class="modal" id="stageModal"> <div class="modal-content"> <button class="modal-close" id="modalCloseBtn">×</button> <h2 class="modal-title" id="modalStageTitle"></h2> <p class="modal-description" id="modalStageDescription"></p> <div class="modal-message" id="modalStageMessage"></div> <div class="modal-buttons"> <button class="modal-button video" id="modalVideoBtn">🎬 動画を見る</button> <button class="modal-button quest" id="modalQuestBtn">⚔️ クエストに挑む</button> </div> </div> </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/auth.js"></script>
+    <!-- 重複しているSupabaseの読み込みを削除 -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> -->
     <script>
         // グローバル変数の更新
         let currentUserId = null;
         let userProgress = {};
         let currentStageIdForModal = null;
-
-        // Googleフォームのリンク設定
-        const GOOGLE_FORM_LINKS = {
-            1: 'https://forms.google.com/your-form-1',
-            2: 'https://forms.google.com/your-form-2',
-            3: 'https://forms.google.com/your-form-3',
-            4: 'https://forms.google.com/your-form-4',
-            5: 'https://forms.google.com/your-form-5',
-            6: 'https://forms.google.com/your-form-6'
-        };
 
         // 認証状態が変更されたときの処理
         window.onAuthStateChanged = async function(user) {
@@ -321,7 +254,10 @@
             } else {
                 currentUserId = null;
                 resetQuestMap();
-                authManager.showAuthModal();
+                // authManagerが利用可能な場合のみ実行
+                if (window.authManager) {
+                    authManager.showAuthModal();
+                }
             }
         };
 
@@ -329,12 +265,66 @@
         const NUM_SKY_OBJECTS = 7;
 
         const stageStaticData = {
-            1: { title: '君はどんな冒険者？', description: 'この世界の地図をひらいて、CLAFTを冒険しよう！', message: '「この世界をどう歩くかは、自分で決めていい」', iconImage: 'https://via.placeholder.com/64x64/8B4513/FFFFFF?text=House', fallbackIcon: '🏠', clearEffectImage: 'https://via.placeholder.com/32x32/CCCCCC/000000?text=Smoke' },
-            2: { title: 'ワクもやエネルギー', description: 'ワクワク・もやもやは問いの原動力になる', message: '「君の感じた"もやもや"が、冒険の出発点」', iconImage: 'https://via.placeholder.com/64x64/228B22/FFFFFF?text=Forest', fallbackIcon: '🌲', clearEffectImage: 'https://via.placeholder.com/32x32/8B4513/FFFFFF?text=Animal' },
-            3: { title: '君はどんなキャラ？', description: '自分を育てる育成ゲーム', message: '「自分のスキルツリーを育てるのは、君自身だ」', iconImage: 'https://via.placeholder.com/64x64/4169E1/FFFFFF?text=Sword', fallbackIcon: '⚔️', clearEffectImage: null },
-            4: { title: 'どんな道具を持ってる？', description: 'この世界の地図をひらいて、CLAFTを冒険しよう！', message: '「自分のスキルツリーを育てるのは、君自身だ」', iconImage: 'https://via.placeholder.com/64x64/FFD700/000000?text=Shield', fallbackIcon: '🛡️', clearEffectImage: null },
-            5: { title: '仲間と冒険するって？', description: 'この世界の地図をひらいて、CLAFTを冒険しよう！', message: '「自分のスキルツリーを育てるのは、君自身だ」', iconImage: 'https://via.placeholder.com/64x64/32CD32/FFFFFF?text=Team', fallbackIcon: '👥', clearEffectImage: null },
-            6: { title: '未来のボスと向き合う', description: 'この世界の地図をひらいて、CLAFTを冒険しよう！', message: '「自分のスキルツリーを育てるのは、君自身だ」', iconImage: 'https://via.placeholder.com/64x64/8B0000/FFFFFF?text=Boss', fallbackIcon: '🏰', clearEffectImage: null }
+            1: { 
+                title: '君はどんな冒険者？', 
+                description: 'この世界の地図をひらいて、CLAFTを冒険しよう！', 
+                message: '「この世界をどう歩くかは、自分で決めていい」',
+                videoUrl: 'https://youtube.com/watch?v=stage1video',
+                formUrl: 'https://forms.google.com/your-form-1',
+                iconImage: 'https://via.placeholder.com/64x64/8B4513/FFFFFF?text=House', 
+                fallbackIcon: '🏠', 
+                clearEffectImage: 'https://via.placeholder.com/32x32/CCCCCC/000000?text=Smoke' 
+            },
+            2: { 
+                title: 'ワクもやエネルギー', 
+                description: 'ワクワク・もやもやは問いの原動力になる', 
+                message: '「君の感じた"もやもや"が、冒険の出発点」',
+                videoUrl: 'https://youtube.com/watch?v=stage2video',
+                formUrl: 'https://forms.google.com/your-form-2',
+                iconImage: 'https://via.placeholder.com/64x64/228B22/FFFFFF?text=Forest', 
+                fallbackIcon: '🌲', 
+                clearEffectImage: 'https://via.placeholder.com/32x32/8B4513/FFFFFF?text=Animal' 
+            },
+            3: { 
+                title: '君はどんなキャラ？', 
+                description: '自分を育てる育成ゲーム', 
+                message: '「自分のスキルツリーを育てるのは、君自身だ」',
+                videoUrl: 'https://youtube.com/watch?v=stage3video',
+                formUrl: 'https://forms.google.com/your-form-3',
+                iconImage: 'https://via.placeholder.com/64x64/4169E1/FFFFFF?text=Sword', 
+                fallbackIcon: '⚔️', 
+                clearEffectImage: null 
+            },
+            4: { 
+                title: 'どんな道具を持ってる？', 
+                description: 'この世界の地図をひらいて、CLAFTを冒険しよう！', 
+                message: '「自分のスキルツリーを育てるのは、君自身だ」',
+                videoUrl: 'https://youtube.com/watch?v=stage4video',
+                formUrl: 'https://forms.google.com/your-form-4',
+                iconImage: 'https://via.placeholder.com/64x64/FFD700/000000?text=Shield', 
+                fallbackIcon: '🛡️', 
+                clearEffectImage: null 
+            },
+            5: { 
+                title: '仲間と冒険するって？', 
+                description: 'この世界の地図をひらいて、CLAFTを冒険しよう！', 
+                message: '「自分のスキルツリーを育てるのは、君自身だ」',
+                videoUrl: 'https://youtube.com/watch?v=stage5video',
+                formUrl: 'https://forms.google.com/your-form-5',
+                iconImage: 'https://via.placeholder.com/64x64/32CD32/FFFFFF?text=Team', 
+                fallbackIcon: '👥', 
+                clearEffectImage: null 
+            },
+            6: { 
+                title: '未来のボスと向き合う', 
+                description: 'この世界の地図をひらいて、CLAFTを冒険しよう！', 
+                message: '「自分のスキルツリーを育てるのは、君自身だ」',
+                videoUrl: 'https://youtube.com/watch?v=stage6video',
+                formUrl: 'https://forms.google.com/your-form-6',
+                iconImage: 'https://via.placeholder.com/64x64/8B0000/FFFFFF?text=Boss', 
+                fallbackIcon: '🏰', 
+                clearEffectImage: null 
+            }
         };
         
         const loadingOverlay = document.getElementById('loadingOverlay');
@@ -577,18 +567,7 @@
                         pendingBadge = document.createElement('div');
                         pendingBadge.className = 'pending-badge';
                         pendingBadge.textContent = '承認待ち';
-                        pendingBadge.style.cssText = `
-                            position: absolute;
-                            top: -10px;
-                            right: -10px;
-                            background: var(--orange);
-                            color: white;
-                            padding: 5px 15px;
-                            border-radius: 20px;
-                            font-size: 12px;
-                            font-weight: 700;
-                            animation: pulse 2s ease-in-out infinite;
-                        `;
+
                         stageNode.appendChild(pendingBadge);
                     }
                 } else {
@@ -616,7 +595,10 @@
             } else if (!currentUserId) {
                 mainQuestButton.textContent = '🚀 冒険を始めよう！';
                 mainQuestButton.disabled = false;
-                mainQuestButton.onclick = () => authManager.showAuthModal();
+                // authManagerが利用可能な場合のみ設定
+                if (window.authManager) {
+                    mainQuestButton.onclick = () => authManager.showAuthModal();
+                }
             } else {
                 mainQuestButton.textContent = '🔥 次の冒険へ進む！';
                 mainQuestButton.disabled = false;
@@ -643,14 +625,25 @@
             const questBtn = document.getElementById('modalQuestBtn');
             
             if (status === 'current') {
+                // 動画ボタンの表示と設定
+                videoBtn.style.display = 'block';
+                videoBtn.textContent = '🎬 動画を見る';
+                videoBtn.disabled = false;
+                
+                // お題ボタンの表示と設定
                 questBtn.style.display = 'block';
                 questBtn.textContent = '⚔️ クエストに挑む';
-                questBtn.onclick = () => startQuest(stageId);
+                questBtn.disabled = false;
+                
+                // イベントハンドラーの設定はstartQuest関数内で行う
+                startQuest(stageId);
             } else if (status === 'pending_approval') {
+                videoBtn.style.display = 'none';
                 questBtn.style.display = 'block';
                 questBtn.textContent = '⏳ 承認待ち';
                 questBtn.disabled = true;
             } else if (status === 'completed') {
+                videoBtn.style.display = 'none';
                 questBtn.style.display = 'none';
             }
             
@@ -662,35 +655,65 @@
             currentStageIdForModal = null;
         }
 
-        // クエスト開始（Googleフォームへ）
-        async function startQuest(stageId) {
+        // 動画視聴とお題提出の処理を実装
+        function startQuest(stageId) {
             if (!currentUserId || userProgress[stageId] !== 'current') return;
             
-            // Googleフォームのリンクを開く
-            const formLink = GOOGLE_FORM_LINKS[stageId];
-            if (formLink) {
-                window.open(formLink, '_blank');
-            } else {
-                alert('このステージのフォームはまだ準備中です。');
-                return;
+            const staticInfo = stageStaticData[stageId];
+            const videoBtn = document.getElementById('modalVideoBtn');
+            const questBtn = document.getElementById('modalQuestBtn');
+            
+            // 動画視聴済みかチェック
+            const videoWatched = localStorage.getItem(`stage_${stageId}_video_watched`) === 'true';
+            
+            // 動画ボタンの初期状態を設定
+            if (videoWatched) {
+                videoBtn.textContent = '✅ 動画視聴済み';
+                videoBtn.disabled = true;
             }
             
-            // ステータスをpending_approvalに更新
-            const success = await saveUserProgress(currentUserId, stageId, 'pending_approval', {
-                google_form_submitted: true,
-                submitted_at: new Date().toISOString()
-            });
-            
-            if (success) {
-                updateStageDisplay();
-                closeStageModal();
+            // 動画ボタンのクリックイベント
+            videoBtn.onclick = function() {
+                // 動画URLを新しいタブで開く
+                window.open(staticInfo.videoUrl, '_blank');
                 
-                setTimeout(() => {
-                    alert('クエストフォームを送信したら、管理者の承認をお待ちください！');
-                }, 100);
-            } else {
-                alert('進捗の保存に失敗しました。');
-            }
+                // 動画視聴フラグをローカルストレージに保存
+                localStorage.setItem(`stage_${stageId}_video_watched`, 'true');
+                
+                // ボタンのテキストを変更
+                videoBtn.textContent = '✅ 動画視聴済み';
+                videoBtn.disabled = true;
+            };
+            
+            // お題ボタンのクリックイベント
+            questBtn.onclick = async function() {
+                // 動画視聴チェック
+                const videoWatchedNow = localStorage.getItem(`stage_${stageId}_video_watched`) === 'true';
+                if (!videoWatchedNow) {
+                    alert('先に動画を視聴してください');
+                    return;
+                }
+                
+                // フォームURLを新しいタブで開く
+                window.open(staticInfo.formUrl, '_blank');
+                
+                // ステータスをpending_approvalに更新
+                const success = await saveUserProgress(currentUserId, stageId, 'pending_approval', {
+                    google_form_submitted: true,
+                    submitted_at: new Date().toISOString()
+                });
+                
+                if (success) {
+                    updateStageDisplay();
+                    closeStageModal();
+                    
+                    setTimeout(() => {
+                        alert('お題を提出しました！管理者の承認をお待ちください。');
+                    }, 100);
+                } else {
+                    alert('進捗の保存に失敗しました。');
+                }
+            };
         }
         
 
@@ -699,55 +722,64 @@
             // 既存の初期化処理...
             createSkyObjects();
             
-            // 認証状態に基づく初期化
-            const user = authManager.getCurrentUser();
-            if (user) {
-                initializeQuestMap();
-            } else {
-                resetQuestMap();
+            // authManagerが利用可能になるまで待つ
+            function waitForAuthManager() {
+                if (window.authManager) {
+                    // 認証状態に基づく初期化
+                    const user = authManager.getCurrentUser();
+                    if (user) {
+                        initializeQuestMap();
+                    } else {
+                        resetQuestMap();
+                    }
+                    
+                    // モーダル関連のイベントリスナー
+                    modalCloseBtn.addEventListener('click', closeStageModal);
+                    stageModal.addEventListener('click', (e) => {
+                        if (e.target === stageModal) closeStageModal();
+                    });
+                    
+                    // ステージノードのクリックイベント
+                    document.querySelectorAll('.stage-node').forEach(node => {
+                        node.addEventListener('click', () => {
+                            const stageId = parseInt(node.dataset.stageId);
+                            openStageModal(stageId);
+                        });
+                    });
+                    
+                    // メインクエストボタン
+                    mainQuestButton.addEventListener('click', () => {
+                        if (!currentUserId) {
+                            authManager.showAuthModal();
+                            return;
+                        }
+                        
+                        const currentStageEntry = Object.entries(userProgress).find(([_, status]) => 
+                            status === 'current' || status === 'pending_approval'
+                        );
+                        
+                        if (currentStageEntry) {
+                            openStageModal(parseInt(currentStageEntry[0]));
+                        } else if (Object.values(userProgress).every(s => s === 'completed') && Object.keys(userProgress).length >= TOTAL_STAGES) {
+                            // 全クリア済み
+                        } else {
+                            const firstNonCompleted = Object.entries(userProgress).find(([id, stat]) => 
+                                stat === 'locked' || stat === 'current'
+                            );
+                            if (firstNonCompleted) {
+                                openStageModal(parseInt(firstNonCompleted[0]));
+                            }
+                        }
+                    });
+                    
+                    // 冒険ログボタン
+                    document.getElementById('adventureLogBtn').addEventListener('click', showAdventureLog);
+                } else {
+                    setTimeout(waitForAuthManager, 100);
+                }
             }
             
-            // モーダル関連のイベントリスナー
-            modalCloseBtn.addEventListener('click', closeStageModal);
-            stageModal.addEventListener('click', (e) => {
-                if (e.target === stageModal) closeStageModal();
-            });
-            
-            // ステージノードのクリックイベント
-            document.querySelectorAll('.stage-node').forEach(node => {
-                node.addEventListener('click', () => {
-                    const stageId = parseInt(node.dataset.stageId);
-                    openStageModal(stageId);
-                });
-            });
-            
-            // メインクエストボタン
-            mainQuestButton.addEventListener('click', () => {
-                if (!currentUserId) {
-                    authManager.showAuthModal();
-                    return;
-                }
-                
-                const currentStageEntry = Object.entries(userProgress).find(([_, status]) => 
-                    status === 'current' || status === 'pending_approval'
-                );
-                
-                if (currentStageEntry) {
-                    openStageModal(parseInt(currentStageEntry[0]));
-                } else if (Object.values(userProgress).every(s => s === 'completed') && Object.keys(userProgress).length >= TOTAL_STAGES) {
-                    // 全クリア済み
-                } else {
-                    const firstNonCompleted = Object.entries(userProgress).find(([id, stat]) => 
-                        stat === 'locked' || stat === 'current'
-                    );
-                    if (firstNonCompleted) {
-                        openStageModal(parseInt(firstNonCompleted[0]));
-                    }
-                }
-            });
-            
-            // 冒険ログボタン
-            document.getElementById('adventureLogBtn').addEventListener('click', showAdventureLog);
+            waitForAuthManager();
         });
 
         // 冒険ログの表示（更新版）
@@ -782,6 +814,12 @@
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
+                // ファイルプロトコル（file://）ではServiceWorkerを登録しない
+                if (window.location.protocol === 'file:') {
+                    console.log('ServiceWorker registration skipped: file protocol not supported');
+                    return;
+                }
+                
                 navigator.serviceWorker.register('sw.js')
                     .then(registration => { console.log('SW registered: ', registration.scope); })
                     .catch(registrationError => { console.log('SW registration failed: ', registrationError); });
@@ -790,8 +828,40 @@
     </script>
     
     <!-- パーシャルインクルード機能 -->
-    <script src="js/include.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/quest.js"></script>
+    <script src="js/include.js?v=20250619"></script>
+    
+    <!-- manifest.jsonを動的に読み込む -->
+    <script>
+    function loadManifestWhenReady() {
+        // file://プロトコルの場合はmanifest.jsonを読み込まない
+        if (window.location.protocol === 'file:') {
+            console.log('Manifest loading skipped: file protocol not supported');
+            return;
+        }
+        
+        // HTTP/HTTPSの場合のみmanifest.jsonを読み込む
+        if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = 'manifest.json?v=20250619';
+            document.head.appendChild(link);
+        }
+    }
+    loadManifestWhenReady();
+    </script>
+    
+    <!-- Supabaseライブラリの読み込み完了後にauth.jsを読み込む -->
+    <script>
+        function loadAuthWhenReady() {
+            if (window.supabase && window.supabase.createClient) {
+                const script = document.createElement('script');
+                script.src = 'js/auth.js?v=20250619';
+                document.body.appendChild(script);
+            } else {
+                setTimeout(loadAuthWhenReady, 100);
+            }
+        }
+        loadAuthWhenReady();
+    </script>
 </body>
 </html>

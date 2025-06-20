@@ -17,19 +17,20 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CLAFT">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <link rel="manifest" href="manifest.json">
+    <!-- manifest.jsonは動的に読み込む -->
     
     <!-- フォントとスタイル -->
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/auth.js"></script>
-    <link rel="stylesheet" href="css/navigation.css">
-    <link rel="stylesheet" href="css/auth.css">
+    <!-- 重複しているauth.jsの読み込みを削除 -->
+    <!-- <script src="js/auth.js?v=20250619"></script> -->
+    <link rel="stylesheet" href="css/navigation.css?v=20250619">
+    <link rel="stylesheet" href="css/auth.css?v=20250619">
     
-    <!-- Supabase JS -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <!-- 重複しているSupabaseの読み込みを削除 -->
+    <!-- <script src="https://unpkg.com/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script> -->
     <style>
         :root {
             --admin-primary: #673AB7;
@@ -363,45 +364,7 @@
             }
         }
 
-        /* ハンバーガーメニューのスタイル修正 */
-        .hamburger-menu {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            padding: 10px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            width: 45px;
-            height: 45px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .hamburger-menu .bar {
-            width: 25px;
-            height: 3px;
-            background: #333;
-            margin: 3px 0;
-            transition: all 0.3s ease;
-            border-radius: 3px;
-        }
-
-        .hamburger-menu.active .bar:nth-child(1) {
-            transform: rotate(45deg) translate(5px, 5px);
-        }
-
-        .hamburger-menu.active .bar:nth-child(2) {
-            opacity: 0;
-        }
-
-        .hamburger-menu.active .bar:nth-child(3) {
-            transform: rotate(-45deg) translate(7px, -6px);
-        }
+        /* ハンバーガーメニューはnavigation.cssで統一管理 */
     </style>
 </head>
 <body>
@@ -442,7 +405,7 @@
             </h1>
             <div class="admin-user-info">
                 <span id="adminEmail">管理者</span>
-                <button class="admin-logout-btn" onclick="authManager.logout()">
+                <button class="admin-logout-btn" onclick="if(window.authManager) authManager.logout()">
                     <i class="fas fa-sign-out-alt"></i>
                     ログアウト
                 </button>
@@ -531,8 +494,409 @@
     </main>
     
     <!-- スクリプト -->
-    <script src="js/include.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/admin.js"></script>
+    <script src="js/include.js?v=20250619"></script>
+    
+    <!-- manifest.jsonを動的に読み込む -->
+    <script>
+    function loadManifestWhenReady() {
+        // file://プロトコルの場合はmanifest.jsonを読み込まない
+        if (window.location.protocol === 'file:') {
+            console.log('Manifest loading skipped: file protocol not supported');
+            return;
+        }
+        
+        // HTTP/HTTPSの場合のみmanifest.jsonを読み込む
+        if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = 'manifest.json?v=20250619';
+            document.head.appendChild(link);
+        }
+    }
+    loadManifestWhenReady();
+    </script>
+    
+    <!-- Supabaseライブラリの読み込み完了後にauth.jsを読み込む -->
+    <script>
+        function loadAuthWhenReady() {
+            if (window.supabase && window.supabase.createClient) {
+                const script = document.createElement('script');
+                script.src = 'js/auth.js?v=20250619';
+                document.body.appendChild(script);
+            } else {
+                setTimeout(loadAuthWhenReady, 100);
+            }
+        }
+        loadAuthWhenReady();
+
+        // グローバル変数
+        let currentUserId = null;
+        let isAdmin = false;
+
+        // DOMContentLoadedイベントリスナー
+        document.addEventListener('DOMContentLoaded', function() {
+            // ハンバーガーメニューの初期化
+            const hamburgerMenu = document.getElementById('hamburgerMenu');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+            if (hamburgerMenu && sidebar && sidebarOverlay) {
+                hamburgerMenu.addEventListener('click', () => {
+                    hamburgerMenu.classList.toggle('active');
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+                });
+
+                sidebarOverlay.addEventListener('click', () => {
+                    hamburgerMenu.classList.remove('active');
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                });
+            }
+
+            // authManagerが利用可能になるまで待つ処理
+            function waitForAuthManager() {
+                if (window.authManager) {
+                    const user = authManager.getCurrentUser();
+                    if (!user) {
+                        // ユーザーがログインしていない場合はindex.htmlにリダイレクト
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    
+                    currentUserId = user.id;
+                    checkAdminAccess();
+                } else {
+                    setTimeout(waitForAuthManager, 100);
+                }
+            }
+            
+            waitForAuthManager();
+        });
+
+        // 管理者権限チェック関数
+        async function checkAdminAccess() {
+            try {
+                const { data, error } = await supabase
+                    .from('admin_users')
+                    .select('*')
+                    .eq('user_id', currentUserId)
+                    .eq('is_active', true)
+                    .single();
+
+                if (error || !data) {
+                    // 管理者権限がない場合はindex.htmlにリダイレクト
+                    alert('管理者権限がありません。ホームページに移動します。');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                isAdmin = true;
+                // 管理者メール表示
+                document.getElementById('adminEmail').textContent = data.email || '管理者';
+                
+                // ダッシュボード読み込み
+                loadDashboard();
+            } catch (error) {
+                console.error('管理者権限チェックエラー:', error);
+                window.location.href = 'index.html';
+            }
+        }
+
+        // ダッシュボード読み込み
+        async function loadDashboard() {
+            await Promise.all([
+                loadStatistics(),
+                loadPendingApprovals(),
+                loadAllUsers()
+            ]);
+        }
+
+        // 承認待ちテーブルの読み込み
+        async function loadPendingApprovals() {
+            const container = document.getElementById('approvalTableContainer');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('quest_progress')
+                    .select(`
+                        *,
+                        users_profile:user_id (
+                            nickname,
+                            email
+                        )
+                    `)
+                    .eq('status', 'pending_approval')
+                    .order('submitted_at', { ascending: true });
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--admin-text-secondary);">承認待ちのクエストはありません</p>';
+                    return;
+                }
+
+                let tableHTML = `
+                    <table class="approval-table">
+                        <thead>
+                            <tr>
+                                <th>ユーザー</th>
+                                <th>ステージ</th>
+                                <th>提出日時</th>
+                                <th>アクション</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                data.forEach(item => {
+                    const userEmail = item.users_profile?.email || 'unknown@example.com';
+                    const userName = item.users_profile?.nickname || userEmail.split('@')[0];
+                    const submitDate = new Date(item.submitted_at).toLocaleString('ja-JP');
+                    
+                    tableHTML += `
+                        <tr>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="user-avatar">${userName.charAt(0).toUpperCase()}</div>
+                                    <div>
+                                        <div style="font-weight: 700;">${userName}</div>
+                                        <div style="font-size: 14px; color: var(--admin-text-secondary);">${userEmail}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="stage-badge">ステージ ${item.stage_id}</span>
+                            </td>
+                            <td>${submitDate}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-btn approve-btn" onclick="approveQuest('${item.user_id}', ${item.stage_id})">
+                                        <i class="fas fa-check"></i> 承認
+                                    </button>
+                                    <button class="action-btn reject-btn" onclick="rejectQuest('${item.user_id}', ${item.stage_id})">
+                                        <i class="fas fa-times"></i> 却下
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableHTML += '</tbody></table>';
+                container.innerHTML = tableHTML;
+
+            } catch (error) {
+                console.error('承認待ちデータ取得エラー:', error);
+                container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--admin-danger);">データの読み込みに失敗しました</p>';
+            }
+        }
+
+        // クエスト承認処理
+        async function approveQuest(userId, stageId) {
+            if (!confirm(`ステージ${stageId}のクエストを承認しますか？`)) {
+                return;
+            }
+
+            try {
+                // 現在のステージを完了状態に更新
+                const { error: updateError } = await supabase
+                    .from('quest_progress')
+                    .update({
+                        status: 'completed',
+                        approved_at: new Date().toISOString(),
+                        approved_by: currentUserId
+                    })
+                    .eq('user_id', userId)
+                    .eq('stage_id', stageId);
+
+                if (updateError) throw updateError;
+
+                // 次のステージを現在のステージに設定（最終ステージでない場合）
+                if (stageId < 6) {
+                    const nextStageId = stageId + 1;
+                    const { error: nextStageError } = await supabase
+                        .from('quest_progress')
+                        .upsert({
+                            user_id: userId,
+                            stage_id: nextStageId,
+                            status: 'current',
+                            updated_at: new Date().toISOString()
+                        }, {
+                            onConflict: 'user_id,stage_id'
+                        });
+
+                    if (nextStageError) throw nextStageError;
+                }
+
+                alert('クエストを承認しました');
+                // データを再読み込み
+                await Promise.all([loadPendingApprovals(), loadStatistics()]);
+
+            } catch (error) {
+                console.error('承認エラー:', error);
+                alert('承認処理に失敗しました');
+            }
+        }
+
+        // クエスト却下処理
+        async function rejectQuest(userId, stageId) {
+            if (!confirm(`ステージ${stageId}のクエストを却下しますか？`)) {
+                return;
+            }
+
+            try {
+                // ステータスを現在に戻す
+                const { error } = await supabase
+                    .from('quest_progress')
+                    .update({
+                        status: 'current',
+                        rejected_at: new Date().toISOString(),
+                        rejected_by: currentUserId,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('user_id', userId)
+                    .eq('stage_id', stageId);
+
+                if (error) throw error;
+
+                alert('クエストを却下しました');
+                // データを再読み込み
+                await Promise.all([loadPendingApprovals(), loadStatistics()]);
+
+            } catch (error) {
+                console.error('却下エラー:', error);
+                alert('却下処理に失敗しました');
+            }
+        }
+
+        // 統計情報の読み込み
+        async function loadStatistics() {
+            try {
+                // 並列で統計情報を取得
+                const [
+                    totalUsersResult,
+                    pendingApprovalsResult,
+                    completedQuestsResult,
+                    activeUsersResult
+                ] = await Promise.all([
+                    // 総ユーザー数
+                    supabase
+                        .from('users_profile')
+                        .select('*', { count: 'exact', head: true }),
+                    
+                    // 承認待ちクエスト数
+                    supabase
+                        .from('quest_progress')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('status', 'pending_approval'),
+                    
+                    // 完了クエスト総数
+                    supabase
+                        .from('quest_progress')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('status', 'completed'),
+                    
+                    // アクティブユーザー数（7日以内にログイン）
+                    supabase
+                        .from('user_stats')
+                        .select('*', { count: 'exact', head: true })
+                        .gte('last_login_date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+                ]);
+
+                // 統計情報を画面に反映
+                document.getElementById('totalUsers').textContent = totalUsersResult.count || 0;
+                document.getElementById('pendingApprovals').textContent = pendingApprovalsResult.count || 0;
+                document.getElementById('completedQuests').textContent = completedQuestsResult.count || 0;
+                document.getElementById('activeUsers').textContent = activeUsersResult.count || 0;
+
+            } catch (error) {
+                console.error('統計情報取得エラー:', error);
+                // エラーの場合は0を表示
+                document.getElementById('totalUsers').textContent = '-';
+                document.getElementById('pendingApprovals').textContent = '-';
+                document.getElementById('completedQuests').textContent = '-';
+                document.getElementById('activeUsers').textContent = '-';
+            }
+        }
+
+        // 全ユーザー管理テーブルの読み込み
+        async function loadAllUsers() {
+            const container = document.getElementById('usersTableContainer');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('users_profile')
+                    .select(`
+                        *,
+                        user_stats:user_id (
+                            last_login_date,
+                            quest_clear_count,
+                            total_exp
+                        )
+                    `)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--admin-text-secondary);">ユーザーが登録されていません</p>';
+                    return;
+                }
+
+                let tableHTML = `
+                    <table class="approval-table">
+                        <thead>
+                            <tr>
+                                <th>ユーザー</th>
+                                <th>登録日</th>
+                                <th>最終ログイン</th>
+                                <th>クエスト進捗</th>
+                                <th>経験値</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                data.forEach(user => {
+                    const userName = user.nickname || user.email?.split('@')[0] || 'Unknown';
+                    const userEmail = user.email || 'unknown@example.com';
+                    const registerDate = new Date(user.created_at).toLocaleDateString('ja-JP');
+                    const lastLogin = user.user_stats?.last_login_date 
+                        ? new Date(user.user_stats.last_login_date).toLocaleDateString('ja-JP')
+                        : '未ログイン';
+                    const questCount = user.user_stats?.quest_clear_count || 0;
+                    const totalExp = user.user_stats?.total_exp || 0;
+                    
+                    tableHTML += `
+                        <tr>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="user-avatar">${userName.charAt(0).toUpperCase()}</div>
+                                    <div>
+                                        <div style="font-weight: 700;">${userName}</div>
+                                        <div style="font-size: 14px; color: var(--admin-text-secondary);">${userEmail}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${registerDate}</td>
+                            <td>${lastLogin}</td>
+                            <td>
+                                <span class="stage-badge">${questCount}個クリア</span>
+                            </td>
+                            <td>${totalExp} EXP</td>
+                        </tr>
+                    `;
+                });
+
+                tableHTML += '</tbody></table>';
+                container.innerHTML = tableHTML;
+
+            } catch (error) {
+                console.error('ユーザーデータ取得エラー:', error);
+                container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--admin-danger);">データの読み込みに失敗しました</p>';
+            }
+        }
+    </script>
 </body>
 </html> 
