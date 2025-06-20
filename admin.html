@@ -348,6 +348,234 @@
             to { transform: rotate(360deg); }
         }
         
+        /* 通知システム */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 400px;
+        }
+        
+        .notification {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(100%);
+            animation: slideInNotification 0.3s ease forwards;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .notification.success {
+            border-left-color: var(--admin-success);
+        }
+        
+        .notification.error {
+            border-left-color: var(--admin-danger);
+        }
+        
+        .notification.info {
+            border-left-color: var(--admin-primary);
+        }
+        
+        .notification-icon {
+            font-size: 20px;
+            min-width: 20px;
+        }
+        
+        .notification.success .notification-icon {
+            color: var(--admin-success);
+        }
+        
+        .notification.error .notification-icon {
+            color: var(--admin-danger);
+        }
+        
+        .notification.info .notification-icon {
+            color: var(--admin-primary);
+        }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        
+        .notification-message {
+            font-size: 13px;
+            color: var(--admin-text-secondary);
+            line-height: 1.4;
+        }
+        
+        .notification-close {
+            background: none;
+            border: none;
+            font-size: 16px;
+            color: var(--admin-text-secondary);
+            cursor: pointer;
+            padding: 0;
+            min-width: 16px;
+        }
+        
+        .notification-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: var(--admin-primary);
+            animation: notificationProgress 5s linear;
+        }
+        
+        .notification.success .notification-progress {
+            background: var(--admin-success);
+        }
+        
+        .notification.error .notification-progress {
+            background: var(--admin-danger);
+        }
+        
+        @keyframes slideInNotification {
+            to { transform: translateX(0); }
+        }
+        
+        @keyframes notificationProgress {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+        
+        /* フィルタリング */
+        .filter-section {
+            background: var(--admin-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .filter-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--admin-text-secondary);
+        }
+        
+        .filter-input, .filter-select {
+            padding: 8px 12px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            min-width: 150px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .filter-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: var(--admin-primary);
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+        }
+        
+        .filter-btn {
+            background: var(--admin-primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover {
+            background: var(--admin-secondary);
+        }
+        
+        .filter-btn.clear {
+            background: var(--admin-text-secondary);
+        }
+        
+        .filter-btn.clear:hover {
+            background: #616161;
+        }
+        
+        /* 一括承認機能 */
+        .bulk-actions {
+            background: var(--admin-bg);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .bulk-actions.show {
+            display: flex;
+        }
+        
+        .bulk-info {
+            flex: 1;
+            font-weight: 700;
+            color: var(--admin-text);
+        }
+        
+        .bulk-btn {
+            background: var(--admin-success);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+        
+        .bulk-btn:hover {
+            background: #388E3C;
+            transform: translateY(-2px);
+        }
+        
+        .bulk-btn.cancel {
+            background: var(--admin-text-secondary);
+        }
+        
+        .bulk-btn.cancel:hover {
+            background: #616161;
+        }
+        
+        /* チェックボックス */
+        .table-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--admin-primary);
+        }
+        
         /* レスポンシブ */
         @media (max-width: 768px) {
             .admin-header-content {
@@ -366,6 +594,28 @@
             
             .action-buttons {
                 flex-direction: column;
+            }
+            
+            .filter-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-actions {
+                margin-left: 0;
+                justify-content: stretch;
+            }
+            
+            .notification-container {
+                left: 10px;
+                right: 10px;
+                max-width: none;
+            }
+            
+            .bulk-actions {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
             }
         }
 
@@ -407,6 +657,9 @@
 
     <!-- 認証ボタン用スペース -->
     <div class="nav-buttons"></div>
+
+    <!-- 通知コンテナ -->
+    <div class="notification-container" id="notificationContainer"></div>
 
     <!-- 管理画面ヘッダー -->
     <header class="admin-header">
@@ -473,7 +726,80 @@
                 </button>
             </div>
             
+            <!-- フィルタリング機能 -->
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label class="filter-label">ユーザー検索</label>
+                    <input type="text" class="filter-input" id="userSearch" placeholder="ユーザー名で検索">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">ステージ</label>
+                    <select class="filter-select" id="stageFilter">
+                        <option value="">全ステージ</option>
+                        <option value="1">ステージ1</option>
+                        <option value="2">ステージ2</option>
+                        <option value="3">ステージ3</option>
+                        <option value="4">ステージ4</option>
+                        <option value="5">ステージ5</option>
+                        <option value="6">ステージ6</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">提出日</label>
+                    <select class="filter-select" id="dateFilter">
+                        <option value="">全期間</option>
+                        <option value="today">今日</option>
+                        <option value="week">1週間以内</option>
+                        <option value="month">1ヶ月以内</option>
+                    </select>
+                </div>
+                <div class="filter-actions">
+                    <button class="filter-btn" onclick="applyFilters()">
+                        <i class="fas fa-search"></i> フィルタ
+                    </button>
+                    <button class="filter-btn clear" onclick="clearFilters()">
+                        <i class="fas fa-times"></i> クリア
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 一括承認機能 -->
+            <div class="bulk-actions" id="bulkActions">
+                <div class="bulk-info">
+                    <span id="selectedCount">0</span>件選択中
+                </div>
+                <button class="bulk-btn" onclick="bulkApprove()">
+                    <i class="fas fa-check-double"></i> 一括承認
+                </button>
+                <button class="bulk-btn cancel" onclick="clearSelection()">
+                    <i class="fas fa-times"></i> 選択解除
+                </button>
+            </div>
+            
             <div id="approvalTableContainer">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>データを読み込んでいます...</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 承認履歴 -->
+        <section class="admin-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <div class="section-icon" style="background: linear-gradient(135deg, var(--admin-accent) 0%, #AD1457 100%);">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    最近の承認履歴
+                </h2>
+                <button class="refresh-btn" onclick="loadApprovalHistory()">
+                    <i class="fas fa-sync-alt"></i>
+                    更新
+                </button>
+            </div>
+            
+            <div id="historyTableContainer">
                 <div class="loading">
                     <div class="loading-spinner"></div>
                     <p>データを読み込んでいます...</p>
@@ -583,7 +909,31 @@
                 }
             }
             
+            // リアルタイム検索の初期化
+            function initRealTimeSearch() {
+                const userSearchInput = document.getElementById('userSearch');
+                let searchTimeout;
+                
+                userSearchInput.addEventListener('input', () => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        applyFilters();
+                    }, 300); // 300ms の遅延で検索実行
+                });
+                
+                // Enterキーでも検索実行
+                userSearchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        clearTimeout(searchTimeout);
+                        applyFilters();
+                    }
+                });
+            }
+            
             waitForAuthManager();
+            
+            // 少し遅らせてリアルタイム検索を初期化
+            setTimeout(initRealTimeSearch, 1000);
         });
 
         // 管理者権限チェック関数
@@ -617,19 +967,24 @@
 
         // ダッシュボード読み込み
         async function loadDashboard() {
+            showNotification('info', '読み込み中...', 'ダッシュボードデータを読み込んでいます');
+            
             await Promise.all([
                 loadStatistics(),
                 loadPendingApprovals(),
+                loadApprovalHistory(),
                 loadAllUsers()
             ]);
+            
+            showNotification('success', '読み込み完了', 'すべてのデータを読み込みました');
         }
 
-        // 承認待ちテーブルの読み込み
+        // 承認待ちテーブルの読み込み（改善版）
         async function loadPendingApprovals() {
             const container = document.getElementById('approvalTableContainer');
             
             try {
-                const { data, error } = await supabase
+                let query = supabase
                     .from('quest_progress')
                     .select(`
                         *,
@@ -638,13 +993,53 @@
                             email
                         )
                     `)
-                    .eq('status', 'pending_approval')
-                    .order('submitted_at', { ascending: true });
+                    .eq('status', 'pending_approval');
+
+                // フィルタリング条件を適用
+                if (currentFilters.stageFilter) {
+                    query = query.eq('stage_id', parseInt(currentFilters.stageFilter));
+                }
+
+                if (currentFilters.dateFilter) {
+                    const now = new Date();
+                    let dateFrom;
+                    
+                    switch (currentFilters.dateFilter) {
+                        case 'today':
+                            dateFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                            break;
+                        case 'week':
+                            dateFrom = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                            break;
+                        case 'month':
+                            dateFrom = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                            break;
+                    }
+                    
+                    if (dateFrom) {
+                        query = query.gte('submitted_at', dateFrom.toISOString());
+                    }
+                }
+
+                const { data, error } = await query.order('submitted_at', { ascending: true });
 
                 if (error) throw error;
 
-                if (!data || data.length === 0) {
+                // ユーザー検索フィルタリング（クライアントサイド）
+                let filteredData = data;
+                if (currentFilters.userSearch) {
+                    const searchTerm = currentFilters.userSearch.toLowerCase();
+                    filteredData = data.filter(item => {
+                        const userName = item.users_profile?.nickname || item.users_profile?.email?.split('@')[0] || '';
+                        const userEmail = item.users_profile?.email || '';
+                        return userName.toLowerCase().includes(searchTerm) || 
+                               userEmail.toLowerCase().includes(searchTerm);
+                    });
+                }
+
+                if (!filteredData || filteredData.length === 0) {
                     container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--admin-text-secondary);">承認待ちのクエストはありません</p>';
+                    clearSelection(); // 選択状態をクリア
                     return;
                 }
 
@@ -652,6 +1047,10 @@
                     <table class="approval-table">
                         <thead>
                             <tr>
+                                <th>
+                                    <input type="checkbox" class="table-checkbox" id="selectAll" 
+                                           onchange="toggleSelectAll(this.checked)">
+                                </th>
                                 <th>ユーザー</th>
                                 <th>ステージ</th>
                                 <th>提出日時</th>
@@ -661,13 +1060,19 @@
                         <tbody>
                 `;
 
-                data.forEach(item => {
+                filteredData.forEach(item => {
                     const userEmail = item.users_profile?.email || 'unknown@example.com';
                     const userName = item.users_profile?.nickname || userEmail.split('@')[0];
                     const submitDate = new Date(item.submitted_at).toLocaleString('ja-JP');
                     
                     tableHTML += `
                         <tr>
+                            <td>
+                                <input type="checkbox" class="table-checkbox item-checkbox" 
+                                       data-user-id="${item.user_id}" 
+                                       data-stage-id="${item.stage_id}"
+                                       onchange="toggleSelection(this, '${item.user_id}', ${item.stage_id})">
+                            </td>
                             <td>
                                 <div class="user-cell">
                                     <div class="user-avatar">${userName.charAt(0).toUpperCase()}</div>
@@ -698,20 +1103,194 @@
                 tableHTML += '</tbody></table>';
                 container.innerHTML = tableHTML;
 
+                // 選択状態をクリア
+                clearSelection();
+
             } catch (error) {
                 console.error('承認待ちデータ取得エラー:', error);
                 container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--admin-danger);">データの読み込みに失敗しました</p>';
             }
         }
 
-        // クエスト承認処理
+        // 承認履歴の読み込み
+        async function loadApprovalHistory() {
+            const container = document.getElementById('historyTableContainer');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('quest_progress')
+                    .select(`
+                        *,
+                        users_profile:user_id (
+                            nickname,
+                            email
+                        ),
+                        admin_profile:approved_by (
+                            email
+                        ),
+                        reject_admin:rejected_by (
+                            email
+                        )
+                    `)
+                    .in('status', ['completed', 'current'])
+                    .not('approved_at', 'is', null)
+                    .order('approved_at', { ascending: false })
+                    .limit(20);
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--admin-text-secondary);">承認履歴はありません</p>';
+                    return;
+                }
+
+                let tableHTML = `
+                    <table class="approval-table">
+                        <thead>
+                            <tr>
+                                <th>ユーザー</th>
+                                <th>ステージ</th>
+                                <th>アクション</th>
+                                <th>管理者</th>
+                                <th>日時</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                data.forEach(item => {
+                    const userEmail = item.users_profile?.email || 'unknown@example.com';
+                    const userName = item.users_profile?.nickname || userEmail.split('@')[0];
+                    
+                    let actionInfo = '';
+                    let actionDate = '';
+                    let adminEmail = '';
+                    
+                    if (item.approved_at) {
+                        actionInfo = '<span class="status-badge approved"><i class="fas fa-check"></i> 承認</span>';
+                        actionDate = new Date(item.approved_at).toLocaleString('ja-JP');
+                        adminEmail = item.admin_profile?.email || '不明';
+                    } else if (item.rejected_at) {
+                        actionInfo = '<span class="status-badge pending"><i class="fas fa-times"></i> 却下</span>';
+                        actionDate = new Date(item.rejected_at).toLocaleString('ja-JP');
+                        adminEmail = item.reject_admin?.email || '不明';
+                    }
+                    
+                    tableHTML += `
+                        <tr>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="user-avatar">${userName.charAt(0).toUpperCase()}</div>
+                                    <div>
+                                        <div style="font-weight: 700;">${userName}</div>
+                                        <div style="font-size: 14px; color: var(--admin-text-secondary);">${userEmail}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="stage-badge">ステージ ${item.stage_id}</span>
+                            </td>
+                            <td>${actionInfo}</td>
+                            <td style="font-size: 14px;">${adminEmail}</td>
+                            <td style="font-size: 14px;">${actionDate}</td>
+                        </tr>
+                    `;
+                });
+
+                tableHTML += '</tbody></table>';
+                container.innerHTML = tableHTML;
+
+            } catch (error) {
+                console.error('承認履歴取得エラー:', error);
+                container.innerHTML = '<p style="text-align: center; padding: 40px; color: var(--admin-danger);">データの読み込みに失敗しました</p>';
+            }
+        }
+
+        // 通知システム
+        function showNotification(type, title, message, duration = 5000) {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            const iconMap = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+            
+            notification.innerHTML = `
+                <div class="notification-icon">
+                    <i class="${iconMap[type]}"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">${title}</div>
+                    ${message ? `<div class="notification-message">${message}</div>` : ''}
+                </div>
+                <button class="notification-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="notification-progress"></div>
+            `;
+            
+            container.appendChild(notification);
+            
+            // 自動削除
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.style.animation = 'slideInNotification 0.3s ease reverse';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, duration);
+        }
+
+        // 統計情報更新関数
+        async function updateUserStats(userId, action) {
+            try {
+                const { data: currentStats, error: fetchError } = await supabase
+                    .from('user_stats')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .single();
+                
+                if (fetchError && fetchError.code !== 'PGRST116') {
+                    console.error('統計取得エラー:', fetchError);
+                    return;
+                }
+                
+                let updateData = {
+                    user_id: userId,
+                    updated_at: new Date().toISOString()
+                };
+                
+                if (action === 'quest_completed') {
+                    updateData.quest_clear_count = (currentStats?.quest_clear_count || 0) + 1;
+                    updateData.total_exp = (currentStats?.total_exp || 0) + 100;
+                }
+                
+                const { error: updateError } = await supabase
+                    .from('user_stats')
+                    .upsert(updateData, { onConflict: 'user_id' });
+                
+                if (updateError) {
+                    console.error('統計更新エラー:', updateError);
+                }
+            } catch (error) {
+                console.error('統計更新処理エラー:', error);
+            }
+        }
+
+        // クエスト承認処理（改善版）
         async function approveQuest(userId, stageId) {
-            if (!confirm(`ステージ${stageId}のクエストを承認しますか？`)) {
+            const nextStageMessage = stageId < 6 ? `\n・次のステージ（ステージ${stageId + 1}）が自動的に解放されます` : '\n・全ステージ完了となります！';
+            
+            if (!confirm(`ステージ${stageId}のクエストを承認しますか？\n\n承認すると：\n・このステージが完了状態になります${nextStageMessage}`)) {
                 return;
             }
 
             try {
-                // 現在のステージを完了状態に更新
+                showNotification('info', '処理中...', 'クエストを承認しています');
+                
+                // 1. 現在のステージを完了に更新
                 const { error: updateError } = await supabase
                     .from('quest_progress')
                     .update({
@@ -724,40 +1303,71 @@
 
                 if (updateError) throw updateError;
 
-                // 次のステージを現在のステージに設定（最終ステージでない場合）
+                // 2. 次のステージが存在する場合、自動的に作成・解放
                 if (stageId < 6) {
                     const nextStageId = stageId + 1;
-                    const { error: nextStageError } = await supabase
+                    
+                    // 次のステージのレコードが存在するか確認
+                    const { data: existingNext } = await supabase
                         .from('quest_progress')
-                        .upsert({
-                            user_id: userId,
-                            stage_id: nextStageId,
-                            status: 'current',
-                            updated_at: new Date().toISOString()
-                        }, {
-                            onConflict: 'user_id,stage_id'
-                        });
+                        .select('*')
+                        .eq('user_id', userId)
+                        .eq('stage_id', nextStageId)
+                        .single();
 
-                    if (nextStageError) throw nextStageError;
+                    if (!existingNext) {
+                        // 存在しない場合は新規作成
+                        const { error: insertError } = await supabase
+                            .from('quest_progress')
+                            .insert({
+                                user_id: userId,
+                                stage_id: nextStageId,
+                                status: 'current',
+                                created_at: new Date().toISOString(),
+                                updated_at: new Date().toISOString()
+                            });
+
+                        if (insertError) throw insertError;
+                    } else if (existingNext.status === 'locked') {
+                        // 存在するがロック状態の場合は解放
+                        const { error: unlockError } = await supabase
+                            .from('quest_progress')
+                            .update({ 
+                                status: 'current',
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('user_id', userId)
+                            .eq('stage_id', nextStageId);
+
+                        if (unlockError) throw unlockError;
+                    }
                 }
 
-                alert('クエストを承認しました');
-                // データを再読み込み
-                await Promise.all([loadPendingApprovals(), loadStatistics()]);
+                // 3. 統計情報の更新
+                await updateUserStats(userId, 'quest_completed');
+
+                // 成功通知
+                const successMessage = stageId < 6 ? `ステージ${stageId + 1}が解放されました。` : '全ステージ完了！';
+                showNotification('success', '承認完了', `ステージ${stageId}を承認しました。${successMessage}`);
+                
+                // テーブルを再読み込み
+                await Promise.all([loadPendingApprovals(), loadStatistics(), loadApprovalHistory()]);
 
             } catch (error) {
                 console.error('承認エラー:', error);
-                alert('承認処理に失敗しました');
+                showNotification('error', '承認失敗', '承認処理中にエラーが発生しました');
             }
         }
 
-        // クエスト却下処理
+        // クエスト却下処理（改善版）
         async function rejectQuest(userId, stageId) {
-            if (!confirm(`ステージ${stageId}のクエストを却下しますか？`)) {
+            if (!confirm(`ステージ${stageId}のクエストを却下しますか？\n\n却下すると：\n・ステージが「挑戦中」状態に戻ります\n・ユーザーは再度クエストに挑戦できます`)) {
                 return;
             }
 
             try {
+                showNotification('info', '処理中...', 'クエストを却下しています');
+                
                 // ステータスを現在に戻す
                 const { error } = await supabase
                     .from('quest_progress')
@@ -772,14 +1382,177 @@
 
                 if (error) throw error;
 
-                alert('クエストを却下しました');
+                showNotification('success', '却下完了', `ステージ${stageId}を却下しました。ユーザーは再挑戦可能です。`);
                 // データを再読み込み
-                await Promise.all([loadPendingApprovals(), loadStatistics()]);
+                await Promise.all([loadPendingApprovals(), loadStatistics(), loadApprovalHistory()]);
 
             } catch (error) {
                 console.error('却下エラー:', error);
-                alert('却下処理に失敗しました');
+                showNotification('error', '却下失敗', '却下処理中にエラーが発生しました');
             }
+        }
+
+        // フィルタリング機能
+        let currentFilters = {
+            userSearch: '',
+            stageFilter: '',
+            dateFilter: ''
+        };
+
+        function applyFilters() {
+            currentFilters.userSearch = document.getElementById('userSearch').value.trim();
+            currentFilters.stageFilter = document.getElementById('stageFilter').value;
+            currentFilters.dateFilter = document.getElementById('dateFilter').value;
+            
+            loadPendingApprovals();
+            showNotification('info', 'フィルタ適用', 'フィルタ条件を適用しました');
+        }
+
+        function clearFilters() {
+            document.getElementById('userSearch').value = '';
+            document.getElementById('stageFilter').value = '';
+            document.getElementById('dateFilter').value = '';
+            
+            currentFilters = {
+                userSearch: '',
+                stageFilter: '',
+                dateFilter: ''
+            };
+            
+            loadPendingApprovals();
+            showNotification('info', 'フィルタクリア', 'フィルタ条件をクリアしました');
+        }
+
+        // 一括承認機能
+        let selectedItems = new Set();
+
+        function toggleSelection(checkbox, userId, stageId) {
+            const key = `${userId}-${stageId}`;
+            
+            if (checkbox.checked) {
+                selectedItems.add(key);
+            } else {
+                selectedItems.delete(key);
+            }
+            
+            updateBulkActions();
+        }
+
+        function toggleSelectAll(checked) {
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = checked;
+                const userId = checkbox.dataset.userId;
+                const stageId = checkbox.dataset.stageId;
+                toggleSelection(checkbox, userId, stageId);
+            });
+        }
+
+        function updateBulkActions() {
+            const bulkActions = document.getElementById('bulkActions');
+            const selectedCount = document.getElementById('selectedCount');
+            
+            selectedCount.textContent = selectedItems.size;
+            
+            if (selectedItems.size > 0) {
+                bulkActions.classList.add('show');
+            } else {
+                bulkActions.classList.remove('show');
+            }
+        }
+
+        function clearSelection() {
+            selectedItems.clear();
+            document.querySelectorAll('.item-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            document.getElementById('selectAll').checked = false;
+            updateBulkActions();
+        }
+
+        async function bulkApprove() {
+            if (selectedItems.size === 0) {
+                showNotification('error', 'エラー', '承認する項目を選択してください');
+                return;
+            }
+
+            if (!confirm(`選択した${selectedItems.size}件のクエストを一括承認しますか？\n\n注意：この操作は取り消せません。`)) {
+                return;
+            }
+
+            try {
+                showNotification('info', '一括承認中...', `${selectedItems.size}件のクエストを承認しています`);
+                
+                const approvalPromises = Array.from(selectedItems).map(item => {
+                    const [userId, stageId] = item.split('-');
+                    return approveQuestBulk(userId, parseInt(stageId));
+                });
+
+                await Promise.all(approvalPromises);
+                
+                clearSelection();
+                showNotification('success', '一括承認完了', `${selectedItems.size}件のクエストを承認しました`);
+                
+            } catch (error) {
+                console.error('一括承認エラー:', error);
+                showNotification('error', '一括承認失敗', '一括承認処理中にエラーが発生しました');
+            }
+        }
+
+        // 一括承認用の内部関数（通知なし）
+        async function approveQuestBulk(userId, stageId) {
+            // 1. 現在のステージを完了に更新
+            const { error: updateError } = await supabase
+                .from('quest_progress')
+                .update({
+                    status: 'completed',
+                    approved_at: new Date().toISOString(),
+                    approved_by: currentUserId
+                })
+                .eq('user_id', userId)
+                .eq('stage_id', stageId);
+
+            if (updateError) throw updateError;
+
+            // 2. 次のステージの処理
+            if (stageId < 6) {
+                const nextStageId = stageId + 1;
+                
+                const { data: existingNext } = await supabase
+                    .from('quest_progress')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .eq('stage_id', nextStageId)
+                    .single();
+
+                if (!existingNext) {
+                    const { error: insertError } = await supabase
+                        .from('quest_progress')
+                        .insert({
+                            user_id: userId,
+                            stage_id: nextStageId,
+                            status: 'current',
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        });
+
+                    if (insertError) throw insertError;
+                } else if (existingNext.status === 'locked') {
+                    const { error: unlockError } = await supabase
+                        .from('quest_progress')
+                        .update({ 
+                            status: 'current',
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('user_id', userId)
+                        .eq('stage_id', nextStageId);
+
+                    if (unlockError) throw unlockError;
+                }
+            }
+
+            // 3. 統計情報の更新
+            await updateUserStats(userId, 'quest_completed');
         }
 
         // 統計情報の読み込み
