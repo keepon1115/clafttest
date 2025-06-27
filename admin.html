@@ -730,7 +730,7 @@
             <div class="filter-section">
                 <div class="filter-group">
                     <label class="filter-label">ユーザー検索</label>
-                    <input type="text" class="filter-input" id="userSearch" placeholder="ユーザー名で検索">
+                    <input type="text" class="filter-input" id="userSearch" placeholder="ユーザー名またはメールで検索">
                 </div>
                 <div class="filter-group">
                     <label class="filter-label">ステージ</label>
@@ -741,7 +741,7 @@
                         <option value="3">ステージ3</option>
                         <option value="4">ステージ4</option>
                         <option value="5">ステージ5</option>
-                        <option value="6">ステージ6</option>
+                        <option value="6">ステージ6（最終）</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -909,24 +909,53 @@
                 }
             }
             
-            // リアルタイム検索の初期化
+            // リアルタイム検索の初期化（改善版）
             function initRealTimeSearch() {
                 const userSearchInput = document.getElementById('userSearch');
-                let searchTimeout;
+                const stageFilter = document.getElementById('stageFilter');
+                const dateFilter = document.getElementById('dateFilter');
                 
-                userSearchInput.addEventListener('input', () => {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        applyFilters();
-                    }, 300); // 300ms の遅延で検索実行
+                if (!userSearchInput || !stageFilter || !dateFilter) {
+                    console.warn('フィルタ要素が見つかりません');
+                    return;
+                }
+                
+                // 検索入力のリアルタイム処理
+                userSearchInput.addEventListener('input', (e) => {
+                    // 入力中の視覚的フィードバック
+                    userSearchInput.style.borderColor = isFiltering ? 'var(--admin-warning)' : 'var(--admin-primary)';
+                    
+                    applyFilters(false); // 通知なしで実行
                 });
                 
-                // Enterキーでも検索実行
+                // セレクトボックスの変更処理
+                stageFilter.addEventListener('change', () => {
+                    applyFilters(true); // 通知ありで実行
+                });
+                
+                dateFilter.addEventListener('change', () => {
+                    applyFilters(true); // 通知ありで実行
+                });
+                
+                // Enterキーで即座に検索実行
                 userSearchInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
-                        clearTimeout(searchTimeout);
-                        applyFilters();
+                        e.preventDefault();
+                        if (filterTimeout) {
+                            clearTimeout(filterTimeout);
+                        }
+                        applyFilters(true);
                     }
+                });
+                
+                // フォーカス/ブラー時の視覚的フィードバック
+                userSearchInput.addEventListener('focus', () => {
+                    userSearchInput.placeholder = 'ユーザー名またはメールアドレスで検索...';
+                });
+                
+                userSearchInput.addEventListener('blur', () => {
+                    userSearchInput.placeholder = 'ユーザー名で検索';
+                    userSearchInput.style.borderColor = '';
                 });
             }
             
@@ -1112,11 +1141,12 @@
             }
         }
 
-        // 承認履歴の読み込み
+        // 承認履歴の読み込み（改善版）
         async function loadApprovalHistory() {
             const container = document.getElementById('historyTableContainer');
             
             try {
+                // 承認と却下の両方の履歴を取得
                 const { data, error } = await supabase
                     .from('quest_progress')
                     .select(`
@@ -1124,18 +1154,11 @@
                         users_profile:user_id (
                             nickname,
                             email
-                        ),
-                        admin_profile:approved_by (
-                            email
-                        ),
-                        reject_admin:rejected_by (
-                            email
                         )
                     `)
-                    .in('status', ['completed', 'current'])
-                    .not('approved_at', 'is', null)
-                    .order('approved_at', { ascending: false })
-                    .limit(20);
+                    .or('approved_at.not.is.null,rejected_at.not.is.null')
+                    .order('updated_at', { ascending: false })
+                    .limit(30);
 
                 if (error) throw error;
 
@@ -1158,23 +1181,59 @@
                         <tbody>
                 `;
 
+                // 管理者情報を非同期で取得
+                const adminIds = new Set();
+                data.forEach(item => {
+                    if (item.approved_by) adminIds.add(item.approved_by);
+                    if (item.rejected_by) adminIds.add(item.rejected_by);
+                });
+
+                let adminProfiles = {};
+                if (adminIds.size > 0) {
+                    const { data: admins } = await supabase
+                        .from('admin_users')
+                        .select('user_id, email')
+                        .in('user_id', Array.from(adminIds));
+                    
+                    if (admins) {
+                        adminProfiles = admins.reduce((acc, admin) => {
+                            acc[admin.user_id] = admin;
+                            return acc;
+                        }, {});
+                    }
+                }
+
                 data.forEach(item => {
                     const userEmail = item.users_profile?.email || 'unknown@example.com';
                     const userName = item.users_profile?.nickname || userEmail.split('@')[0];
                     
                     let actionInfo = '';
                     let actionDate = '';
-                    let adminEmail = '';
+                    let adminInfo = '';
                     
-                    if (item.approved_at) {
+                    if (item.approved_at && item.rejected_at) {
+                        // 承認後に却下された場合（稀なケース）
+                        if (new Date(item.approved_at) > new Date(item.rejected_at)) {
+                            actionInfo = '<span class="status-badge approved"><i class="fas fa-check"></i> 承認</span>';
+                            actionDate = new Date(item.approved_at).toLocaleString('ja-JP');
+                            adminInfo = adminProfiles[item.approved_by]?.email || '管理者';
+                        } else {
+                            actionInfo = '<span class="status-badge pending"><i class="fas fa-times"></i> 却下</span>';
+                            actionDate = new Date(item.rejected_at).toLocaleString('ja-JP');
+                            adminInfo = adminProfiles[item.rejected_by]?.email || '管理者';
+                        }
+                    } else if (item.approved_at) {
                         actionInfo = '<span class="status-badge approved"><i class="fas fa-check"></i> 承認</span>';
                         actionDate = new Date(item.approved_at).toLocaleString('ja-JP');
-                        adminEmail = item.admin_profile?.email || '不明';
+                        adminInfo = adminProfiles[item.approved_by]?.email || '管理者';
                     } else if (item.rejected_at) {
                         actionInfo = '<span class="status-badge pending"><i class="fas fa-times"></i> 却下</span>';
                         actionDate = new Date(item.rejected_at).toLocaleString('ja-JP');
-                        adminEmail = item.reject_admin?.email || '不明';
+                        adminInfo = adminProfiles[item.rejected_by]?.email || '管理者';
                     }
+                    
+                    // 相対時間表示を追加
+                    const relativeTime = getRelativeTime(actionDate);
                     
                     tableHTML += `
                         <tr>
@@ -1191,7 +1250,10 @@
                                 <span class="stage-badge">ステージ ${item.stage_id}</span>
                             </td>
                             <td>${actionInfo}</td>
-                            <td style="font-size: 14px;">${adminEmail}</td>
+                            <td style="font-size: 14px;">
+                                <div>${adminInfo}</div>
+                                <div style="color: var(--admin-text-secondary); font-size: 12px;">${relativeTime}</div>
+                            </td>
                             <td style="font-size: 14px;">${actionDate}</td>
                         </tr>
                     `;
@@ -1243,81 +1305,148 @@
             }, duration);
         }
 
-        // 統計情報更新関数
+        // 相対時間表示のヘルパー関数
+        function getRelativeTime(dateString) {
+            if (!dateString) return '';
+            
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / (1000 * 60));
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            
+            if (diffMins < 1) return 'たった今';
+            if (diffMins < 60) return `${diffMins}分前`;
+            if (diffHours < 24) return `${diffHours}時間前`;
+            if (diffDays < 7) return `${diffDays}日前`;
+            if (diffDays < 30) return `${Math.floor(diffDays / 7)}週間前`;
+            return `${Math.floor(diffDays / 30)}ヶ月前`;
+        }
+
+        // 統計情報更新関数（改善版）
         async function updateUserStats(userId, action) {
             try {
-                const { data: currentStats, error: fetchError } = await supabase
-                    .from('user_stats')
-                    .select('*')
-                    .eq('user_id', userId)
-                    .single();
-                
-                if (fetchError && fetchError.code !== 'PGRST116') {
-                    console.error('統計取得エラー:', fetchError);
-                    return;
-                }
-                
+                // より効率的にupsertを使用
                 let updateData = {
                     user_id: userId,
                     updated_at: new Date().toISOString()
                 };
                 
                 if (action === 'quest_completed') {
+                    // 現在の統計を取得
+                    const { data: currentStats, error: fetchError } = await supabase
+                        .from('user_stats')
+                        .select('quest_clear_count, total_exp')
+                        .eq('user_id', userId)
+                        .maybeSingle();
+                    
+                    if (fetchError && fetchError.code !== 'PGRST116') {
+                        console.warn('統計取得エラー:', fetchError);
+                    }
+                    
+                    // 経験値は100ポイント/クエスト
+                    const experienceGain = 100;
                     updateData.quest_clear_count = (currentStats?.quest_clear_count || 0) + 1;
-                    updateData.total_exp = (currentStats?.total_exp || 0) + 100;
+                    updateData.total_exp = (currentStats?.total_exp || 0) + experienceGain;
+                    
+                } else if (action === 'login') {
+                    // ログイン時の統計更新
+                    const { data: currentStats } = await supabase
+                        .from('user_stats')
+                        .select('login_count')
+                        .eq('user_id', userId)
+                        .maybeSingle();
+                    
+                    updateData.login_count = (currentStats?.login_count || 0) + 1;
+                    updateData.last_login_date = new Date().toISOString().split('T')[0]; // 日付のみ
                 }
                 
                 const { error: updateError } = await supabase
                     .from('user_stats')
-                    .upsert(updateData, { onConflict: 'user_id' });
+                    .upsert(updateData, { 
+                        onConflict: 'user_id',
+                        ignoreDuplicates: false 
+                    });
                 
                 if (updateError) {
                     console.error('統計更新エラー:', updateError);
+                    throw updateError;
                 }
+                
+                return { success: true, action, userId };
+                
             } catch (error) {
                 console.error('統計更新処理エラー:', error);
+                // 統計更新失敗は致命的ではないため、エラーをログに記録するのみ
+                return { success: false, error: error.message, action, userId };
             }
         }
 
         // クエスト承認処理（改善版）
         async function approveQuest(userId, stageId) {
-            const nextStageMessage = stageId < 6 ? `\n・次のステージ（ステージ${stageId + 1}）が自動的に解放されます` : '\n・全ステージ完了となります！';
+            // ユーザー情報を取得して確認ダイアログに表示
+            let userInfo = '';
+            try {
+                const { data: user } = await supabase
+                    .from('users_profile')
+                    .select('nickname, email')
+                    .eq('id', userId)
+                    .single();
+                
+                const userName = user?.nickname || user?.email?.split('@')[0] || 'Unknown';
+                userInfo = `ユーザー: ${userName}\n`;
+            } catch (error) {
+                console.warn('ユーザー情報取得に失敗:', error);
+            }
+
+            const nextStageMessage = stageId < 6 ? 
+                `・次のステージ（ステージ${stageId + 1}）が自動的に解放されます` : 
+                '・全ステージ完了となります！🎉';
             
-            if (!confirm(`ステージ${stageId}のクエストを承認しますか？\n\n承認すると：\n・このステージが完了状態になります${nextStageMessage}`)) {
+            const confirmMessage = `${userInfo}ステージ${stageId}のクエストを承認しますか？\n\n承認すると：\n・このステージが完了状態になります\n${nextStageMessage}\n・ユーザーの統計情報が更新されます`;
+            
+            if (!confirm(confirmMessage)) {
                 return;
             }
 
             try {
                 showNotification('info', '処理中...', 'クエストを承認しています');
                 
+                // トランザクション的な処理を実装
+                const updates = [];
+                
                 // 1. 現在のステージを完了に更新
-                const { error: updateError } = await supabase
+                const updateCurrentStage = supabase
                     .from('quest_progress')
                     .update({
                         status: 'completed',
                         approved_at: new Date().toISOString(),
-                        approved_by: currentUserId
+                        approved_by: currentUserId,
+                        updated_at: new Date().toISOString()
                     })
                     .eq('user_id', userId)
                     .eq('stage_id', stageId);
 
-                if (updateError) throw updateError;
+                updates.push(updateCurrentStage);
 
-                // 2. 次のステージが存在する場合、自動的に作成・解放
+                // 2. 次のステージの処理
                 if (stageId < 6) {
                     const nextStageId = stageId + 1;
                     
                     // 次のステージのレコードが存在するか確認
-                    const { data: existingNext } = await supabase
+                    const { data: existingNext, error: checkError } = await supabase
                         .from('quest_progress')
                         .select('*')
                         .eq('user_id', userId)
                         .eq('stage_id', nextStageId)
-                        .single();
+                        .maybeSingle();
+
+                    if (checkError) throw checkError;
 
                     if (!existingNext) {
                         // 存在しない場合は新規作成
-                        const { error: insertError } = await supabase
+                        const insertNextStage = supabase
                             .from('quest_progress')
                             .insert({
                                 user_id: userId,
@@ -1326,11 +1455,11 @@
                                 created_at: new Date().toISOString(),
                                 updated_at: new Date().toISOString()
                             });
-
-                        if (insertError) throw insertError;
+                        
+                        updates.push(insertNextStage);
                     } else if (existingNext.status === 'locked') {
                         // 存在するがロック状態の場合は解放
-                        const { error: unlockError } = await supabase
+                        const unlockNextStage = supabase
                             .from('quest_progress')
                             .update({ 
                                 status: 'current',
@@ -1338,30 +1467,62 @@
                             })
                             .eq('user_id', userId)
                             .eq('stage_id', nextStageId);
-
-                        if (unlockError) throw unlockError;
+                        
+                        updates.push(unlockNextStage);
                     }
+                }
+
+                // 並列実行でパフォーマンス向上
+                const results = await Promise.all(updates);
+                
+                // エラーチェック
+                const errors = results.filter(result => result.error);
+                if (errors.length > 0) {
+                    throw new Error(`データベース更新エラー: ${errors.map(e => e.error.message).join(', ')}`);
                 }
 
                 // 3. 統計情報の更新
                 await updateUserStats(userId, 'quest_completed');
 
                 // 成功通知
-                const successMessage = stageId < 6 ? `ステージ${stageId + 1}が解放されました。` : '全ステージ完了！';
+                const successMessage = stageId < 6 ? 
+                    `ステージ${stageId + 1}が解放されました！` : 
+                    '🎉 全ステージ完了おめでとうございます！';
                 showNotification('success', '承認完了', `ステージ${stageId}を承認しました。${successMessage}`);
                 
-                // テーブルを再読み込み
-                await Promise.all([loadPendingApprovals(), loadStatistics(), loadApprovalHistory()]);
+                // テーブルを再読み込み（並列実行）
+                await Promise.all([
+                    loadPendingApprovals(), 
+                    loadStatistics(), 
+                    loadApprovalHistory()
+                ]);
 
             } catch (error) {
                 console.error('承認エラー:', error);
-                showNotification('error', '承認失敗', '承認処理中にエラーが発生しました');
+                showNotification('error', '承認失敗', `承認処理中にエラーが発生しました: ${error.message}`);
             }
         }
 
         // クエスト却下処理（改善版）
         async function rejectQuest(userId, stageId) {
-            if (!confirm(`ステージ${stageId}のクエストを却下しますか？\n\n却下すると：\n・ステージが「挑戦中」状態に戻ります\n・ユーザーは再度クエストに挑戦できます`)) {
+            // ユーザー情報を取得して確認ダイアログに表示
+            let userInfo = '';
+            try {
+                const { data: user } = await supabase
+                    .from('users_profile')
+                    .select('nickname, email')
+                    .eq('id', userId)
+                    .single();
+                
+                const userName = user?.nickname || user?.email?.split('@')[0] || 'Unknown';
+                userInfo = `ユーザー: ${userName}\n`;
+            } catch (error) {
+                console.warn('ユーザー情報取得に失敗:', error);
+            }
+
+            const confirmMessage = `${userInfo}ステージ${stageId}のクエストを却下しますか？\n\n却下すると：\n・ステージが「挑戦中」状態に戻ります\n・ユーザーは再度クエストに挑戦できます\n・却下履歴が記録されます`;
+            
+            if (!confirm(confirmMessage)) {
                 return;
             }
 
@@ -1375,7 +1536,11 @@
                         status: 'current',
                         rejected_at: new Date().toISOString(),
                         rejected_by: currentUserId,
-                        updated_at: new Date().toISOString()
+                        updated_at: new Date().toISOString(),
+                        // 承認関連の情報をクリア（再提出の準備）
+                        approved_at: null,
+                        approved_by: null,
+                        google_form_submitted: false
                     })
                     .eq('user_id', userId)
                     .eq('stage_id', stageId);
@@ -1383,44 +1548,81 @@
                 if (error) throw error;
 
                 showNotification('success', '却下完了', `ステージ${stageId}を却下しました。ユーザーは再挑戦可能です。`);
-                // データを再読み込み
-                await Promise.all([loadPendingApprovals(), loadStatistics(), loadApprovalHistory()]);
+                
+                // データを再読み込み（並列実行）
+                await Promise.all([
+                    loadPendingApprovals(), 
+                    loadStatistics(), 
+                    loadApprovalHistory()
+                ]);
 
             } catch (error) {
                 console.error('却下エラー:', error);
-                showNotification('error', '却下失敗', '却下処理中にエラーが発生しました');
+                showNotification('error', '却下失敗', `却下処理中にエラーが発生しました: ${error.message}`);
             }
         }
 
-        // フィルタリング機能
+        // フィルタリング機能（改善版）
         let currentFilters = {
             userSearch: '',
             stageFilter: '',
             dateFilter: ''
         };
 
-        function applyFilters() {
-            currentFilters.userSearch = document.getElementById('userSearch').value.trim();
-            currentFilters.stageFilter = document.getElementById('stageFilter').value;
-            currentFilters.dateFilter = document.getElementById('dateFilter').value;
-            
-            loadPendingApprovals();
-            showNotification('info', 'フィルタ適用', 'フィルタ条件を適用しました');
+        let filterTimeout = null;
+        let isFiltering = false;
+
+        function applyFilters(showNotificationFlag = true) {
+            // 連続した検索要求をキャンセル
+            if (filterTimeout) {
+                clearTimeout(filterTimeout);
+            }
+
+            filterTimeout = setTimeout(async () => {
+                try {
+                    isFiltering = true;
+                    
+                    currentFilters.userSearch = document.getElementById('userSearch').value.trim();
+                    currentFilters.stageFilter = document.getElementById('stageFilter').value;
+                    currentFilters.dateFilter = document.getElementById('dateFilter').value;
+                    
+                    // フィルタ条件のカウント
+                    const filterCount = Object.values(currentFilters).filter(v => v !== '').length;
+                    
+                    if (showNotificationFlag && filterCount > 0) {
+                        showNotification('info', 'フィルタ適用', `${filterCount}個の条件でフィルタリング中...`);
+                    }
+                    
+                    await loadPendingApprovals();
+                    
+                    if (showNotificationFlag && filterCount > 0) {
+                        showNotification('success', 'フィルタ完了', `${filterCount}個の条件を適用しました`);
+                    }
+                } catch (error) {
+                    console.error('フィルタリングエラー:', error);
+                    showNotification('error', 'フィルタエラー', 'フィルタリング中にエラーが発生しました');
+                } finally {
+                    isFiltering = false;
+                }
+            }, 300); // 300ms のデバウンス
         }
 
         function clearFilters() {
+            // 入力フィールドをクリア
             document.getElementById('userSearch').value = '';
             document.getElementById('stageFilter').value = '';
             document.getElementById('dateFilter').value = '';
             
+            // フィルタ状態をリセット
             currentFilters = {
                 userSearch: '',
                 stageFilter: '',
                 dateFilter: ''
             };
             
+            // 即座にデータを再読み込み
             loadPendingApprovals();
-            showNotification('info', 'フィルタクリア', 'フィルタ条件をクリアしました');
+            showNotification('info', 'フィルタクリア', 'すべてのフィルタ条件をクリアしました');
         }
 
         // 一括承認機能
@@ -1476,83 +1678,154 @@
                 return;
             }
 
-            if (!confirm(`選択した${selectedItems.size}件のクエストを一括承認しますか？\n\n注意：この操作は取り消せません。`)) {
+            // 選択されたアイテムの詳細を表示
+            const selectedDetails = Array.from(selectedItems).map(item => {
+                const [userId, stageId] = item.split('-');
+                return `・ステージ${stageId}`;
+            }).join('\n');
+
+            const confirmMessage = `選択した${selectedItems.size}件のクエストを一括承認しますか？\n\n選択項目：\n${selectedDetails}\n\n注意：\n・この操作は取り消せません\n・次のステージが自動的に解放されます\n・統計情報が更新されます`;
+            
+            if (!confirm(confirmMessage)) {
                 return;
             }
 
             try {
                 showNotification('info', '一括承認中...', `${selectedItems.size}件のクエストを承認しています`);
                 
-                const approvalPromises = Array.from(selectedItems).map(item => {
-                    const [userId, stageId] = item.split('-');
-                    return approveQuestBulk(userId, parseInt(stageId));
-                });
+                // プログレス管理のため、逐次処理
+                let completed = 0;
+                const total = selectedItems.size;
+                const promises = [];
 
-                await Promise.all(approvalPromises);
+                for (const item of selectedItems) {
+                    const [userId, stageId] = item.split('-');
+                    const promise = approveQuestBulk(userId, parseInt(stageId))
+                        .then(() => {
+                            completed++;
+                            // プログレス表示更新
+                            if (completed % 3 === 0 || completed === total) {
+                                showNotification('info', '進行中...', `${completed}/${total}件完了`);
+                            }
+                        });
+                    promises.push(promise);
+                }
+
+                // 一定数ずつ並列実行（サーバー負荷軽減）
+                const batchSize = 5;
+                for (let i = 0; i < promises.length; i += batchSize) {
+                    const batch = promises.slice(i, i + batchSize);
+                    await Promise.all(batch);
+                    
+                    // バッチ間に少し待機
+                    if (i + batchSize < promises.length) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                }
                 
                 clearSelection();
-                showNotification('success', '一括承認完了', `${selectedItems.size}件のクエストを承認しました`);
+                
+                // 成功統計の表示
+                showNotification('success', '一括承認完了', `🎉 ${total}件のクエストを承認しました！\n次のステージも自動的に解放されています。`);
+                
+                // テーブルを再読み込み
+                await Promise.all([
+                    loadPendingApprovals(), 
+                    loadStatistics(), 
+                    loadApprovalHistory()
+                ]);
                 
             } catch (error) {
                 console.error('一括承認エラー:', error);
-                showNotification('error', '一括承認失敗', '一括承認処理中にエラーが発生しました');
+                showNotification('error', '一括承認失敗', `一括承認処理中にエラーが発生しました: ${error.message}\n\n一部の承認は完了している可能性があります。`);
+                clearSelection();
+                
+                // エラー後もデータを再読み込み
+                await Promise.all([
+                    loadPendingApprovals(), 
+                    loadStatistics(), 
+                    loadApprovalHistory()
+                ]);
             }
         }
 
         // 一括承認用の内部関数（通知なし）
         async function approveQuestBulk(userId, stageId) {
-            // 1. 現在のステージを完了に更新
-            const { error: updateError } = await supabase
-                .from('quest_progress')
-                .update({
-                    status: 'completed',
-                    approved_at: new Date().toISOString(),
-                    approved_by: currentUserId
-                })
-                .eq('user_id', userId)
-                .eq('stage_id', stageId);
-
-            if (updateError) throw updateError;
-
-            // 2. 次のステージの処理
-            if (stageId < 6) {
-                const nextStageId = stageId + 1;
+            try {
+                // トランザクション的な処理を実装
+                const updates = [];
                 
-                const { data: existingNext } = await supabase
+                // 1. 現在のステージを完了に更新
+                const updateCurrentStage = supabase
                     .from('quest_progress')
-                    .select('*')
+                    .update({
+                        status: 'completed',
+                        approved_at: new Date().toISOString(),
+                        approved_by: currentUserId,
+                        updated_at: new Date().toISOString()
+                    })
                     .eq('user_id', userId)
-                    .eq('stage_id', nextStageId)
-                    .single();
+                    .eq('stage_id', stageId);
 
-                if (!existingNext) {
-                    const { error: insertError } = await supabase
-                        .from('quest_progress')
-                        .insert({
-                            user_id: userId,
-                            stage_id: nextStageId,
-                            status: 'current',
-                            created_at: new Date().toISOString(),
-                            updated_at: new Date().toISOString()
-                        });
+                updates.push(updateCurrentStage);
 
-                    if (insertError) throw insertError;
-                } else if (existingNext.status === 'locked') {
-                    const { error: unlockError } = await supabase
+                // 2. 次のステージの処理
+                if (stageId < 6) {
+                    const nextStageId = stageId + 1;
+                    
+                    const { data: existingNext, error: checkError } = await supabase
                         .from('quest_progress')
-                        .update({ 
-                            status: 'current',
-                            updated_at: new Date().toISOString()
-                        })
+                        .select('*')
                         .eq('user_id', userId)
-                        .eq('stage_id', nextStageId);
+                        .eq('stage_id', nextStageId)
+                        .maybeSingle();
 
-                    if (unlockError) throw unlockError;
+                    if (checkError) throw checkError;
+
+                    if (!existingNext) {
+                        const insertNextStage = supabase
+                            .from('quest_progress')
+                            .insert({
+                                user_id: userId,
+                                stage_id: nextStageId,
+                                status: 'current',
+                                created_at: new Date().toISOString(),
+                                updated_at: new Date().toISOString()
+                            });
+                        
+                        updates.push(insertNextStage);
+                    } else if (existingNext.status === 'locked') {
+                        const unlockNextStage = supabase
+                            .from('quest_progress')
+                            .update({ 
+                                status: 'current',
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('user_id', userId)
+                            .eq('stage_id', nextStageId);
+                        
+                        updates.push(unlockNextStage);
+                    }
                 }
-            }
 
-            // 3. 統計情報の更新
-            await updateUserStats(userId, 'quest_completed');
+                // 並列実行でパフォーマンス向上
+                const results = await Promise.all(updates);
+                
+                // エラーチェック
+                const errors = results.filter(result => result.error);
+                if (errors.length > 0) {
+                    throw new Error(`ステージ${stageId} 更新エラー: ${errors.map(e => e.error.message).join(', ')}`);
+                }
+
+                // 3. 統計情報の更新
+                await updateUserStats(userId, 'quest_completed');
+                
+                return { success: true, userId, stageId };
+                
+            } catch (error) {
+                console.error(`一括承認エラー (ユーザー: ${userId}, ステージ: ${stageId}):`, error);
+                throw new Error(`ユーザー${userId}のステージ${stageId}承認失敗: ${error.message}`);
+            }
         }
 
         // 統計情報の読み込み
