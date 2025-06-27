@@ -265,6 +265,7 @@ class AuthManager {
     }
 
     showAuthModal() {
+        console.log('showAuthModal called from:', new Error().stack);
         const modal = document.getElementById('authModal');
         if (modal) {
             modal.style.display = 'flex';
@@ -451,9 +452,24 @@ class AuthManager {
     handlePageSpecificAuth() {
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
         
+        console.log('handlePageSpecificAuth called:', {
+            currentPage,
+            hasUser: !!this.currentUser,
+            isIndex: currentPage === 'index.html',
+            isProfile: currentPage === 'profile.html'
+        });
+        
         // profile.htmlの場合のみ、ログインを強制
         if (currentPage === 'profile.html' && !this.currentUser) {
+            console.log('Showing auth modal for profile.html');
             this.showAuthModal();
+            return;
+        }
+        
+        // index.htmlでは認証モーダルを自動表示しない
+        if (currentPage === 'index.html') {
+            console.log('index.html detected - no auto auth modal');
+            this.updateAuthButtons();
             return;
         }
         

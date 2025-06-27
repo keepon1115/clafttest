@@ -2159,8 +2159,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     const redirectUrl = urlParams.get('redirect');
     
-    // デフォルトのonAuthStateChangedを設定
+    // デフォルトのonAuthStateChangedを設定（index.html用）
     window.onAuthStateChanged = function(user) {
+        console.log('index.html onAuthStateChanged called:', !!user);
         // デフォルトデータ
         const defaultData = {
             playerName: 'ゲスト',
@@ -2184,11 +2185,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // 非ログイン時：デフォルトデータを表示
             updateUIWithData(defaultData);
             
-            // プロフィール編集ボタンを非表示またはログイン促進に変更
+            // プロフィール編集ボタンを未ログイン用に変更
             const editBtn = document.querySelector('.edit-profile-btn');
             if (editBtn) {
-                editBtn.textContent = '🔐 ログインして編集';
-                editBtn.onclick = () => window.authManager && authManager.showAuthModal();
+                editBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> ログインして編集';
+                // onclickはそのままgoToProfileEdit()を使用（関数内でログインチェック）
             }
         }
     };
@@ -2315,6 +2316,20 @@ function loadUserProfile(userId) {
     // ここで実際のユーザーデータを取得する処理を実装
     console.log('Loading user profile for:', userId);
     // 今は何もしない（既存の動作を維持）
+}
+
+// プロフィール編集ボタンの処理
+function goToProfileEdit() {
+    // ログインチェック
+    if (window.authManager && window.authManager.isLoggedIn()) {
+        // ログイン済みの場合はプロフィールページに移動
+        window.location.href = 'profile.html';
+    } else {
+        // 未ログインの場合は認証モーダルを表示
+        if (window.authManager) {
+            window.authManager.showAuthModal();
+        }
+    }
 }
 
 </script>
