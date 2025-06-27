@@ -277,18 +277,18 @@
         const stageStaticData = {
             1: { 
                 title: '君はどんな冒険者？', 
-                description: 'この世界の地図をひらいて、CLAFTを冒険しよう！', 
-                message: '「この世界をどう歩くかは、自分で決めていい」',
-                videoUrl: 'https://youtube.com/watch?v=stage1video',
-                formUrl: 'https://forms.google.com/your-form-1',
+                description: '〜学びの地図をひらこう〜', 
+                message: '「勉強という二文字を忘れよう」',
+                videoUrl: 'https://vimeo.com/1096785134/fc1a254212',
+                formUrl: 'https://forms.gle/DX3GDXH9E62wVWTz7',
                 iconImage: 'https://via.placeholder.com/64x64/8B4513/FFFFFF?text=House', 
                 fallbackIcon: '🏠', 
                 clearEffectImage: 'https://via.placeholder.com/32x32/CCCCCC/000000?text=Smoke' 
             },
             2: { 
-                title: 'ワクもやエネルギー', 
-                description: 'ワクワク・もやもやは問いの原動力になる', 
-                message: '「君の感じた"もやもや"が、冒険の出発点」',
+                title: '新時代の冒険者に必要なものって？', 
+                description: '〜武器と道具の話〜', 
+                message: '「君は武器や道具をどう使う？」',
                 videoUrl: 'https://youtube.com/watch?v=stage2video',
                 formUrl: 'https://forms.google.com/your-form-2',
                 iconImage: 'https://via.placeholder.com/64x64/228B22/FFFFFF?text=Forest', 
@@ -297,8 +297,8 @@
             },
             3: { 
                 title: '君はどんなキャラ？', 
-                description: '自分を育てる育成ゲーム', 
-                message: '「自分のスキルツリーを育てるのは、君自身だ」',
+                description: '〜自分を育てる育成ゲーム〜', 
+                message: '「自分のキャラは、自分で決めよう」',
                 videoUrl: 'https://youtube.com/watch?v=stage3video',
                 formUrl: 'https://forms.google.com/your-form-3',
                 iconImage: 'https://via.placeholder.com/64x64/4169E1/FFFFFF?text=Sword', 
@@ -306,9 +306,9 @@
                 clearEffectImage: null 
             },
             4: { 
-                title: 'どんな道具を持ってる？', 
-                description: 'この世界の地図をひらいて、CLAFTを冒険しよう！', 
-                message: '「自分のスキルツリーを育てるのは、君自身だ」',
+                title: 'ちがうって、おもしろい', 
+                description: '〜正解がないから広がる世界〜', 
+                message: '「だれかと違うのは怖いことじゃない」',
                 videoUrl: 'https://youtube.com/watch?v=stage4video',
                 formUrl: 'https://forms.google.com/your-form-4',
                 iconImage: 'https://via.placeholder.com/64x64/FFD700/000000?text=Shield', 
@@ -316,9 +316,9 @@
                 clearEffectImage: null 
             },
             5: { 
-                title: '仲間と冒険するって？', 
-                description: 'この世界の地図をひらいて、CLAFTを冒険しよう！', 
-                message: '「自分のスキルツリーを育てるのは、君自身だ」',
+                title: '「？」が世界をひらく', 
+                description: '〜ワクワク＆もやもや〜', 
+                message: '「“もやもや”がアイデアをつくる！！」',
                 videoUrl: 'https://youtube.com/watch?v=stage5video',
                 formUrl: 'https://forms.google.com/your-form-5',
                 iconImage: 'https://via.placeholder.com/64x64/32CD32/FFFFFF?text=Team', 
@@ -326,9 +326,9 @@
                 clearEffectImage: null 
             },
             6: { 
-                title: '未来のボスと向き合う', 
-                description: 'この世界の地図をひらいて、CLAFTを冒険しよう！', 
-                message: '「自分のスキルツリーを育てるのは、君自身だ」',
+                title: 'つくってつたえると気づける', 
+                description: '〜違いを生かして未来を創る〜', 
+                message: '「小さな一歩が、大きな未来につながる」',
                 videoUrl: 'https://youtube.com/watch?v=stage6video',
                 formUrl: 'https://forms.google.com/your-form-6',
                 iconImage: 'https://via.placeholder.com/64x64/8B0000/FFFFFF?text=Boss', 
@@ -395,11 +395,11 @@
 
         // デモ用のクエストマップ表示関数
         function showDemoQuestMap() {
-            // デモ用の進捗データ
+            // デモ用の進捗データ（ステージ1のみアクセス可能）
             userProgress = {
-                1: 'completed',
-                2: 'completed',
-                3: 'current',
+                1: 'current',  // ステージ1は未ログインでも体験可能
+                2: 'locked',
+                3: 'locked',
                 4: 'locked',
                 5: 'locked',
                 6: 'locked'
@@ -407,11 +407,11 @@
             
             updateStageDisplay();
             
-            // メインクエストボタンをログイン促進に変更
+            // メインクエストボタンをステージ1体験用に変更
             const mainQuestButton = document.getElementById('mainQuestButton');
             if (mainQuestButton) {
-                mainQuestButton.textContent = '🔐 ログインして冒険を始める';
-                mainQuestButton.onclick = () => window.authManager && authManager.showAuthModal();
+                mainQuestButton.textContent = '🌟 ステージ1を体験してみる';
+                mainQuestButton.onclick = () => openStageModal(1);
             }
         }
         
@@ -625,12 +625,9 @@
                 mainQuestButton.textContent = '❓ 次のステージへ';
                 mainQuestButton.disabled = false;
             } else if (!currentUserId) {
-                mainQuestButton.textContent = '🚀 冒険を始めよう！';
+                mainQuestButton.textContent = '🌟 ステージ1を体験してみる';
                 mainQuestButton.disabled = false;
-                // authManagerが利用可能な場合のみ設定
-                if (window.authManager) {
-                    mainQuestButton.onclick = () => authManager.showAuthModal();
-                }
+                // onclick処理はイベントリスナーで統一管理
             } else {
                 mainQuestButton.textContent = '🔥 次の冒険へ進む！';
                 mainQuestButton.disabled = false;
@@ -640,8 +637,16 @@
         // モーダルを開く（更新版）
         function openStageModal(stageId) {
             const status = userProgress[stageId];
-            if (status === 'locked') {
+            
+            // ステージ1は未ログインでもアクセス可能、他のステージはlocked時は拒否
+            if (status === 'locked' && stageId !== 1) {
                 alert('このステージはまだ開放されていません！');
+                return;
+            }
+            
+            // ステージ1で未ログインの場合の特別処理
+            if (stageId === 1 && !currentUserId) {
+                openStage1GuestModal();
                 return;
             }
             
@@ -680,6 +685,63 @@
             }
             
             stageModal.style.display = 'flex';
+        }
+
+        // ステージ1のゲスト用モーダル表示
+        function openStage1GuestModal() {
+            currentStageIdForModal = 1;
+            const staticInfo = stageStaticData[1];
+            
+            modalStageTitle.textContent = `ステージ 1: ${staticInfo.title}`;
+            modalStageDescription.textContent = staticInfo.description;
+            modalStageMessage.textContent = staticInfo.message;
+            
+            // ボタンの表示制御（ゲスト用）
+            const videoBtn = document.getElementById('modalVideoBtn');
+            const questBtn = document.getElementById('modalQuestBtn');
+            
+            videoBtn.style.display = 'block';
+            videoBtn.textContent = '🎬 動画を見る';
+            videoBtn.disabled = false;
+            
+            questBtn.style.display = 'block';
+            questBtn.textContent = '⚔️ クエストに挑む';
+            questBtn.disabled = false;
+            
+            // ゲスト用のイベントハンドラー設定
+            setupGuestStage1Handlers();
+            
+            stageModal.style.display = 'flex';
+        }
+
+        // ゲスト用ステージ1のハンドラー設定
+        function setupGuestStage1Handlers() {
+            const videoBtn = document.getElementById('modalVideoBtn');
+            const questBtn = document.getElementById('modalQuestBtn');
+            
+            // 動画ボタン：ログインを促す
+            videoBtn.onclick = function() {
+                closeStageModal();
+                setTimeout(() => {
+                    if (confirm('動画を視聴するにはログインが必要です。ログインしますか？')) {
+                        if (window.authManager) {
+                            authManager.showAuthModal();
+                        }
+                    }
+                }, 100);
+            };
+            
+            // クエストボタン：ログインを促す
+            questBtn.onclick = function() {
+                closeStageModal();
+                setTimeout(() => {
+                    if (confirm('クエストに挑戦するにはログインが必要です。ログインしますか？')) {
+                        if (window.authManager) {
+                            authManager.showAuthModal();
+                        }
+                    }
+                }, 100);
+            };
         }
 
         function closeStageModal() {
@@ -775,17 +837,26 @@
                     document.querySelectorAll('.stage-node').forEach(node => {
                         node.addEventListener('click', () => {
                             const stageId = parseInt(node.dataset.stageId);
-                            openStageModal(stageId);
+                            
+                            // ステージ1は未ログインでもアクセス可能
+                            if (stageId === 1 || currentUserId) {
+                                openStageModal(stageId);
+                            } else {
+                                // 他のステージで未ログインの場合
+                                if (confirm('このステージにアクセスするにはログインが必要です。ログインしますか？')) {
+                                    if (window.authManager) {
+                                        authManager.showAuthModal();
+                                    }
+                                }
+                            }
                         });
                     });
                     
                     // メインクエストボタン
                     mainQuestButton.addEventListener('click', () => {
                         if (!currentUserId) {
-                            // ログインしていない場合はauthManagerのモーダルを表示
-                            if (window.authManager) {
-                                authManager.showAuthModal();
-                            }
+                            // ログインしていない場合はステージ1を体験
+                            openStageModal(1);
                             return;
                         }
                         
