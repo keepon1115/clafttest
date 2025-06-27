@@ -27,24 +27,54 @@ class AuthManager {
     }
 
     async initializeAuth() {
+        console.log('Auth initialization started');
         const loaded = await waitForSupabase();
         if (!loaded) {
-            console.error('Supabaseライブラリが読み込まれていません。ページを再読み込みします。');
-            setTimeout(() => location.reload(), 1000);
+            console.error('Supabaseライブラリが読み込まれていません');
             return;
         }
+        
+        console.log('Supabase URL:', SUPABASE_URL);
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('Supabase client created:', !!supabase);
         // 認証状態の監視
         if (!supabase || !supabase.auth) {
             console.error('Supabaseクライアントの初期化に失敗しました');
             return;
         }
         supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log('Auth state changed:', event, !!session?.user);
             this.currentUser = session?.user || null;
+            
             if (this.currentUser) {
                 await this.handleLogin();
                 await this.checkAdminStatus();
+                
+                // リダイレクト処理
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirectUrl = urlParams.get('redirect');
+                if (redirectUrl) {
+                    // リダイレクトパラメータをクリア
+                    const newUrl = window.location.pathname;
+                    window.history.replaceState({}, document.title, newUrl);
+                    
+                    // 少し遅らせてリダイレクト（認証状態の安定化）
+                    setTimeout(() => {
+                        window.location.href = redirectUrl;
+                    }, 500);
+                }
+            } else {
+                // ログアウト時の処理
+                this.isAdmin = false;
+                document.querySelectorAll('.admin-link').forEach(link => {
+                    link.style.display = 'none';
+                });
             }
+            
+            // ページ別の処理
+            this.handlePageSpecificAuth();
+            
+            // 認証状態変更のコールバック実行
             if (window.onAuthStateChanged) {
                 window.onAuthStateChanged(this.currentUser);
             }
@@ -111,16 +141,35 @@ class AuthManager {
             return;
         }
         try {
-            const { data, error } = await window.supabaseClient
+            // supabaseClientではなくsupabaseを使用
+            const { data, error } = await supabase
                 .from('admin_users')
                 .select('is_active')
-                .eq('id', this.currentUser.id)
+                .eq('user_id', this.currentUser.id)  // 'id'ではなく'user_id'
                 .eq('is_active', true)
                 .single();
+            
             this.isAdmin = !error && data?.is_active === true;
+            console.log('Admin status check:', { isAdmin: this.isAdmin, data, error });
+            
+            // 管理者の場合、管理画面リンクを表示
+            if (this.isAdmin) {
+                document.querySelectorAll('.admin-link').forEach(link => {
+                    link.style.display = 'block';
+                });
+            } else {
+                // 管理者でない場合は非表示
+                document.querySelectorAll('.admin-link').forEach(link => {
+                    link.style.display = 'none';
+                });
+            }
         } catch (error) {
             console.error('管理者チェックエラー:', error);
             this.isAdmin = false;
+            // エラー時も管理画面リンクを非表示
+            document.querySelectorAll('.admin-link').forEach(link => {
+                link.style.display = 'none';
+            });
         }
     }
 
@@ -273,6 +322,11 @@ class AuthManager {
         }
     }
 
+    // 現在のhandleLoginSubmitメソッドの直後に以下を追加
+    async handleLogin() {
+        return this.handleLoginSubmit();
+    }
+
     async handleSignup() {
         if (!supabase) {
             this.showMessage(document.getElementById('signupMessage'), 'Supabaseが初期化されていません', 'error');
@@ -394,10 +448,24 @@ class AuthManager {
         return this.isAdmin;
     }
 
-    // ページ保護メソッド
+    handlePageSpecificAuth() {
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        
+        // profile.htmlの場合のみ、ログインを強制
+        if (currentPage === 'profile.html' && !this.currentUser) {
+            this.showAuthModal();
+            return;
+        }
+        
+        // その他のページでは、ログインボタンの表示/非表示のみ制御
+        this.updateAuthButtons();
+    }
+
+    // ページ保護メソッド - showAuthModalを自動実行しないように修正
     requireAuth(redirectUrl = '/') {
         if (!this.isLoggedIn()) {
-            this.showAuthModal();
+            // 自動でモーダルを表示しない
+            console.log('Authentication required');
             return false;
         }
         return true;

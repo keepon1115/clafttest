@@ -29,8 +29,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- 重複しているauth.jsの読み込みを削除 -->
-    <!-- <script src="js/auth.js?v=20250619"></script> -->
+    <!-- auth.jsの読み込みを有効化 -->
+    <script src="js/auth.js?v=20250619" defer></script>
     <link rel="stylesheet" href="css/navigation.css?v=20250619">
     <link rel="stylesheet" href="css/auth.css?v=20250619">
     
@@ -623,12 +623,7 @@
     </style>
 </head>
 <body>
-    <!-- 回転促進メッセージ -->
-    <div class="rotation-notice">
-        <div class="rotation-notice-icon">📱</div>
-        <h2>横画面でお楽しみください</h2>
-        <p>このアプリは横画面でのご利用を推奨しています。<br>スマートフォンを横向きにしてお楽しみください。</p>
-    </div>
+
 
     <!-- ハンバーガーメニュー -->
     <div class="hamburger-menu" id="hamburgerMenu">
@@ -854,18 +849,7 @@
     loadManifestWhenReady();
     </script>
     
-    <!-- Supabaseライブラリの読み込み完了後にauth.jsを読み込む -->
-    <script>
-        function loadAuthWhenReady() {
-            if (window.supabase && window.supabase.createClient) {
-                const script = document.createElement('script');
-                script.src = 'js/auth.js?v=20250619';
-                document.body.appendChild(script);
-            } else {
-                setTimeout(loadAuthWhenReady, 100);
-            }
-        }
-        loadAuthWhenReady();
+    <!-- auth.jsは既に静的に読み込まれているため、動的読み込みは削除 -->
 
         // グローバル変数
         let currentUserId = null;
@@ -892,18 +876,60 @@
                 });
             }
 
-            // authManagerが利用可能になるまで待つ処理
+            // authManagerが利用可能になるまで待つ処理（改善版）
             function waitForAuthManager() {
                 if (window.authManager) {
-                    const user = authManager.getCurrentUser();
-                    if (!user) {
-                        // ユーザーがログインしていない場合はindex.htmlにリダイレクト
-                        window.location.href = 'index.html';
+                    // authManagerが初期化完了するまで待つ
+                    if (!authManager.getCurrentUser && !authManager.initializeAuth) {
+                        // authManagerがまだ完全に初期化されていない
+                        setTimeout(waitForAuthManager, 100);
                         return;
                     }
+
+                    // 認証状態変更イベントリスナーを設定
+                    window.onAuthStateChanged = function(user) {
+                        console.log('Admin page: Auth state changed:', !!user);
+                        if (user) {
+                            currentUserId = user.id;
+                            checkAdminAccess();
+                        } else {
+                            // ログアウト状態の場合
+                            alert('ログインが必要です。index.htmlからログインしてください。');
+                            window.location.href = 'index.html?redirect=admin.html';
+                        }
+                    };
+
+                    // 現在のユーザー状態をチェック
+                    const user = authManager.getCurrentUser();
+                    console.log('Current user on admin page:', user);
                     
-                    currentUserId = user.id;
-                    checkAdminAccess();
+                    if (user) {
+                        currentUserId = user.id;
+                        checkAdminAccess();
+                    } else {
+                        // 認証状態の初期化を待つ（最大5秒）
+                        let attempts = 0;
+                        const maxAttempts = 50; // 5秒間（100ms × 50回）
+                        
+                        const checkUserPeriodically = () => {
+                            attempts++;
+                            const currentUser = authManager.getCurrentUser();
+                            
+                            if (currentUser) {
+                                currentUserId = currentUser.id;
+                                checkAdminAccess();
+                            } else if (attempts < maxAttempts) {
+                                setTimeout(checkUserPeriodically, 100);
+                            } else {
+                                // 最大試行回数に達してもユーザーが見つからない
+                                console.log('No user found after waiting period');
+                                alert('ログインが必要です。index.htmlからログインしてください。');
+                                window.location.href = 'index.html?redirect=admin.html';
+                            }
+                        };
+                        
+                        checkUserPeriodically();
+                    }
                 } else {
                     setTimeout(waitForAuthManager, 100);
                 }
@@ -1100,7 +1126,7 @@
                                 <input type="checkbox" class="table-checkbox item-checkbox" 
                                        data-user-id="${item.user_id}" 
                                        data-stage-id="${item.stage_id}"
-                                       onchange="toggleSelection(this, '${item.user_id}', ${item.stage_id})">
+                                       onchange="toggleSelection(this, '${item.user_id}', '${item.stage_id}')">
                             </td>
                             <td>
                                 <div class="user-cell">
@@ -1117,10 +1143,10 @@
                             <td>${submitDate}</td>
                             <td>
                                 <div class="action-buttons">
-                                    <button class="action-btn approve-btn" onclick="approveQuest('${item.user_id}', ${item.stage_id})">
+                                    <button class="action-btn approve-btn" onclick="approveQuest('${item.user_id}', '${item.stage_id}')">
                                         <i class="fas fa-check"></i> 承認
                                     </button>
-                                    <button class="action-btn reject-btn" onclick="rejectQuest('${item.user_id}', ${item.stage_id})">
+                                    <button class="action-btn reject-btn" onclick="rejectQuest('${item.user_id}', '${item.stage_id}')">
                                         <i class="fas fa-times"></i> 却下
                                     </button>
                                 </div>
@@ -1957,55 +1983,6 @@
         }
     </script>
     
-    <!-- 横画面強制表示機能 -->
-    <script>
-    // 横画面強制表示機能
-    function initLandscapeMode() {
-        // スマートフォンかどうかの判定
-        function isMobileDevice() {
-            const userAgent = navigator.userAgent.toLowerCase();
-            const mobileKeywords = ['mobile', 'android', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone'];
-            return mobileKeywords.some(keyword => userAgent.includes(keyword)) || 
-                   (window.innerWidth <= 770 && 'ontouchstart' in window);
-        }
-        
-        // 画面の向きをチェックして表示を切り替える
-        function checkOrientation() {
-            const rotationNotice = document.querySelector('.rotation-notice');
-            const isLandscape = window.innerHeight < window.innerWidth;
-            const isMobile = isMobileDevice();
-            
-            if (isMobile && !isLandscape) {
-                // スマートフォンで縦画面の場合
-                rotationNotice.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            } else {
-                // 横画面またはデスクトップの場合
-                rotationNotice.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            }
-        }
-        
-        // 初期チェック
-        checkOrientation();
-        
-        // 画面回転・リサイズ時のイベントリスナー
-        window.addEventListener('orientationchange', () => {
-            setTimeout(checkOrientation, 100); // 少し遅らせて正確な値を取得
-        });
-        
-        window.addEventListener('resize', checkOrientation);
-        
-        // VisibilityChange イベントでもチェック（アプリ切り替え時など）
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                setTimeout(checkOrientation, 100);
-            }
-        });
-    }
-    
-    // 初期化
-    document.addEventListener('DOMContentLoaded', initLandscapeMode);
-    </script>
+
 </body>
 </html> 

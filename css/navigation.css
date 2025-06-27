@@ -1,9 +1,10 @@
 /* ナビゲーションバー共通スタイル */
+/* ハンバーガーメニューのz-index調整 */
 .hamburger-menu {
     position: fixed;
     top: 20px;
     left: 20px;
-    z-index: 9999;
+    z-index: 10000 !important;
     background: rgba(255, 255, 255, 0.95);
     border-radius: 10px;
     padding: 10px;
@@ -81,7 +82,7 @@
     height: 100%;
     background: linear-gradient(180deg, #2C3E50 0%, #34495E 100%);
     transition: left 0.3s ease;
-    z-index: 999;
+    z-index: 9999 !important;
     box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
     overflow-y: auto;
 }
@@ -181,7 +182,7 @@
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
-    z-index: 998;
+    z-index: 9998 !important;
 }
 
 .sidebar-overlay.active {
@@ -239,15 +240,20 @@
     }
 }
 
-/* 縦画面時の回転促進メッセージ */
+/* 横向き推奨メッセージ - デフォルトは非表示 */
 .rotation-notice {
+    display: none !important;
+}
+
+/* quest.htmlでのみ縦画面時に表示 */
+body.quest-page .rotation-notice {
     display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: rgba(0, 0, 0, 0.9);
     color: white;
     z-index: 10000;
     flex-direction: column;
@@ -285,39 +291,29 @@
     100% { transform: rotate(90deg); }
 }
 
-/* スマートフォン縦画面時のメッセージ表示 */
-@media screen and (orientation: portrait) and (max-width: 770px) {
-    .rotation-notice {
+@media screen and (orientation: portrait) and (max-device-width: 768px) {
+    body.quest-page .rotation-notice {
         display: flex !important;
     }
     
-    /* 縦画面の時は通常のコンテンツを隠す */
-    body > *:not(.rotation-notice) {
+    /* quest.htmlのみ縦画面時にコンテンツを隠す */
+    body.quest-page > *:not(.rotation-notice) {
         display: none !important;
     }
 }
 
-/* スマートフォン横画面時の強制表示確保 */
+/* 横画面強制表示設定を削除（quest.html以外で不要） */
+/*
 @media screen and (orientation: landscape) and (max-width: 770px) {
-    .rotation-notice {
-        display: none !important;
-    }
-    
-    body > *:not(.rotation-notice) {
-        display: block !important;
-    }
-    
     body {
-        transform: none !important;
-        width: 100% !important;
-        height: 100% !important;
-        position: static !important;
-        top: auto !important;
-        left: auto !important;
-        overflow-x: auto !important;
+        transform: rotate(90deg);
+        ...
     }
-    
-    /* スマートフォン横画面でのナビゲーション調整 */
+}
+*/
+
+/* スマートフォン横画面時のナビゲーション調整のみ残す */
+@media screen and (orientation: landscape) and (max-width: 770px) {
     .hamburger-menu {
         top: 10px;
         left: 10px;
@@ -366,5 +362,112 @@
     .nav-buttons {
         top: 25px;
         right: 25px;
+    }
+}
+
+/* 他の要素のz-indexを調整 */
+.auth-modal {
+    z-index: 9000;
+}
+
+.notification-container {
+    z-index: 8000;
+}
+
+/* モバイル用の基本設定 */
+@media (max-width: 768px) {
+    /* 基本フォントサイズを小さく */
+    html {
+        font-size: 14px; /* デフォルト16pxから縮小 */
+    }
+    
+    body {
+        font-size: 0.875rem; /* 14px相当 */
+    }
+    
+    /* 見出しサイズの調整 */
+    h1 { font-size: 1.75rem; } /* 28px → 24.5px */
+    h2 { font-size: 1.5rem; }   /* 24px → 21px */
+    h3 { font-size: 1.25rem; }  /* 20px → 17.5px */
+    h4 { font-size: 1.125rem; } /* 18px → 15.75px */
+    
+    /* パディングとマージンの調整 */
+    .main-content,
+    .container {
+        padding: 15px 10px;
+    }
+    
+    /* カード要素の調整 */
+    .section-card,
+    .zone-card,
+    .profile-card,
+    .craft-story-card,
+    .jibun-craft-card {
+        padding: 20px 15px;
+        margin-bottom: 20px;
+        border-radius: 15px;
+    }
+    
+    /* ボタンサイズの調整 */
+    .btn,
+    .btn-primary,
+    .btn-secondary,
+    .auth-btn,
+    button {
+        padding: 10px 20px;
+        font-size: 0.875rem;
+    }
+    
+    /* アイコンサイズの調整 */
+    .section-icon,
+    .zone-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 1.5rem;
+    }
+    
+    /* フォーム要素の調整 */
+    input,
+    textarea,
+    select {
+        padding: 8px 12px;
+        font-size: 0.875rem;
+    }
+    
+    /* モーダルの調整 */
+    .modal-content,
+    .auth-modal-content {
+        padding: 20px;
+        margin: 15px;
+    }
+}
+
+/* より小さい画面用の追加調整 */
+@media (max-width: 480px) {
+    html {
+        font-size: 13px;
+    }
+    
+    .main-content,
+    .container {
+        padding: 10px 8px;
+    }
+    
+    /* ナビゲーション調整 */
+    .hamburger-menu {
+        width: 40px;
+        height: 40px;
+        top: 15px;
+        left: 15px;
+    }
+    
+    .sidebar {
+        width: 240px;
+    }
+    
+    /* カードのさらなる調整 */
+    .section-card,
+    .zone-card {
+        padding: 15px 12px;
     }
 }

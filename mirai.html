@@ -1290,12 +1290,7 @@
     </style>
 </head>
 <body>
-    <!-- 回転促進メッセージ -->
-    <div class="rotation-notice">
-        <div class="rotation-notice-icon">📱</div>
-        <h2>横画面でお楽しみください</h2>
-        <p>このアプリは横画面でのご利用を推奨しています。<br>スマートフォンを横向きにしてお楽しみください。</p>
-    </div>
+
 
     <!-- ハンバーガーメニュー -->
     <div class="hamburger-menu" id="hamburgerMenu">
@@ -1315,6 +1310,7 @@
                 <li><a href="quest.html"><i class="fas fa-map"></i><span class="nav-label">クエストマップ</span></a></li>
                 <li><a href="yononaka.html"><i class="fas fa-globe"></i><span class="nav-label">Yononaka</span></a></li>
                 <li><a href="mirai.html" class="active"><i class="fas fa-rocket"></i><span class="nav-label">ミライクラフト</span></a></li>
+                <li><a href="admin.html" style="display: none;" class="admin-link"><i class="fas fa-cog"></i><span class="nav-label">管理画面</span></a></li>
             </ul>
         </div>
     </nav>
@@ -2081,31 +2077,42 @@
         // 完了メッセージ
         console.log('🌱 ミライクラフトへようこそ！未来を一緒に創りましょう！');
 
-        // ハンバーガーメニューの動作
+        // ハンバーガーメニューの初期化を確実に行う
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing hamburger menu');
+            
             const hamburgerMenu = document.getElementById('hamburgerMenu');
             const sidebar = document.getElementById('sidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
-
+            
             if (hamburgerMenu && sidebar && sidebarOverlay) {
-                console.log('Navigation elements found and initialized');
+                // クリックイベントの重複を防ぐため、既存のリスナーを削除
+                const newHamburger = hamburgerMenu.cloneNode(true);
+                hamburgerMenu.parentNode.replaceChild(newHamburger, hamburgerMenu);
                 
-                hamburgerMenu.addEventListener('click', () => {
-                    hamburgerMenu.classList.toggle('active');
+                newHamburger.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Hamburger clicked');
+                    
+                    newHamburger.classList.toggle('active');
                     sidebar.classList.toggle('active');
                     sidebarOverlay.classList.toggle('active');
                 });
-
+                
                 sidebarOverlay.addEventListener('click', () => {
-                    hamburgerMenu.classList.remove('active');
+                    newHamburger.classList.remove('active');
                     sidebar.classList.remove('active');
                     sidebarOverlay.classList.remove('active');
                 });
-            } else {
-                console.error('Navigation elements not found:', {
-                    hamburgerMenu: !!hamburgerMenu,
-                    sidebar: !!sidebar,
-                    sidebarOverlay: !!sidebarOverlay
+                
+                // サイドバーのリンククリックでメニューを閉じる
+                sidebar.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        newHamburger.classList.remove('active');
+                        sidebar.classList.remove('active');
+                        sidebarOverlay.classList.remove('active');
+                    });
                 });
             }
         });
@@ -2146,55 +2153,6 @@
         loadAuthWhenReady();
     </script>
     
-    <!-- 横画面強制表示機能 -->
-    <script>
-    // 横画面強制表示機能
-    function initLandscapeMode() {
-        // スマートフォンかどうかの判定
-        function isMobileDevice() {
-            const userAgent = navigator.userAgent.toLowerCase();
-            const mobileKeywords = ['mobile', 'android', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone'];
-            return mobileKeywords.some(keyword => userAgent.includes(keyword)) || 
-                   (window.innerWidth <= 770 && 'ontouchstart' in window);
-        }
-        
-        // 画面の向きをチェックして表示を切り替える
-        function checkOrientation() {
-            const rotationNotice = document.querySelector('.rotation-notice');
-            const isLandscape = window.innerHeight < window.innerWidth;
-            const isMobile = isMobileDevice();
-            
-            if (isMobile && !isLandscape) {
-                // スマートフォンで縦画面の場合
-                rotationNotice.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            } else {
-                // 横画面またはデスクトップの場合
-                rotationNotice.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            }
-        }
-        
-        // 初期チェック
-        checkOrientation();
-        
-        // 画面回転・リサイズ時のイベントリスナー
-        window.addEventListener('orientationchange', () => {
-            setTimeout(checkOrientation, 100); // 少し遅らせて正確な値を取得
-        });
-        
-        window.addEventListener('resize', checkOrientation);
-        
-        // VisibilityChange イベントでもチェック（アプリ切り替え時など）
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                setTimeout(checkOrientation, 100);
-            }
-        });
-    }
-    
-    // 初期化
-    document.addEventListener('DOMContentLoaded', initLandscapeMode);
-    </script>
+
 </body>
 </html>

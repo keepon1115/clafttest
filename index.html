@@ -1672,14 +1672,59 @@
         .user-details {
             text-align: right;
         }
+        
+        @media (max-width: 768px) {
+            /* ヘッダーの調整 */
+            .greeting-section h1 {
+                font-size: 1.5rem;
+            }
+            
+            .greeting-section p {
+                font-size: 0.875rem;
+            }
+            
+            /* プロフィールカードの調整 */
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .avatar-container {
+                font-size: 40px;
+            }
+            
+            .profile-name {
+                font-size: 1.5rem;
+            }
+            
+            /* 能力カードの調整 */
+            .ability-card {
+                padding: 15px;
+            }
+            
+            .ability-tag {
+                font-size: 0.75rem;
+                padding: 4px 10px;
+            }
+            
+            /* パワーメーターの調整 */
+            .power-meter {
+                margin-bottom: 15px;
+            }
+            
+            .power-name {
+                font-size: 0.875rem;
+            }
+            
+            .power-icon {
+                width: 24px;
+                height: 24px;
+                font-size: 12px;
+            }
+        }
     </style> <!-- ★★★ 修正点1: styleタグを閉じる ★★★ -->
 
-    <!-- 回転促進メッセージ -->
-    <div class="rotation-notice">
-        <div class="rotation-notice-icon">📱</div>
-        <h2>横画面でお楽しみください</h2>
-        <p>このアプリは横画面でのご利用を推奨しています。<br>スマートフォンを横向きにしてお楽しみください。</p>
-    </div>
+
 
     <!-- ハンバーガーメニュー -->
     <div class="hamburger-menu" id="hamburgerMenu">
@@ -2109,6 +2154,71 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         checkAuthManager();
     }
+
+    // リダイレクト機能の初期化
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectUrl = urlParams.get('redirect');
+    
+    // デフォルトのonAuthStateChangedを設定
+    window.onAuthStateChanged = function(user) {
+        // デフォルトデータ
+        const defaultData = {
+            playerName: 'ゲスト',
+            greeting: 'こんにちは、ゲストさん！',
+            subGreeting: 'ログインして、あなたの冒険を始めましょう',
+            profileName: 'ゲスト冒険者',
+            characterText: '冒険を始めよう！',
+            catchphraseText: '「ログインして自分だけの物語を作ろう！」',
+            strengthTags: ['未設定', '未設定', '未設定'],
+            weaknessTags: ['未設定', '未設定'],
+            favoriteTime: 'ログインして設定しよう',
+            energyCharge: 'ログインして設定しよう',
+            adventurePartner: 'ログインして仲間を見つけよう',
+            commentText: 'ログインして、あなたの冒険の物語を始めましょう！'
+        };
+        
+        if (user) {
+            // ログイン時：実際のユーザーデータを取得して表示
+            loadUserProfile(user.id);
+        } else {
+            // 非ログイン時：デフォルトデータを表示
+            updateUIWithData(defaultData);
+            
+            // プロフィール編集ボタンを非表示またはログイン促進に変更
+            const editBtn = document.querySelector('.edit-profile-btn');
+            if (editBtn) {
+                editBtn.textContent = '🔐 ログインして編集';
+                editBtn.onclick = () => window.authManager && authManager.showAuthModal();
+            }
+        }
+    };
+    
+    if (redirectUrl) {
+        // リダイレクト用の通知を表示
+        console.log('Redirect requested to:', redirectUrl);
+        
+        // リダイレクト専用のコールバックで上書き
+        window.onAuthStateChanged = function(user) {
+            if (user) {
+                console.log('User logged in, redirecting to:', redirectUrl);
+                // ログイン成功後にリダイレクト
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 1000); // 1秒後にリダイレクト
+            }
+        };
+        
+        // ログインボタンに説明を追加
+        const loginButtons = document.querySelectorAll('[data-auth-action="login"]');
+        loginButtons.forEach(button => {
+            const originalText = button.textContent;
+            button.textContent = originalText + ' (管理画面へ)';
+        });
+    }
+
+    // デバッグ情報の確認
+    console.log('authManager exists:', !!window.authManager);
+    console.log('supabase exists:', !!window.supabase);
     
     // ハンバーガーメニューの初期化（デバッグ版）
     const hamburgerMenu = document.getElementById('hamburgerMenu');
@@ -2158,55 +2268,55 @@ document.addEventListener('DOMContentLoaded', function() {
             sidebarOverlay: !!sidebarOverlay
         });
     }
-    
-    // 横画面強制表示機能
-    initLandscapeMode();
 });
 
-// 横画面強制表示機能
-function initLandscapeMode() {
-    // スマートフォンかどうかの判定
-    function isMobileDevice() {
-        const userAgent = navigator.userAgent.toLowerCase();
-        const mobileKeywords = ['mobile', 'android', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone'];
-        return mobileKeywords.some(keyword => userAgent.includes(keyword)) || 
-               (window.innerWidth <= 770 && 'ontouchstart' in window);
-    }
+// UI更新関数を追加
+function updateUIWithData(data) {
+    const elements = {
+        'playerName': data.playerName,
+        'greeting': data.greeting,
+        'subGreeting': data.subGreeting,
+        'profileName': data.profileName,
+        'characterText': data.characterText,
+        'catchphraseText': data.catchphraseText,
+        'favoriteTime': data.favoriteTime,
+        'energyCharge': data.energyCharge,
+        'adventurePartner': data.adventurePartner,
+        'commentText': data.commentText
+    };
     
-    // 画面の向きをチェックして表示を切り替える
-    function checkOrientation() {
-        const rotationNotice = document.querySelector('.rotation-notice');
-        const isLandscape = window.innerHeight < window.innerWidth;
-        const isMobile = isMobileDevice();
-        
-        if (isMobile && !isLandscape) {
-            // スマートフォンで縦画面の場合
-            rotationNotice.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        } else {
-            // 横画面またはデスクトップの場合
-            rotationNotice.style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-    }
-    
-    // 初期チェック
-    checkOrientation();
-    
-    // 画面回転・リサイズ時のイベントリスナー
-    window.addEventListener('orientationchange', () => {
-        setTimeout(checkOrientation, 100); // 少し遅らせて正確な値を取得
-    });
-    
-    window.addEventListener('resize', checkOrientation);
-    
-    // VisibilityChange イベントでもチェック（アプリ切り替え時など）
-    document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
-            setTimeout(checkOrientation, 100);
+    // 各要素のテキストを更新
+    Object.keys(elements).forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = elements[id];
         }
     });
+    
+    // タグの更新
+    const strengthContainer = document.getElementById('strengthTags');
+    const weaknessContainer = document.getElementById('weaknessTags');
+    
+    if (strengthContainer) {
+        strengthContainer.innerHTML = data.strengthTags.map(tag => 
+            `<span class="ability-tag">${tag}</span>`
+        ).join('');
+    }
+    
+    if (weaknessContainer) {
+        weaknessContainer.innerHTML = data.weaknessTags.map(tag => 
+            `<span class="ability-tag">${tag}</span>`
+        ).join('');
+    }
 }
+
+// 実際のユーザープロフィール読み込み関数（空の実装）
+function loadUserProfile(userId) {
+    // ここで実際のユーザーデータを取得する処理を実装
+    console.log('Loading user profile for:', userId);
+    // 今は何もしない（既存の動作を維持）
+}
+
 </script>
 
 </body>

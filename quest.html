@@ -130,7 +130,7 @@
 
     </style>
 </head>
-<body>
+<body class="quest-page">
     <!-- 回転促進メッセージ -->
     <div class="rotation-notice">
         <div class="rotation-notice-icon">📱</div>
@@ -156,6 +156,7 @@
                 <li><a href="quest.html" class="active"><i class="fas fa-map"></i><span class="nav-label">クエストマップ</span></a></li>
                 <li><a href="yononaka.html"><i class="fas fa-globe"></i><span class="nav-label">Yononaka</span></a></li>
                 <li><a href="mirai.html"><i class="fas fa-rocket"></i><span class="nav-label">ミライクラフト</span></a></li>
+                <li><a href="admin.html" style="display: none;" class="admin-link"><i class="fas fa-cog"></i><span class="nav-label">管理画面</span></a></li>
             </ul>
         </div>
     </nav>
@@ -265,11 +266,8 @@
                 await initializeQuestMap();
             } else {
                 currentUserId = null;
-                resetQuestMap();
-                // authManagerが利用可能な場合のみ実行
-                if (window.authManager) {
-                    authManager.showAuthModal();
-                }
+                // デモデータでクエストマップを表示
+                showDemoQuestMap();
             }
         };
 
@@ -393,6 +391,28 @@
                 userProgress[i] = 'locked';
             }
             updateStageDisplay();
+        }
+
+        // デモ用のクエストマップ表示関数
+        function showDemoQuestMap() {
+            // デモ用の進捗データ
+            userProgress = {
+                1: 'completed',
+                2: 'completed',
+                3: 'current',
+                4: 'locked',
+                5: 'locked',
+                6: 'locked'
+            };
+            
+            updateStageDisplay();
+            
+            // メインクエストボタンをログイン促進に変更
+            const mainQuestButton = document.getElementById('mainQuestButton');
+            if (mainQuestButton) {
+                mainQuestButton.textContent = '🔐 ログインして冒険を始める';
+                mainQuestButton.onclick = () => window.authManager && authManager.showAuthModal();
+            }
         }
         
         function showLoading(show) { 
@@ -742,7 +762,7 @@
                     if (user) {
                         initializeQuestMap();
                     } else {
-                        resetQuestMap();
+                        showDemoQuestMap();
                     }
                     
                     // モーダル関連のイベントリスナー
@@ -762,7 +782,10 @@
                     // メインクエストボタン
                     mainQuestButton.addEventListener('click', () => {
                         if (!currentUserId) {
-                            authManager.showAuthModal();
+                            // ログインしていない場合はauthManagerのモーダルを表示
+                            if (window.authManager) {
+                                authManager.showAuthModal();
+                            }
                             return;
                         }
                         
@@ -787,52 +810,41 @@
                     // 冒険ログボタン
                     document.getElementById('adventureLogBtn').addEventListener('click', showAdventureLog);
                     
-                    // ハンバーガーメニューの初期化（デバッグ版）
+                    // ハンバーガーメニューの初期化を確実に行う
+                    console.log('DOM loaded, initializing hamburger menu');
+                    
                     const hamburgerMenu = document.getElementById('hamburgerMenu');
                     const sidebar = document.getElementById('sidebar');
                     const sidebarOverlay = document.getElementById('sidebarOverlay');
                     
-                    console.log('Hamburger menu elements:', {
-                        hamburgerMenu,
-                        sidebar,
-                        sidebarOverlay
-                    });
-                    
                     if (hamburgerMenu && sidebar && sidebarOverlay) {
-                        console.log('Setting up hamburger menu event listeners');
+                        // クリックイベントの重複を防ぐため、既存のリスナーを削除
+                        const newHamburger = hamburgerMenu.cloneNode(true);
+                        hamburgerMenu.parentNode.replaceChild(newHamburger, hamburgerMenu);
                         
-                        hamburgerMenu.addEventListener('click', (e) => {
-                            console.log('Hamburger menu clicked!');
+                        newHamburger.addEventListener('click', (e) => {
                             e.preventDefault();
                             e.stopPropagation();
+                            console.log('Hamburger clicked');
                             
-                            hamburgerMenu.classList.toggle('active');
+                            newHamburger.classList.toggle('active');
                             sidebar.classList.toggle('active');
                             sidebarOverlay.classList.toggle('active');
-                            
-                            console.log('Classes toggled. Active states:', {
-                                hamburger: hamburgerMenu.classList.contains('active'),
-                                sidebar: sidebar.classList.contains('active'),
-                                overlay: sidebarOverlay.classList.contains('active')
-                            });
                         });
                         
-                        sidebarOverlay.addEventListener('click', (e) => {
-                            console.log('Sidebar overlay clicked!');
-                            e.preventDefault();
-                            e.stopPropagation();
-                            
-                            hamburgerMenu.classList.remove('active');
+                        sidebarOverlay.addEventListener('click', () => {
+                            newHamburger.classList.remove('active');
                             sidebar.classList.remove('active');
                             sidebarOverlay.classList.remove('active');
                         });
                         
-                        console.log('Hamburger menu event listeners set up successfully');
-                    } else {
-                        console.error('Failed to find hamburger menu elements:', {
-                            hamburgerMenu: !!hamburgerMenu,
-                            sidebar: !!sidebar,
-                            sidebarOverlay: !!sidebarOverlay
+                        // サイドバーのリンククリックでメニューを閉じる
+                        sidebar.querySelectorAll('a').forEach(link => {
+                            link.addEventListener('click', () => {
+                                newHamburger.classList.remove('active');
+                                sidebar.classList.remove('active');
+                                sidebarOverlay.classList.remove('active');
+                            });
                         });
                     }
                 } else {
