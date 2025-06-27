@@ -2141,16 +2141,29 @@
     
     <!-- Supabaseライブラリの読み込み完了後にauth.jsを読み込む -->
     <script>
-        function loadAuthWhenReady() {
+        function loadSupabaseAndAuth() {
             if (window.supabase && window.supabase.createClient) {
-                const script = document.createElement('script');
-                script.src = 'js/auth.js?v=20250619';
-                document.body.appendChild(script);
+                // supabase.jsを読み込む
+                const supabaseScript = document.createElement('script');
+                supabaseScript.src = 'js/supabase.js?v=20250619';
+                supabaseScript.onload = () => {
+                    // Supabaseクライアントを初期化
+                    if (window.initSupabase) {
+                        window.supabase = window.initSupabase();
+                        console.log('🔗 Supabase client ready');
+                    }
+                    
+                    // auth.jsを読み込む
+                    const authScript = document.createElement('script');
+                    authScript.src = 'js/auth.js?v=20250619';
+                    document.body.appendChild(authScript);
+                };
+                document.body.appendChild(supabaseScript);
             } else {
-                setTimeout(loadAuthWhenReady, 100);
+                setTimeout(loadSupabaseAndAuth, 100);
             }
         }
-        loadAuthWhenReady();
+        loadSupabaseAndAuth();
     </script>
     
 
