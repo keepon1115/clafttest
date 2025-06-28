@@ -1,11 +1,14 @@
-const CACHE_NAME = 'claft-cache-v3';
+const CACHE_NAME = 'claft-cache-v4-20250119-001';
 const urlsToCache = [
   './',
   './index.html',
-  './css/navigation.css',
-  './css/auth.css',
-  './js/auth.js',
-  './js/include.js',
+  './css/navigation.css?v=20250119-001',
+  './css/auth.css?v=20250119-001',
+  './css/quest.css?v=20250119-001',
+  './css/profile.css?v=20250119-001',
+  './js/auth.js?v=20250119-001',
+  './js/include.js?v=20250119-001',
+  './js/supabase.js?v=20250119-001',
   './icons/icon-192.png',
   './icons/icon-512.png'
 ];

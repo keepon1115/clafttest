@@ -26,9 +26,10 @@
     
     <!-- フォントとスタイル -->
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/navigation.css?v=20250619">
-    <link rel="stylesheet" href="css/auth.css?v=20250619">
-    <link rel="stylesheet" href="css/quest.css?v=20250619">
+    <link rel="stylesheet" href="css/navigation.css?v=20250119-001">
+    <link rel="stylesheet" href="css/auth.css?v=20250119-001">
+    <link rel="stylesheet" href="css/quest.css?v=20250119-001">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <!-- Supabase JS -->
     <script src="https://unpkg.com/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
@@ -126,6 +127,41 @@
         .loading-content p { color: #654321; font-weight: bold; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
+        /* 認証ボタンのスタイル */
+        .nav-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 998;
+        }
+
+        .auth-btn {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #4DB6F7;
+            color: #4DB6F7;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .auth-btn:hover {
+            background: #4DB6F7;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(77, 182, 247, 0.3);
+        }
+
+        /* Font Awesomeアイコンが読み込まれていない場合の対策 */
+        .auth-btn i {
+            display: inline-block;
+        }
+        
         /* ハンバーガーメニューはnavigation.cssで統一管理 */
 
     </style>
@@ -165,7 +201,11 @@
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- 認証ボタン用スペース -->
-    <div class="nav-buttons"></div>
+    <div class="nav-buttons">
+        <button data-auth-action="login" class="auth-btn login-btn" style="display: block;">
+            <i class="fas fa-sign-in-alt"></i> ログイン/登録
+        </button>
+    </div>
 
     <div id="skyObjectsContainer"></div>
     <div class="loading-overlay" id="loadingOverlay"> <div class="loading-content"> <div class="loading-spinner"></div> <p>冒険の準備中...</p> </div> </div>
@@ -249,6 +289,44 @@
         </div>
     </div>
     <button class="quest-button" id="mainQuestButton">🔥 次の冒険へ進む！</button>
+    
+    <!-- キャッシュクリア案内モーダル -->
+    <div class="modal" id="cacheModal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <button class="modal-close" onclick="document.getElementById('cacheModal').style.display='none'">×</button>
+            <h2 class="modal-title">🔄 キャッシュクリアのお願い</h2>
+            <div class="modal-description">
+                <p>最新の変更が反映されない場合は、以下の方法でキャッシュをクリアしてください：</p>
+                
+                <div style="margin: 20px 0; padding: 15px; background: #FFF9C4; border: 2px solid #F9A825; border-radius: 8px;">
+                    <h4 style="margin-bottom: 10px; color: #F57F17;">📱 スマートフォン</h4>
+                    <ul style="margin-left: 20px; line-height: 1.6;">
+                        <li><strong>Chrome/Safari:</strong> 設定 → プライバシー → ブラウザデータを削除</li>
+                        <li><strong>または:</strong> ブラウザを完全に閉じて再起動</li>
+                    </ul>
+                </div>
+                
+                <div style="margin: 20px 0; padding: 15px; background: #E8F5E9; border: 2px solid #66BB6A; border-radius: 8px;">
+                    <h4 style="margin-bottom: 10px; color: #2E7D32;">💻 パソコン</h4>
+                    <ul style="margin-left: 20px; line-height: 1.6;">
+                        <li><strong>Chrome:</strong> Ctrl+Shift+R (Win) / Cmd+Shift+R (Mac)</li>
+                        <li><strong>Safari:</strong> Cmd+Option+R</li>
+                        <li><strong>Firefox:</strong> Ctrl+F5 (Win) / Cmd+Shift+R (Mac)</li>
+                    </ul>
+                </div>
+                
+                <p style="text-align: center; margin-top: 20px; font-weight: bold; color: #4DB6F7;">
+                    それでも解決しない場合は、ブラウザの設定から全ての閲覧データを削除してください
+                </p>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button" style="background: #4DB6F7; border-color: #2196F3; color: white;" onclick="document.getElementById('cacheModal').style.display='none'">
+                    理解しました
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <div class="modal" id="stageModal"> <div class="modal-content"> <button class="modal-close" id="modalCloseBtn">×</button> <h2 class="modal-title" id="modalStageTitle"></h2> <p class="modal-description" id="modalStageDescription"></p> <div class="modal-message" id="modalStageMessage"></div> <div class="modal-buttons"> <button class="modal-button video" id="modalVideoBtn">🎬 動画を見る</button> <button class="modal-button quest" id="modalQuestBtn">⚔️ クエストに挑む</button> </div> </div> </div>
     
     <!-- 重複しているSupabaseの読み込みを削除 -->
@@ -327,7 +405,7 @@
             5: { 
                 title: '「？」が世界をひらく', 
                 description: '〜ワクワク＆もやもや〜', 
-                message: '「“もやもや”がアイデアをつくる！！」',
+                message: '「"もやもや"がアイデアをつくる！！」',
                 videoUrl: 'https://youtube.com/watch?v=stage5video',
                 formUrl: 'https://forms.google.com/your-form-5',
                 iconImage: 'https://via.placeholder.com/64x64/32CD32/FFFFFF?text=Team', 
@@ -922,9 +1000,19 @@
                     currentUserId = null;
                     showDemoQuestMap();
                     setupEventListeners();
+                    
+                    // 認証ボタンの手動設定
+                    const loginBtn = document.querySelector('[data-auth-action="login"]');
+                    if (loginBtn) {
+                        loginBtn.onclick = function() {
+                            alert('認証システムの読み込みに失敗しました。ページをリロードしてください。');
+                            location.reload();
+                        };
+                    }
                 } catch (error) {
                     console.error('❌ Error in no-auth initialization:', error);
-                    // 最低限の表示
+                } finally {
+                    // 必ずローディングを非表示にする
                     showLoading(false);
                 }
             }
@@ -1117,28 +1205,43 @@
     <!-- Supabaseライブラリの読み込み完了後にsupabase.jsとauth.jsを読み込む -->
     <script>
         function loadSupabaseAndAuth() {
+            console.log('🔧 Loading auth.js directly...');
+            
+            // Supabaseクライアントが既に存在することを確認
             if (window.supabase && window.supabase.createClient) {
-                // supabase.jsを読み込む
-                const supabaseScript = document.createElement('script');
-                supabaseScript.src = 'js/supabase.js?v=20250619';
-                supabaseScript.onload = () => {
-                    // Supabaseクライアントを初期化
-                    if (window.initSupabase) {
-                        window.supabase = window.initSupabase();
-                        console.log('🔗 Supabase client ready');
-                    }
-                    
-                    // auth.jsを読み込む
-                    const authScript = document.createElement('script');
-                    authScript.src = 'js/auth.js?v=20250619';
-                    document.body.appendChild(authScript);
+                // auth.jsを直接読み込む
+                const authScript = document.createElement('script');
+                authScript.src = 'js/auth.js?v=20250119-001';
+                authScript.onload = function() {
+                    console.log('✅ auth.js loaded successfully');
+                    // auth.js読み込み後、認証ボタンを更新
+                    updateAuthButtons();
                 };
-                document.body.appendChild(supabaseScript);
+                authScript.onerror = function() {
+                    console.error('❌ Failed to load auth.js');
+                    // エラーが発生してもデモを表示
+                    showDemoQuestMap();
+                };
+                document.body.appendChild(authScript);
             } else {
+                console.warn('⚠️ Supabase not ready, retrying...');
                 setTimeout(loadSupabaseAndAuth, 100);
             }
         }
-        loadSupabaseAndAuth();
+        
+        // 認証ボタンの更新関数
+        function updateAuthButtons() {
+            const loginBtn = document.querySelector('[data-auth-action="login"]');
+            if (loginBtn && window.authManager) {
+                loginBtn.onclick = () => authManager.showAuthModal();
+                console.log('✅ Login button configured');
+            }
+        }
+        
+        // DOMContentLoaded後に実行
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSupabaseAndAuth();
+        });
     </script>
     
     <!-- 横画面強制表示機能 -->
@@ -1191,5 +1294,8 @@
     // 初期化
     document.addEventListener('DOMContentLoaded', initLandscapeMode);
     </script>
+
+    <!-- キャッシュクリア案内ボタンを追加 -->
+    <button class="quest-button" id="cacheHelpBtn" style="display: none;">🔄 更新されない場合</button>
 </body>
 </html>
