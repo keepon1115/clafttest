@@ -1144,7 +1144,7 @@
     </script>
     
     <!-- パーシャルインクルード機能 -->
-    <script src="js/include.js?v=20250619"></script>
+    <script src="js/include.js?v=20250119-001"></script>
     
     <!-- manifest.jsonを動的に読み込む -->
     <script>
@@ -1159,7 +1159,7 @@
         if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
             const link = document.createElement('link');
             link.rel = 'manifest';
-            link.href = 'manifest.json?v=20250619';
+            link.href = 'manifest.json?v=20250119-001';
             document.head.appendChild(link);
         }
     }
@@ -1169,23 +1169,46 @@
     <!-- Supabaseライブラリの読み込み完了後にsupabase.jsとauth.jsを読み込む -->
     <script>
         function loadSupabaseAndAuth() {
-            console.log('🔧 Loading auth.js directly...');
+            console.log('🔧 Loading auth.js...');
             
             // Supabaseクライアントが既に存在することを確認
             if (window.supabase && window.supabase.createClient) {
-                // auth.jsを直接読み込む
+                console.log('✅ Supabase client available, loading auth.js...');
+                
+                // auth.jsを読み込む
                 const authScript = document.createElement('script');
                 authScript.src = 'js/auth.js?v=20250119-001';
+                
                 authScript.onload = function() {
                     console.log('✅ auth.js loaded successfully');
-                    // auth.js読み込み後、認証ボタンを更新
-                    updateAuthButtons();
+                    
+                    // authManagerの初期化を待つ
+                    function waitForAuthManager(attempts = 0) {
+                        if (window.authManager) {
+                            console.log('✅ AuthManager initialized');
+                            updateAuthButtons();
+                            
+                            // 認証状態変更リスナーを再設定
+                            if (window.authManager.getCurrentUser()) {
+                                console.log('👤 User already logged in');
+                                // 既にログイン済みの場合の処理
+                            }
+                        } else if (attempts < 50) { // 5秒間待機
+                            setTimeout(() => waitForAuthManager(attempts + 1), 100);
+                        } else {
+                            console.error('❌ AuthManager initialization timeout');
+                            setupFallbackAuth();
+                        }
+                    }
+                    
+                    waitForAuthManager();
                 };
-                authScript.onerror = function() {
-                    console.error('❌ Failed to load auth.js');
-                    // エラーが発生してもデモを表示
-                    showDemoQuestMap();
+                
+                authScript.onerror = function(error) {
+                    console.error('❌ Failed to load auth.js:', error);
+                    setupFallbackAuth();
                 };
+                
                 document.body.appendChild(authScript);
             } else {
                 console.warn('⚠️ Supabase not ready, retrying...');
@@ -1193,19 +1216,110 @@
             }
         }
         
-        // 認証ボタンの更新関数
-        function updateAuthButtons() {
+        // フォールバック認証設定
+        function setupFallbackAuth() {
+            console.log('🔄 Setting up fallback auth...');
             const loginBtn = document.querySelector('[data-auth-action="login"]');
-            if (loginBtn && window.authManager) {
-                loginBtn.onclick = () => authManager.showAuthModal();
-                console.log('✅ Login button configured');
+            if (loginBtn) {
+                loginBtn.onclick = (e) => {
+                    e.preventDefault();
+                    alert('認証システムの読み込みに失敗しました。ページをリロードしてお試しください。');
+                    location.reload();
+                };
+                console.log('✅ Fallback auth button configured');
+            }
+        }
+        
+        // 認証ボタンの更新関数（改善版）
+        function updateAuthButtons() {
+            console.log('🔧 Updating auth buttons...');
+            const loginBtn = document.querySelector('[data-auth-action="login"]');
+            const logoutBtn = document.querySelector('[data-auth-action="logout"]');
+            
+            if (!loginBtn) {
+                console.warn('⚠️ Login button not found');
+                return;
+            }
+            
+            if (window.authManager) {
+                console.log('✅ AuthManager found, configuring buttons...');
+                
+                // 現在のユーザー状態を確認
+                const user = window.authManager.getCurrentUser();
+                console.log('👤 Current user status:', !!user);
+                
+                if (user) {
+                    // ログイン済みの場合
+                    loginBtn.style.display = 'none';
+                    if (logoutBtn) {
+                        logoutBtn.style.display = 'block';
+                        logoutBtn.onclick = () => authManager.logout();
+                    }
+                } else {
+                    // 未ログインの場合
+                    loginBtn.style.display = 'block';
+                    loginBtn.onclick = (e) => {
+                        e.preventDefault();
+                        console.log('🔑 Login button clicked');
+                        authManager.showAuthModal();
+                    };
+                    if (logoutBtn) {
+                        logoutBtn.style.display = 'none';
+                    }
+                }
+                
+                console.log('✅ Login button configured successfully');
+            } else {
+                console.warn('⚠️ AuthManager not available, setting fallback handler');
+                // フォールバック処理
+                loginBtn.onclick = (e) => {
+                    e.preventDefault();
+                    console.log('🔑 Login button clicked (fallback)');
+                    if (window.authManager) {
+                        authManager.showAuthModal();
+                    } else {
+                        alert('認証システムの読み込み中です。しばらくお待ちください...');
+                        // 1秒後に再試行
+                        setTimeout(() => {
+                            if (window.authManager) {
+                                authManager.showAuthModal();
+                            } else {
+                                alert('認証システムの読み込みに失敗しました。ページをリロードしてください。');
+                            }
+                        }, 1000);
+                    }
+                };
             }
         }
         
         // DOMContentLoaded後に実行
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM loaded, starting auth initialization...');
+            
+            // ログインボタンの存在確認
+            const loginBtn = document.querySelector('[data-auth-action="login"]');
+            console.log('🔍 Login button found:', !!loginBtn);
+            if (loginBtn) {
+                console.log('🔍 Login button HTML:', loginBtn.outerHTML);
+            }
+            
+            // Supabaseライブラリの確認
+            console.log('🔍 Supabase library available:', !!(window.supabase && window.supabase.createClient));
+            
             loadSupabaseAndAuth();
         });
+        
+        // 定期的な認証状態チェック（デバッグ用）
+        setInterval(() => {
+            if (window.authManager) {
+                const user = window.authManager.getCurrentUser();
+                console.log('📊 Auth status check:', {
+                    hasAuthManager: !!window.authManager,
+                    hasUser: !!user,
+                    userId: user?.id
+                });
+            }
+        }, 30000); // 30秒ごと
     </script>
     
     <!-- 横画面強制表示機能 -->
