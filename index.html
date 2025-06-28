@@ -2399,34 +2399,7 @@ async function forceUpdateServiceWorker() {
     }
 }
 
-// ユーザー向け案内とボタン追加
-function addCacheControlButtons() {
-    // 強制キャッシュクリアボタンも追加（開発者向け）
-    const forceClearBtn = document.createElement('button');
-    forceClearBtn.innerHTML = '⚡ 強制更新';
-    forceClearBtn.style.cssText = `
-        position: fixed;
-        bottom: 80px;
-        left: 30px;
-        padding: 8px 16px;
-        background: rgba(244, 67, 54, 0.9);
-        border: 2px solid #D32F2F;
-        color: white;
-        font-size: 0.9rem;
-        font-weight: bold;
-        cursor: pointer;
-        border-radius: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        transition: all 0.3s ease;
-        z-index: 999;
-    `;
-    forceClearBtn.onclick = () => {
-        if (confirm('キャッシュを全削除してページを更新しますか？')) {
-            forceUpdateServiceWorker();
-        }
-    };
-    document.body.appendChild(forceClearBtn);
-}
+
 
         // UIの更新関数
         function updateUIForLoggedInUser(user) {
@@ -2439,47 +2412,10 @@ function addCacheControlButtons() {
         
         // 初期化完了
         document.addEventListener('DOMContentLoaded', function() {
-            addCacheControlButtons();
             checkAuthStatus();
         });
 </script>
 
-    <!-- キャッシュクリア案内モーダル -->
-    <div id="cacheModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10000; align-items: center; justify-content: center;">
-        <div style="background: #F5F5DC; border: 4px solid #8B4513; padding: 32px; max-width: 600px; width: 90%; box-shadow: 0 0 0 2px #A0522D, 8px 8px 0 0 rgba(0,0,0,0.5); position: relative;">
-            <button onclick="document.getElementById('cacheModal').style.display='none'" style="position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; background: #DC143C; border: 2px solid #8B0000; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; font-weight: bold;">×</button>
-            <h2 style="font-size: 1.6rem; color: #8B4513; margin-bottom: 16px; font-weight: bold; text-align: center;">🔄 キャッシュクリアのお願い</h2>
-            <div style="color: #654321; line-height: 1.6;">
-                <p>最新の変更が反映されない場合は、以下の方法でキャッシュをクリアしてください：</p>
-                
-                <div style="margin: 20px 0; padding: 15px; background: #FFF9C4; border: 2px solid #F9A825; border-radius: 8px;">
-                    <h4 style="margin-bottom: 10px; color: #F57F17;">📱 スマートフォン</h4>
-                    <ul style="margin-left: 20px; line-height: 1.6;">
-                        <li><strong>Chrome/Safari:</strong> 設定 → プライバシー → ブラウザデータを削除</li>
-                        <li><strong>または:</strong> ブラウザを完全に閉じて再起動</li>
-                    </ul>
-                </div>
-                
-                <div style="margin: 20px 0; padding: 15px; background: #E8F5E9; border: 2px solid #66BB6A; border-radius: 8px;">
-                    <h4 style="margin-bottom: 10px; color: #2E7D32;">💻 パソコン</h4>
-                    <ul style="margin-left: 20px; line-height: 1.6;">
-                        <li><strong>Chrome:</strong> Ctrl+Shift+R (Win) / Cmd+Shift+R (Mac)</li>
-                        <li><strong>Safari:</strong> Cmd+Option+R</li>
-                        <li><strong>Firefox:</strong> Ctrl+F5 (Win) / Cmd+Shift+R (Mac)</li>
-                    </ul>
-                </div>
-                
-                <p style="text-align: center; margin-top: 20px; font-weight: bold; color: #4DB6F7;">
-                    それでも解決しない場合は、ブラウザの設定から全ての閲覧データを削除してください
-                </p>
-            </div>
-            <div style="display: flex; justify-content: center; margin-top: 24px;">
-                <button onclick="document.getElementById('cacheModal').style.display='none'" style="padding: 12px 24px; background: #4CAF50; border: 3px solid #388E3C; color: white; font-size: 1rem; font-weight: bold; cursor: pointer;">理解しました</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 前のコンテンツを維持 -->
     <div class="background-wrapper">
         <div class="parallax-layer sky-layer"></div>
         <div class="parallax-layer clouds">
@@ -2489,14 +2425,6 @@ function addCacheControlButtons() {
         </div>
         <div class="city-silhouette"></div>
     </div>
-
-    <!-- キャッシュクリア案内ボタンを追加 -->
-    <button onclick="document.getElementById('cacheModal').style.display='flex'" style="position: fixed; bottom: 30px; left: 30px; padding: 8px 16px; background: rgba(255, 193, 7, 0.9); border: 2px solid #FFA000; color: #333; font-size: 0.9rem; font-weight: bold; cursor: pointer; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); transition: all 0.3s ease; z-index: 999;">🔄 更新されない場合</button>
-
-    <!-- 初期化の最後に追加 -->
-    <script>
-    console.log('🌟 CLAFTへようこそ！');
-    </script>
 
 </body>
 </html>

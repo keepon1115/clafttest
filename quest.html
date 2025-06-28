@@ -290,43 +290,7 @@
     </div>
     <button class="quest-button" id="mainQuestButton">🔥 次の冒険へ進む！</button>
     
-    <!-- キャッシュクリア案内モーダル -->
-    <div class="modal" id="cacheModal" style="display: none;">
-        <div class="modal-content" style="max-width: 600px;">
-            <button class="modal-close" onclick="document.getElementById('cacheModal').style.display='none'">×</button>
-            <h2 class="modal-title">🔄 キャッシュクリアのお願い</h2>
-            <div class="modal-description">
-                <p>最新の変更が反映されない場合は、以下の方法でキャッシュをクリアしてください：</p>
-                
-                <div style="margin: 20px 0; padding: 15px; background: #FFF9C4; border: 2px solid #F9A825; border-radius: 8px;">
-                    <h4 style="margin-bottom: 10px; color: #F57F17;">📱 スマートフォン</h4>
-                    <ul style="margin-left: 20px; line-height: 1.6;">
-                        <li><strong>Chrome/Safari:</strong> 設定 → プライバシー → ブラウザデータを削除</li>
-                        <li><strong>または:</strong> ブラウザを完全に閉じて再起動</li>
-                    </ul>
-                </div>
-                
-                <div style="margin: 20px 0; padding: 15px; background: #E8F5E9; border: 2px solid #66BB6A; border-radius: 8px;">
-                    <h4 style="margin-bottom: 10px; color: #2E7D32;">💻 パソコン</h4>
-                    <ul style="margin-left: 20px; line-height: 1.6;">
-                        <li><strong>Chrome:</strong> Ctrl+Shift+R (Win) / Cmd+Shift+R (Mac)</li>
-                        <li><strong>Safari:</strong> Cmd+Option+R</li>
-                        <li><strong>Firefox:</strong> Ctrl+F5 (Win) / Cmd+Shift+R (Mac)</li>
-                    </ul>
-                </div>
-                
-                <p style="text-align: center; margin-top: 20px; font-weight: bold; color: #4DB6F7;">
-                    それでも解決しない場合は、ブラウザの設定から全ての閲覧データを削除してください
-                </p>
-            </div>
-            <div class="modal-buttons">
-                <button class="modal-button" style="background: #4DB6F7; border-color: #2196F3; color: white;" onclick="document.getElementById('cacheModal').style.display='none'">
-                    理解しました
-                </button>
-            </div>
-        </div>
-    </div>
-    
+
     <div class="modal" id="stageModal"> <div class="modal-content"> <button class="modal-close" id="modalCloseBtn">×</button> <h2 class="modal-title" id="modalStageTitle"></h2> <p class="modal-description" id="modalStageDescription"></p> <div class="modal-message" id="modalStageMessage"></div> <div class="modal-buttons"> <button class="modal-button video" id="modalVideoBtn">🎬 動画を見る</button> <button class="modal-button quest" id="modalQuestBtn">⚔️ クエストに挑む</button> </div> </div> </div>
     
     <!-- 重複しているSupabaseの読み込みを削除 -->
@@ -1295,7 +1259,6 @@
     document.addEventListener('DOMContentLoaded', initLandscapeMode);
     </script>
 
-    <!-- キャッシュクリア案内ボタンを追加 -->
-    <button class="quest-button" id="cacheHelpBtn" style="display: none;">🔄 更新されない場合</button>
+
 </body>
 </html>
